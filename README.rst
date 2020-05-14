@@ -7,12 +7,14 @@ plot using ``pyqt`` by placing a vtk-widget into a background render.
 This can be quite useful when you desire to update your plot in
 real-time.
 
-
 Documentation
 =============
 
 Refer to the `documentation <http://docs.pyvista.org/>`_ for detailed
-installation and usage details.
+installation and usage details for the core package which is used
+alongside this package.
+
+For the installation and usage to the `pyvista_qt documentation <http://qtdocs.pyvista.org/>`_ the usage of this module.
 
 For general questions about the project, its applications, or about software
 usage, please create an issue in the `pyvista/pyvista-support`_ repository
@@ -50,8 +52,6 @@ PyVista, please see the the ``pyvista`` `Contributing Guide`_ and
 
 .. _Contributing Guide: https://github.com/pyvista/pyvista/blob/master/CONTRIBUTING.md
 .. _Code of Conduct: https://github.com/pyvista/pyvista/blob/master/CODE_OF_CONDUCT.md
-
-
 
 License
 =======

@@ -73,7 +73,7 @@ sphere to an empty plotting window.
         sys.exit(app.exec_())
 
 
-.. figure:: ../images/user-generated/qt_plotting_sphere.png
+.. figure:: ./images/user-generated/qt_plotting_sphere.png
     :width: 600pt
 
     PyQt5 pyvista QtInteractor
