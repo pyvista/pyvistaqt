@@ -35,6 +35,69 @@ jobs:
     displayName: 'Run doctest'
 
 
+# DESCRIPTION: Linux multiple qt version testing
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  variables:
+    DISPLAY: ':99.0'
+    PYVISTA_OFF_SCREEN: 'True'
+
+  strategy:
+    matrix:
+      LinuxPyQt5.14.2:
+        pyqt5.version: '5.14.2'
+      LinuxPyQt55.14.1:
+        pyqt5.version: '5.14.1'
+      LinuxPyQt55.14.0:
+        pyqt5.version: '5.14.0'
+      LinuxPyQt55.13.2:
+        pyqt5.version: '5.13.2'
+      LinuxPyQt55.13.1:
+        pyqt5.version: '5.13.1'
+      LinuxPyQt55.13.0:
+        pyqt5.version: '5.13.0'
+      LinuxPyQt55.12.3:
+        pyqt5.version: '5.12.3'
+      LinuxPyQt55.12.2:
+        pyqt5.version: '5.12.2'
+      LinuxPyQt55.12.1:
+        pyqt5.version: '5.12.1'
+      LinuxPyQt55.12.0:
+        pyqt5.version: '5.12.0'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+    displayName: 'Set Python 3.7'
+
+  - script: |
+      pip install pyqt5==$(pyqt5.version)
+    displayName: 'Install PyQt5=='$(pyqt5.version)'
+
+  - script: |
+      pip install -e .
+    displayName: Install pyvista_qt
+
+  - script: |
+      .ci/setup_headless_display.sh
+    displayName: Install headless display
+
+  - script: |
+      sudo apt-get install python3-tk
+      pip install -r requirements_test.txt
+      python -c "import pyvista; print(pyvista.Report())"
+      which python
+      pip list
+    displayName: 'Install dependencies'
+
+  - script: |
+      pip install pytest-azurepipelines
+      pytest -v --cov pyvista_qt --cov-report html
+    displayName: 'Test Core API'
+
+
 # DESCRIPTION: Core API and doc string testing for Linux
 - job: Linux
   pool:
@@ -59,6 +122,10 @@ jobs:
     displayName: 'Use Python $(python.version)'
 
   - script: |
+      pip install pyqt5==5.11.3
+    displayName: Install pyqt==5.11.3
+
+  - script: |
       pip install -e .
     displayName: Install pyvista_qt
 
@@ -80,7 +147,7 @@ jobs:
     displayName: 'Test Core API'
 
   - script: |
-      pytest -v --doctest-modules pyvista_qt
+      pytest -v --doctest-modules pyvista
     displayName: 'Test Package Docstrings'
 
   # - script: |
@@ -269,9 +336,10 @@ jobs:
       GH_NAME: $(gh.name)
       GH_EMAIL: $(gh.email)
 
-  # - script: |
-  #     pip install pyqt5==5.11.3
-  #   displayName: Install pyqt5
+  - script: |
+      sudo apt-get install python3-tk
+      pip install -r requirements_docs.txt
+    displayName: 'Install dependencies'
 
   - script: |
       pip install -e .
@@ -281,11 +349,6 @@ jobs:
       .ci/setup_headless_display.sh
       # python .ci/pyvista_test.py  # for debug
     displayName: Install headless display
-
-  - script: |
-      sudo apt-get install python3-tk
-      pip install -r requirements_docs.txt
-    displayName: 'Install dependencies'
 
   - script: |
       make -C docs html -b coverage

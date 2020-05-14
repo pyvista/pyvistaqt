@@ -4,12 +4,13 @@ imageio-ffmpeg
 colorcet
 cmocean
 meshio>=4.0.3, <5.0
+PyQt5==5.11.3
+pytest-sphinx
 Sphinx
 sphinx-autobuild
 sphinx-rtd-theme
 sphinxcontrib-napoleon
 sphinxcontrib-websupport
-pytest-sphinx
 sphinx-notfound-page>=0.3.0
 sphinx-copybutton
 lxml
