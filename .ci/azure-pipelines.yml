@@ -74,7 +74,7 @@ jobs:
 
   - script: |
       pip install pyqt5==$(pyqt5.version)
-    displayName: 'Install PyQt5=='$(pyqt5.version)'
+    displayName: 'Install PyQt5==$(pyqt5.version)'
 
   - script: |
       pip install -e .
