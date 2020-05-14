@@ -36,7 +36,7 @@ jobs:
 
 
 # DESCRIPTION: Linux multiple qt version testing
-- job: Linux ManyQT
+- job: LinuxManyQT
   pool:
     vmImage: 'ubuntu-16.04'
   variables:
