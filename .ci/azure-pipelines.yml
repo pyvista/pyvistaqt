@@ -283,6 +283,7 @@ jobs:
   - script: |
       sudo apt-get install python3-tk
       pip install -r requirements_docs.txt
+      pip install -r requirements_tests.txt
     displayName: 'Install dependencies'
 
   - script: |
