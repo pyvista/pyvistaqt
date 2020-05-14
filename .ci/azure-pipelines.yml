@@ -272,6 +272,10 @@ jobs:
       GH_EMAIL: $(gh.email)
 
   - script: |
+      pip install pyqt5==5.11.3
+    displayName: Install pyqt5
+
+  - script: |
       pip install -e .
     displayName: Install pyvista_qt
 
