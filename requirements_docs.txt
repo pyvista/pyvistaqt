@@ -1,0 +1,15 @@
+matplotlib
+imageio>=2.5.0
+imageio-ffmpeg
+colorcet
+cmocean
+meshio>=4.0.3, <5.0
+Sphinx
+sphinx-autobuild
+sphinx-rtd-theme
+sphinxcontrib-napoleon
+sphinxcontrib-websupport
+pytest-sphinx
+sphinx-notfound-page>=0.3.0
+sphinx-copybutton
+lxml

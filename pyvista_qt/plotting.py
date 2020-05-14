@@ -1,5 +1,4 @@
 """Qt interactive plotter."""
-import logging
 import os
 import platform
 import time
@@ -32,15 +31,12 @@ from PyQt5.QtWidgets import (QMenuBar, QVBoxLayout, QHBoxLayout,
 # changing it from the default 'QWidget'.
 # See https://github.com/pyvista/pyvista/pull/693
 
-
-log = logging.getLogger(__name__)
-log.setLevel('DEBUG')
-
+# log is unused at the moment
+# log = logging.getLogger(__name__)
+# log.setLevel('DEBUG')
 
 SAVE_CAM_BUTTON_TEXT = 'Save Camera'
 CLEAR_CAMS_BUTTON_TEXT = 'Clear Cameras'
-
-
 
 class FileDialog(QFileDialog):
     """Generic file query.
@@ -618,8 +614,9 @@ class BackgroundPlotter(QtInteractor):
     Examples
     --------
     >>> import pyvista as pv
-    >>> plotter = pv.BackgroundPlotter()
-    >>> actor = plotter.add_mesh(pv.Sphere())
+    >>> from pyvista_qt import BackgroundPlotter
+    >>> plotter = BackgroundPlotter()
+    >>> _ = plotter.add_mesh(pv.Sphere())
     """
 
     ICON_TIME_STEP = 5.0
