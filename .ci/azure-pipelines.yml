@@ -36,7 +36,7 @@ jobs:
 
 
 # DESCRIPTION: Linux multiple qt version testing
-- job: Linux Python3.7
+- job: Linux ManyQT
   pool:
     vmImage: 'ubuntu-16.04'
   variables:
