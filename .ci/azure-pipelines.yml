@@ -36,7 +36,7 @@ jobs:
 
 
 # DESCRIPTION: Linux multiple qt version testing
-- job: LinuxManyQT
+- job: LinuxPyQT
   pool:
     vmImage: 'ubuntu-16.04'
   variables:
@@ -45,26 +45,28 @@ jobs:
 
   strategy:
     matrix:
-      LinuxPyQt5.14.2:
+      5.14.2:
         pyqt5.version: '5.14.2'
-      LinuxPyQt55.14.1:
+      5.14.1:
         pyqt5.version: '5.14.1'
-      LinuxPyQt55.14.0:
+      5.14.0:
         pyqt5.version: '5.14.0'
-      LinuxPyQt55.13.2:
+      5.13.2:
         pyqt5.version: '5.13.2'
-      LinuxPyQt55.13.1:
+      5.13.1:
         pyqt5.version: '5.13.1'
-      LinuxPyQt55.13.0:
+      5.13.0:
         pyqt5.version: '5.13.0'
-      LinuxPyQt55.12.3:
+      5.12.3:
         pyqt5.version: '5.12.3'
-      LinuxPyQt55.12.2:
+      5.12.2:
         pyqt5.version: '5.12.2'
-      LinuxPyQt55.12.1:
+      5.12.1:
         pyqt5.version: '5.12.1'
-      LinuxPyQt55.12.0:
+      5.12.0:
         pyqt5.version: '5.12.0'
+      5.11.3:
+        pyqt5.version: '5.11.3'
 
   steps:
   - task: UsePythonVersion@0
@@ -147,7 +149,7 @@ jobs:
     displayName: 'Test Core API'
 
   - script: |
-      pytest -v --doctest-modules pyvista
+      pytest -v --doctest-modules pyvista_qt
     displayName: 'Test Package Docstrings'
 
   # - script: |
