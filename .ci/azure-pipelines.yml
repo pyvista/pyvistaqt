@@ -275,11 +275,13 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
-    - script: .ci/macos-install-python.sh '$(python.version)'
+    - script: |
+        .ci/macos-install-python.sh '$(python.version)'
+	python -c "import sys; print(sys.version)"
       displayName: Install Python
 
     - script: |
-        pip install -e .
+        python -m pip install -e .
         python -c "import pyvista; print(pyvista.Report())"
       displayName: 'Install pyvista_qt'
 
