@@ -254,7 +254,7 @@ jobs:
       python -c "import pyvista; print(pyvista.Report())"
     displayName: 'Install PyVista'
   - script: |
-      python -m pytest -v --cov pyvista_qt --cov-report html
+      pytest -v --cov pyvista_qt --cov-report html
     displayName: 'Run Tests'
 
   # don't run job on no-ci builds
