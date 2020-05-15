@@ -1,9 +1,6 @@
 variables:
   ALLOW_PLOTTING: true
   SHELLOPTS: 'errexit:pipefail'
-  DISPLAY: ':99.0'
-  PYVISTA_OFF_SCREEN: 'True'
-
 
 trigger:
   branches:
@@ -42,6 +39,9 @@ jobs:
 # - job: LinuxPyQT
 #   pool:
 #     vmImage: 'ubuntu-16.04'
+#   variables:
+#     DISPLAY: ':99.0'
+#     PYVISTA_OFF_SCREEN: 'True'
 
 #   strategy:
 #     matrix:
@@ -123,7 +123,9 @@ jobs:
       versionSpec: '$(python.version)'
     displayName: 'Use Python $(python.version)'
 
-  - template: install_pyvista.yml
+  - script: |
+      pip install -e .
+    displayName: Install pyvista_qt
 
   - script: |
       .ci/setup_headless_display.sh
@@ -131,9 +133,16 @@ jobs:
 
   - script: |
       sudo apt-get install python3-tk
-    displayName: 'Install additional dependencies'
+      pip install -r requirements_test.txt
+      python -c "import pyvista; print(pyvista.Report())"
+      which python
+      pip list
+    displayName: 'Install dependencies'
 
-  - template: run_core_tests.yml
+  - script: |
+      pip install pytest-azurepipelines
+      pytest -v --cov pyvista_qt --cov-report html
+    displayName: 'Test Core API'
 
   - script: |
       pytest -v --doctest-modules pyvista_qt
@@ -213,8 +222,6 @@ jobs:
     vmIMage: 'VS2017-Win2016'
   variables:
     AZURE_CI_WINDOWS: 'true'
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
   strategy:
     maxParallel: 4
     matrix:
@@ -236,8 +243,17 @@ jobs:
       git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
       powershell gl-ci-helpers/appveyor/install_opengl.ps1
     displayName: 'Install OpenGL'
-  - template: install_pyvista.yml
-  - template: run_core_tests.yml
+  - script: |
+      python -m pip install -r requirements_test.txt
+    displayName: 'Install test dependencies'
+  - script: |
+      python -m pip install -e .
+      python -c "import pyvista; print(pyvista.Report())"
+    displayName: 'Install PyVista'
+  - script: |
+      pytest -v --cov pyvista_qt --cov-report html
+    displayName: 'Run Tests'
+
   # don't run job on no-ci builds
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
@@ -245,8 +261,7 @@ jobs:
 # DESCRIPTION: Core API testing for MacOS
 - job: macOS
   variables:
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
+    python.architecture: 'x64'
   strategy:
     matrix:
       # Skipping Python 3.5: doesn't have great support on Azure
@@ -261,8 +276,27 @@ jobs:
         .ci/macos-install-python.sh '$(python.version)'
         python -c "import sys; print(sys.version)"
       displayName: Install Python
-    - template: install_pyvista.yml
-    - template: run_core_tests.yml
+
+    - script: |
+        python -m pip install -e .
+        python -c "import pyvista; print(pyvista.Report())"
+      displayName: 'Install pyvista_qt'
+
+    - script: |
+        EXAMPLES_PATH=$(python -c "import pyvista; print(pyvista.EXAMPLES_PATH)")
+        mkdir -p EXAMPLES_PATH
+        echo "##vso[task.setvariable variable=EXAMPLES_PATH]$EXAMPLES_PATH"
+        PYVISTA_VERSION=$(python -c "import io; exec(io.open('pyvista/_version.py').read()); print(__version__)")
+        echo "##vso[task.setvariable variable=PYVISTA_VERSION]$PYVISTA_VERSION"
+        echo $EXAMPLES_PATH
+      displayName: 'Store location of pyvista downloads cache and version'
+
+    - script: |
+        python -m pip install -r requirements_test.txt
+        python -m pip install pytest-azurepipelines
+        python -m pytest -v --cov pyvista_qt --cov-report html --durations=0
+      displayName: 'Run Tests'
+
   # don't run job on no-ci builds
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
@@ -271,6 +305,7 @@ jobs:
 - job: BuildDocumentation
   pool:
     vmImage: 'ubuntu-16.04'
+
   variables:
     DISPLAY: ':99.0'
     PYVISTA_OFF_SCREEN: 'True'
@@ -295,7 +330,9 @@ jobs:
       pip install -r requirements_docs.txt
     displayName: 'Install dependencies'
 
-  - template: install_pyvista.yml
+  - script: |
+      pip install -e .
+    displayName: Install pyvista_qt
 
   - script: |
       .ci/setup_headless_display.sh

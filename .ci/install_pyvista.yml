@@ -1,5 +1,0 @@
-steps:
-- script: |
-    python -m pip install -e .
-    python -c "import pyvista; print(pyvista.Report())"
-  displayName: 'Install pyvista_qt'
