@@ -1,6 +1,9 @@
 variables:
   ALLOW_PLOTTING: true
   SHELLOPTS: 'errexit:pipefail'
+  DISPLAY: ':99.0'
+  PYVISTA_OFF_SCREEN: 'True'
+
 
 trigger:
   branches:
@@ -39,9 +42,6 @@ jobs:
 # - job: LinuxPyQT
 #   pool:
 #     vmImage: 'ubuntu-16.04'
-#   variables:
-#     DISPLAY: ':99.0'
-#     PYVISTA_OFF_SCREEN: 'True'
 
 #   strategy:
 #     matrix:
@@ -104,9 +104,6 @@ jobs:
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
-  variables:
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
 
   strategy:
     matrix:
@@ -123,9 +120,7 @@ jobs:
       versionSpec: '$(python.version)'
     displayName: 'Use Python $(python.version)'
 
-  - script: |
-      pip install -e .
-    displayName: Install pyvista_qt
+  - template: install_pyvista.yml
 
   - script: |
       .ci/setup_headless_display.sh
@@ -133,16 +128,9 @@ jobs:
 
   - script: |
       sudo apt-get install python3-tk
-      pip install -r requirements_test.txt
-      python -c "import pyvista; print(pyvista.Report())"
-      which python
-      pip list
-    displayName: 'Install dependencies'
+    displayName: 'Install additional dependencies'
 
-  - script: |
-      pip install pytest-azurepipelines
-      pytest -v --cov pyvista_qt --cov-report html
-    displayName: 'Test Core API'
+  - template: run_core_tests.yml
 
   - script: |
       pytest -v --doctest-modules pyvista_qt
@@ -172,9 +160,6 @@ jobs:
 - job: LinuxConda
   pool:
     vmImage: 'ubuntu-16.04'
-  variables:
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
 
   strategy:
     matrix:
@@ -243,17 +228,8 @@ jobs:
       git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
       powershell gl-ci-helpers/appveyor/install_opengl.ps1
     displayName: 'Install OpenGL'
-  - script: |
-      python -m pip install -r requirements_test.txt
-    displayName: 'Install test dependencies'
-  - script: |
-      python -m pip install -e .
-      python -c "import pyvista; print(pyvista.Report())"
-    displayName: 'Install PyVista'
-  - script: |
-      pytest -v --cov pyvista_qt --cov-report html
-    displayName: 'Run Tests'
-
+  - template: install_pyvista.yml
+  - template: run_core_tests.yml
   # don't run job on no-ci builds
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
@@ -276,27 +252,8 @@ jobs:
         .ci/macos-install-python.sh '$(python.version)'
         python -c "import sys; print(sys.version)"
       displayName: Install Python
-
-    - script: |
-        python -m pip install -e .
-        python -c "import pyvista; print(pyvista.Report())"
-      displayName: 'Install pyvista_qt'
-
-    - script: |
-        EXAMPLES_PATH=$(python -c "import pyvista; print(pyvista.EXAMPLES_PATH)")
-        mkdir -p EXAMPLES_PATH
-        echo "##vso[task.setvariable variable=EXAMPLES_PATH]$EXAMPLES_PATH"
-        PYVISTA_VERSION=$(python -c "import io; exec(io.open('pyvista/_version.py').read()); print(__version__)")
-        echo "##vso[task.setvariable variable=PYVISTA_VERSION]$PYVISTA_VERSION"
-        echo $EXAMPLES_PATH
-      displayName: 'Store location of pyvista downloads cache and version'
-
-    - script: |
-        python -m pip install -r requirements_test.txt
-        python -m pip install pytest-azurepipelines
-        python -m pytest -v --cov pyvista_qt --cov-report html --durations=0
-      displayName: 'Run Tests'
-
+    - template: install_pyvista.yml
+    - template: run_core_tests.yml
   # don't run job on no-ci builds
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
@@ -305,10 +262,6 @@ jobs:
 - job: BuildDocumentation
   pool:
     vmImage: 'ubuntu-16.04'
-
-  variables:
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
 
   steps:
   - task: UsePythonVersion@0
@@ -330,9 +283,7 @@ jobs:
       pip install -r requirements_docs.txt
     displayName: 'Install dependencies'
 
-  - script: |
-      pip install -e .
-    displayName: Install pyvista_qt
+  - template: install_pyvista.yml
 
   - script: |
       .ci/setup_headless_display.sh
