@@ -104,6 +104,9 @@ jobs:
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    DISPLAY: ':99.0'
+    PYVISTA_OFF_SCREEN: 'True'
 
   strategy:
     matrix:
@@ -160,6 +163,9 @@ jobs:
 - job: LinuxConda
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    DISPLAY: ':99.0'
+    PYVISTA_OFF_SCREEN: 'True'
 
   strategy:
     matrix:
@@ -207,6 +213,8 @@ jobs:
     vmIMage: 'VS2017-Win2016'
   variables:
     AZURE_CI_WINDOWS: 'true'
+    DISPLAY: ':99.0'
+    PYVISTA_OFF_SCREEN: 'True'
   strategy:
     maxParallel: 4
     matrix:
@@ -237,7 +245,8 @@ jobs:
 # DESCRIPTION: Core API testing for MacOS
 - job: macOS
   variables:
-    python.architecture: 'x64'
+    DISPLAY: ':99.0'
+    PYVISTA_OFF_SCREEN: 'True'
   strategy:
     matrix:
       # Skipping Python 3.5: doesn't have great support on Azure
@@ -262,6 +271,9 @@ jobs:
 - job: BuildDocumentation
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    DISPLAY: ':99.0'
+    PYVISTA_OFF_SCREEN: 'True'
 
   steps:
   - task: UsePythonVersion@0
