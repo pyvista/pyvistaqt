@@ -614,7 +614,7 @@ class BackgroundPlotter(QtInteractor):
     Examples
     --------
     >>> import pyvista as pv
-    >>> from pyvista_qt import BackgroundPlotter
+    >>> from pyvistaqt import BackgroundPlotter
     >>> plotter = BackgroundPlotter()
     >>> _ = plotter.add_mesh(pv.Sphere())
     """

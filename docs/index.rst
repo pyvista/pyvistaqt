@@ -1,4 +1,4 @@
-.. title:: pyvista_qt
+.. title:: pyvistaqt
 
 
 Getting Started
@@ -6,7 +6,7 @@ Getting Started
 
 Installation using ``pip`` is simply::
 
-    $ pip install pyvista_qt
+    $ pip install pyvistaqt
 
 You can also visit `PyPi <https://pypi.org/project/pyvista/>`_ or
 `GitHub <https://github.com/pyvista/pyvista>`_ to download the source.

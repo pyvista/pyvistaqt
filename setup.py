@@ -5,7 +5,7 @@ import os
 from io import open as io_open
 from setuptools import setup
 
-package_name = 'pyvista_qt'
+package_name = 'pyvistaqt'
 
 __version__ = None
 filepath = os.path.dirname(__file__)
@@ -38,7 +38,7 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
 
-    url='https://github.com/pyvista/pyvista_qt',
+    url='https://github.com/pyvista/pyvistaqt',
     keywords='vtk numpy plotting mesh qt pyqt',
     python_requires='>=3.5.*',
     install_requires=['pyvista>=0.24.0',

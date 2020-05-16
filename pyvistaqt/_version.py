@@ -1,4 +1,4 @@
-"""Version info for pyvista_qt."""
+"""Version info for pyvistaqt."""
 # major, minor, patch
 version_info = 0, 1, 0
 
