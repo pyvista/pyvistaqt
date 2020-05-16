@@ -6,9 +6,9 @@ import pytest
 import pyvista
 import vtk
 from pyvista.plotting import system_supports_plotting, Renderer
-from pyvista_qt.plotting import (QVTKRenderWindowInteractor, QTimer,
+from pyvistaqt.plotting import (QVTKRenderWindowInteractor, QTimer,
                                  _create_menu_bar)
-from pyvista_qt import QtInteractor, MainWindow, BackgroundPlotter
+from pyvistaqt import QtInteractor, MainWindow, BackgroundPlotter
 
 from PyQt5.Qt import (QMainWindow, QFrame, QVBoxLayout, QMenuBar,
                       QAction, QToolBar)
