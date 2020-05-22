@@ -225,8 +225,8 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      Python35-64bit:
-        PYTHON_VERSION: '3.5'
+      # Python35-64bit:
+        # PYTHON_VERSION: '3.5'
       Python36-64bit:
         PYTHON_VERSION: '3.6'
       Python37-64bit:
