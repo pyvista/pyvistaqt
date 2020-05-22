@@ -14,7 +14,7 @@ Refer to the `documentation <http://docs.pyvista.org/>`_ for detailed
 installation and usage details for the core package which is used
 alongside this package.
 
-For the installation and usage to the `pyvista_qt documentation <http://qtdocs.pyvista.org/>`_ the usage of this module.
+For the installation and usage to the `pyvistaqt documentation <http://qtdocs.pyvista.org/>`_ the usage of this module.
 
 For general questions about the project, its applications, or about software
 usage, please create an issue in the `pyvista/pyvista-support`_ repository
@@ -30,13 +30,13 @@ The project support team can be reached at `info@pyvista.org`_.
 Installation
 ============
 
-PyVista can be installed from `PyPI <https://pypi.org/project/pyvista_qt/>`_
+PyVista can be installed from `PyPI <https://pypi.org/project/pyvistaqt/>`_
 using ``pip`` on Python >= 3.5::
 
-    pip install pyvista_qt
+    pip install pyvistaqt
 
-You can also visit `PyPi <https://pypi.org/project/pyvista_qt/>`_ or
-`GitHub <https://github.com/pyvista/pyvista_qt>`_ to download the source.
+You can also visit `PyPi <https://pypi.org/project/pyvistaqt/>`_ or
+`GitHub <https://github.com/pyvista/pyvistaqt>`_ to download the source.
 
 
 Contributing

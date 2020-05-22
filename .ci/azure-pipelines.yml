@@ -80,7 +80,7 @@ jobs:
 
 #   - script: |
 #       pip install -e .
-#     displayName: Install pyvista_qt
+#     displayName: Install pyvistaqt
 
 #   - script: |
 #       .ci/setup_headless_display.sh
@@ -96,7 +96,7 @@ jobs:
 
 #   - script: |
 #       pip install pytest-azurepipelines
-#       pytest -v --cov pyvista_qt --cov-report html
+#       pytest -v --cov pyvistaqt --cov-report html
 #     displayName: 'Test Core API'
 
 
@@ -125,7 +125,7 @@ jobs:
 
   - script: |
       pip install -e .
-    displayName: Install pyvista_qt
+    displayName: Install pyvistaqt
 
   - script: |
       .ci/setup_headless_display.sh
@@ -141,11 +141,11 @@ jobs:
 
   - script: |
       pip install pytest-azurepipelines
-      pytest -v --cov pyvista_qt --cov-report html
+      pytest -v --cov pyvistaqt --cov-report html
     displayName: 'Test Core API'
 
   - script: |
-      pytest -v --doctest-modules pyvista_qt
+      pytest -v --doctest-modules pyvistaqt
     displayName: 'Test Package Docstrings'
 
   - script: |
@@ -156,7 +156,7 @@ jobs:
   - script: |
       pip install twine
       python setup.py sdist
-      twine upload --skip-existing dist/pyvista_qt*.gz
+      twine upload --skip-existing dist/pyvistaqt*.gz
     displayName: 'Upload to PyPi'
     condition: and(eq(variables['python.version'], '3.7'), contains(variables['Build.SourceBranch'], 'refs/tags/'))
     env:
@@ -205,13 +205,13 @@ jobs:
     - script: |
         source /usr/share/miniconda/etc/profile.d/conda.sh
         conda activate pyvista-vtk$(VTK.VERSION)
-        pytest -v --cov pyvista_qt --cov-report html
+        pytest -v --cov pyvistaqt --cov-report html
       displayName: 'Test Core API against VTK'
 
     - script: |
         source /usr/share/miniconda/etc/profile.d/conda.sh
         conda activate pyvista-vtk$(VTK.VERSION)
-        pytest -v --doctest-modules pyvista_qt
+        pytest -v --doctest-modules pyvistaqt
       displayName: 'Test Package Docstrings against VTK'
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
@@ -251,7 +251,7 @@ jobs:
       python -c "import pyvista; print(pyvista.Report())"
     displayName: 'Install PyVista'
   - script: |
-      pytest -v --cov pyvista_qt --cov-report html
+      pytest -v --cov pyvistaqt --cov-report html
     displayName: 'Run Tests'
 
   # don't run job on no-ci builds
@@ -280,12 +280,12 @@ jobs:
     - script: |
         python -m pip install -e .
         python -c "import pyvista; print(pyvista.Report())"
-      displayName: 'Install pyvista_qt'
+      displayName: 'Install pyvistaqt'
 
     - script: |
         python -m pip install -r requirements_test.txt
         python -m pip install pytest-azurepipelines
-        python -m pytest -v --cov pyvista_qt --cov-report html --durations=0
+        python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
       displayName: 'Run Tests'
 
   # don't run job on no-ci builds
@@ -323,7 +323,7 @@ jobs:
 
   - script: |
       pip install -e .
-    displayName: Install pyvista_qt
+    displayName: Install pyvistaqt
 
   - script: |
       .ci/setup_headless_display.sh
@@ -343,10 +343,10 @@ jobs:
       make -C docs html
     displayName: 'Update figures from doctest'
 
-  # upload documentation to pyvista_qt-docs
+  # upload documentation to pyvistaqt-docs
   - script: |
-      git clone --depth 1 https://${GH_TOKEN}@github.com/pyvista/pyvista_qt-docs.git
-      cd pyvista_qt-docs
+      git clone --depth 1 https://${GH_TOKEN}@github.com/pyvista/pyvistaqt-docs.git
+      cd pyvistaqt-docs
       git gc --prune=now
       git remote prune origin
       rm -rf *
@@ -358,7 +358,7 @@ jobs:
       git add .
       git commit -am "Azure CI commit ref $(Build.SourceVersion)"
       git push
-    displayName: Upload Documentation to pyvista_qt-docs
+    displayName: Upload Documentation to pyvistaqt-docs
     env:
       GH_TOKEN: $(gh.token)
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))    

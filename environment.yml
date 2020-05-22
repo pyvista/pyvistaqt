@@ -1,4 +1,4 @@
-name: pyvista_qt-env
+name: pyvistaqt-env
 channels:
   - conda-forge
 dependencies:

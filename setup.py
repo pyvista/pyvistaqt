@@ -1,5 +1,5 @@
 """
-Installation file for python pyvista_qt module
+Installation file for python pyvistaqt module
 """
 import os
 from io import open as io_open
