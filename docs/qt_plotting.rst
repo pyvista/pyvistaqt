@@ -1,7 +1,7 @@
 .. _qt_ref:
 
-PyVista PyQt Interface
-----------------------
+pyvistaqt Usage
+---------------
 
 PyVista has an interface for placing plots in ``pyvistaqt`` that extends the
 functionality of the ``QVTKRenderWindowInteractor`` class.

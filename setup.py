@@ -41,7 +41,7 @@ setup(
     url='https://github.com/pyvista/pyvistaqt',
     keywords='vtk numpy plotting mesh qt pyqt',
     python_requires='>=3.5.*',
-    install_requires=['pyvista>=0.24.0',
+    install_requires=['pyvista>=0.25.0',
                       'PyQt5>=5.11.3',
     ],
 

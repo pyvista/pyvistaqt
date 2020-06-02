@@ -304,7 +304,7 @@ def test_background_plotting_orbit(qtbot):
     plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
     # perform the orbit:
-    plotter.orbit_on_path(bkg=False, step=0.0)
+    plotter.orbit_on_path(threaded=True, step=0.0)
     plotter.close()
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
