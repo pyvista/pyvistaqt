@@ -124,8 +124,10 @@ jobs:
     displayName: 'Use Python $(python.version)'
 
   - script: |
-      pip install -e .
-    displayName: Install pyvistaqt
+      pip install wheel --upgrade
+      python setup.py bdist_wheel
+      pip install dist/pyvistaqt*.whl
+    displayName: Build wheel and install pyvistaqt
 
   - script: |
       .ci/setup_headless_display.sh
@@ -141,7 +143,9 @@ jobs:
 
   - script: |
       pip install pytest-azurepipelines
+      cd tests
       pytest -v --cov pyvistaqt --cov-report html
+      cd ..
     displayName: 'Test Core API'
 
   - script: |
@@ -155,8 +159,7 @@ jobs:
 
   - script: |
       pip install twine
-      python setup.py sdist
-      twine upload --skip-existing dist/pyvistaqt*.gz
+      twine upload --skip-existing dist/pyvistaqt*.whl
     displayName: 'Upload to PyPi'
     condition: and(eq(variables['python.version'], '3.7'), contains(variables['Build.SourceBranch'], 'refs/tags/'))
     env:
@@ -182,9 +185,10 @@ jobs:
         VTK.VERSION: 8.1
       VTKv82:
         VTK.VERSION: 8.2
+      # VTKv90:
+        # VTK.VERSION: 9.0
 
   steps:
-
     - script: |
         .ci/setup_headless_display.sh
       displayName: Install headless display
@@ -225,12 +229,12 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      # Python35-64bit:
-        # PYTHON_VERSION: '3.5'
       Python36-64bit:
         PYTHON_VERSION: '3.6'
       Python37-64bit:
         PYTHON_VERSION: '3.7'
+      Python38-64bit:
+        PYTHON_VERSION: '3.8'
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -247,6 +251,7 @@ jobs:
       python -m pip install -r requirements_test.txt
     displayName: 'Install test dependencies'
   - script: |
+      pip install pyqt5==5.15.0
       python -m pip install -e .
       python -c "import pyvista; print(pyvista.Report())"
     displayName: 'Install PyVista'
@@ -269,8 +274,10 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+      Python38:
+        python.version: '3.8'
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
   steps:
     - script: |
         .ci/macos-install-python.sh '$(python.version)'
