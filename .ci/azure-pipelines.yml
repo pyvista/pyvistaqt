@@ -183,7 +183,7 @@ jobs:
         VTK.VERSION: 8.1
       VTKv82:
         VTK.VERSION: 8.2
-      VTKv82:
+      VTKv90:
         VTK.VERSION: 9.0
 
   steps:
@@ -231,7 +231,7 @@ jobs:
         PYTHON_VERSION: '3.6'
       Python37-64bit:
         PYTHON_VERSION: '3.7'
-      Python37-64bit:
+      Python38-64bit:
         PYTHON_VERSION: '3.8'
   steps:
   - task: UsePythonVersion@0
