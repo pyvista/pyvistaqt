@@ -48,6 +48,6 @@ Create an instance of the ``BackgroundPlotter`` and plot a sphere.
 
 License
 =======
-While ``pyvista-qt`` is under the MIT license, ``pyqt5`` is subject to
+While ``pyvistaqt`` is under the MIT license, ``pyqt5`` is subject to
 the GPL license.  Please see deails at
 `Riverbank License FAQ <https://www.riverbankcomputing.com/commercial/license-faq>`_.
