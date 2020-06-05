@@ -1,8 +1,8 @@
-##########
-PyVista-qt
-##########
+#########
+PyVistaQt
+#########
 
-``pyvista-qt`` is a helper module for ``pyvista`` to enable you to
+``pyvistaqt`` is a helper module for ``pyvista`` to enable you to
 plot using ``pyqt`` by placing a vtk-widget into a background render.
 This can be quite useful when you desire to update your plot in
 real-time.
@@ -42,7 +42,7 @@ You can also visit `PyPi <https://pypi.org/project/pyvistaqt/>`_ or
 Contributing
 ============
 
-We absolutely welcome contributions. ``pyvista-qt`` is maintained on a
+We absolutely welcome contributions. ``pyvistaqt`` is maintained on a
 volunteer basis and thus we need to foster a community that can
 support user questions and develop new features to make this software
 a useful tool for all users while encouraging every member of the
@@ -55,6 +55,6 @@ PyVista, please see the the ``pyvista`` `Contributing Guide`_ and
 
 License
 =======
-While ``pyvista-qt`` is under the MIT license, ``pyqt5`` is subject to
+While ``pyvistaqt`` is under the MIT license, ``pyqt5`` is subject to
 the GPL license.  Please see deails at
 `Riverbank License FAQ <https://www.riverbankcomputing.com/commercial/license-faq>`_.

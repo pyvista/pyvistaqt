@@ -84,7 +84,7 @@ Background Plotting
 
 Normal PyVista plotting windows exhibit blocking behavior, but it is possible
 to plot in the background and update the plotter in real-time using the
-``BackgroundPlotter`` object.  This requires ``pyvista-qt``, but otherwise appears
+``BackgroundPlotter`` object.  This requires ``pyvistaqt``, but otherwise appears
 and functions like a normal PyVista ``Plotter`` instance.  For example:
 
 .. code:: python
