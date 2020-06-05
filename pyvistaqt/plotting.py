@@ -15,14 +15,14 @@ import scooby
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QTimer
+from qtpy.QtCore import Signal, Slot, QObject, QTimer
+from qtpy import QtGui
+from qtpy import QtCore
+from qtpy.QtWidgets import (QMenuBar, QVBoxLayout, QHBoxLayout,
+                            QDoubleSpinBox, QFrame, QMainWindow,
+                            QSlider, QAction, QDialog, QFormLayout,
+                            QFileDialog)
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5 import QtGui
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import (QMenuBar, QVBoxLayout, QHBoxLayout,
-                             QDoubleSpinBox, QFrame, QMainWindow,
-                             QSlider, QAction, QDialog, QFormLayout,
-                             QFileDialog)
 
 
 # for display bugs due to older intel integrated GPUs, setting
@@ -45,7 +45,7 @@ class FileDialog(QFileDialog):
     the dialog was property closed.
     """
 
-    dlg_accepted = pyqtSignal(str)
+    dlg_accepted = Signal(str)
 
     def __init__(self, parent=None, filefilter=None, save_mode=True, show=True,
                  callback=None, directory=False):
@@ -192,8 +192,8 @@ class RangeGroup(QHBoxLayout):
 class ScaleAxesDialog(QDialog):
     """Dialog to control axes scaling."""
 
-    accepted = pyqtSignal(float)
-    signal_close = pyqtSignal()
+    accepted = Signal(float)
+    signal_close = Signal()
 
     def __init__(self, parent, plotter, show=True):
         """Initialize the scaling dialog."""
@@ -331,8 +331,8 @@ class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
     """
 
     # Signals must be class attributes
-    render_signal = pyqtSignal()
-    key_press_event_signal = pyqtSignal(vtk.vtkGenericRenderWindowInteractor, str)
+    render_signal = Signal()
+    key_press_event_signal = Signal(vtk.vtkGenericRenderWindowInteractor, str)
 
     def __init__(self, parent=None, title=None, off_screen=None,
                  multi_samples=None, line_smoothing=False,
@@ -655,7 +655,7 @@ class BackgroundPlotter(QtInteractor):
 
         # run within python
         if app is None:
-            from PyQt5.QtWidgets import QApplication
+            from qtpy.QtWidgets import QApplication
             app = QApplication.instance()
             if not app:  # pragma: no cover
                 app = QApplication([''])
@@ -833,7 +833,7 @@ class BackgroundPlotter(QtInteractor):
 class MainWindow(QMainWindow):
     """Convenience MainWindow that manages the application."""
 
-    signal_close = pyqtSignal()
+    signal_close = Signal()
 
     def __init__(self, parent=None):
         """Initialize the main window."""
@@ -848,7 +848,7 @@ class MainWindow(QMainWindow):
 class Counter(QObject):
     """Counter augmented with a Qt timer."""
 
-    signal_finished = pyqtSignal()
+    signal_finished = Signal()
 
     def __init__(self, count):
         """Initialize the counter."""
@@ -861,7 +861,7 @@ class Counter(QObject):
         else:
             raise ValueError('count is not strictly positive.')
 
-    @pyqtSlot()
+    @Slot()
     def decrease(self):
         """Decrease the count."""
         self.count -= 1

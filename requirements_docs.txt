@@ -4,6 +4,7 @@ imageio-ffmpeg
 colorcet
 cmocean
 meshio>=4.0.3, <5.0
+qtpy
 PyQt5==5.11.3
 pytest-sphinx
 Sphinx
