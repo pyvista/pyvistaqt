@@ -380,8 +380,6 @@ class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
             istyle = vtk.vtkInteractorStyleTrackballCamera()
             self.SetInteractorStyle(istyle)
 
-            self.iren.Initialize()
-
             self._observers = {}    # Map of events to observers of self.iren
             self._add_observer("KeyPressEvent", self.key_press_event)
 
