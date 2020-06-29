@@ -15,10 +15,10 @@ import scooby
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QTimer
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QTimer, Qt, QEvent
+from tvtk.pyface.ui.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+# from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from PyQt5 import QtGui
-from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QMenuBar, QVBoxLayout, QHBoxLayout,
                              QDoubleSpinBox, QFrame, QMainWindow,
                              QSlider, QAction, QDialog, QFormLayout,
@@ -143,7 +143,7 @@ class RangeGroup(QHBoxLayout):
                  value=1.0):
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
-        self.slider = DoubleSlider(QtCore.Qt.Horizontal)
+        self.slider = DoubleSlider(Qt.Horizontal)
         self.slider.setTickInterval(0.1)
         self.slider.setMinimum(minimum)
         self.slider.setMaximum(maximum)
@@ -260,8 +260,15 @@ class QVTKRenderWindowInteractorAdapter(QObject):
     def __init__(self, parent, **kwargs):
         """Initialize the internal interactor."""
         self.interactor = QVTKRenderWindowInteractor(parent=parent)
-        self.interactor.dragEnterEvent = self.dragEnterEvent
-        self.interactor.dropEvent = self.dropEvent
+        for key in ('dragEnterEvent', 'dropEvent', 'resizeEvent',
+                    'mousePressEvent', 'mouseReleaseEvent', 'mouseMoveEvent'):
+            setattr(self.interactor, key, getattr(self, key))
+        self._pixel_ratio = 1.
+        # This should work, but doesn't :(
+        # Things do not render at full resolution actually
+        # self._pixel_ratio = getattr(
+        #     self.interactor, 'devicePixelRatio', lambda: 1.)()
+        self._ActiveButton = Qt.NoButton
         super(QVTKRenderWindowInteractorAdapter, self).__init__(**kwargs)
 
     def GetRenderWindow(self):
@@ -295,6 +302,48 @@ class QVTKRenderWindowInteractorAdapter(QObject):
     def dropEvent(self, event):
         """Manage drop event."""
         pass
+
+    def resizeEvent(self, ev):
+        pxr = self._pixel_ratio
+        w = int(ev.size().width() * pxr)
+        h = int(ev.size().height() * pxr)
+        self.GetRenderWindow().SetSize(w, h)  # XXX this does not actually "take"
+        self.interactor.SetSize(w, h)
+        self.interactor.ConfigureEvent()
+        self.update()
+
+    def _handle_mouse(self, ev, repeat=None):
+        ctrl = bool(ev.modifiers() & Qt.ControlModifier)
+        shift = bool(ev.modifiers() & Qt.ShiftModifier)
+        pxr = self._pixel_ratio
+        x, y = int(round(ev.x() * pxr)), int(round(ev.y() * pxr))
+        repeat = (ev.type() == QEvent.MouseButtonDblClick)
+        self.interactor.SetEventInformationFlipY(
+            x, y, ctrl, shift, chr(0), repeat, None)
+        return x, y, ctrl, shift
+
+    def mousePressEvent(self, ev):
+        self._handle_mouse(ev)
+        self._ActiveButton = ev.button()
+        if self._ActiveButton == Qt.LeftButton:
+            self.interactor.LeftButtonPressEvent()
+        elif self._ActiveButton == Qt.RightButton:
+            self.interactor.RightButtonPressEvent()
+        elif self._ActiveButton == Qt.MidButton:
+            self.interactor.MiddleButtonPressEvent()
+
+    def mouseReleaseEvent(self, ev):
+        self._handle_mouse(ev, 0)
+        if self._ActiveButton == Qt.LeftButton:
+            self.interactor.LeftButtonReleaseEvent()
+        elif self._ActiveButton == Qt.RightButton:
+            self.interactor.RightButtonReleaseEvent()
+        elif self._ActiveButton == Qt.MidButton:
+            self.interactor.MiddleButtonReleaseEvent()
+
+    def mouseMoveEvent(self, ev):
+        self._handle_mouse(ev, 0)
+        self.interactor.MouseMoveEvent()
 
 
 class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
