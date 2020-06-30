@@ -405,6 +405,13 @@ class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
         self._first_time = False # Crucial!
         self.view_isometric()
 
+    def gesture_event(self, event):
+        pinch = event.gesture(QtCore.Qt.PinchGesture)
+        if pinch:
+            self.camera.Zoom(pinch.scaleFactor())
+            event.accept()
+        return True
+
     def key_press_event(self, obj, event):
         """Call `key_press_event` using a signal."""
         self.key_press_event_signal.emit(obj, event)
@@ -669,6 +676,8 @@ class BackgroundPlotter(QtInteractor):
         super(BackgroundPlotter, self).__init__(parent=self.frame,
                                                 off_screen=off_screen,
                                                 **kwargs)
+        self.app_window.grabGesture(QtCore.Qt.PinchGesture)
+        self.app_window.signal_gesture.connect(self.gesture_event)
         self.app_window.signal_close.connect(self._close)
 
         self.main_menu = None
@@ -834,10 +843,17 @@ class MainWindow(QMainWindow):
     """Convenience MainWindow that manages the application."""
 
     signal_close = pyqtSignal()
+    signal_gesture = pyqtSignal(QtCore.QEvent)
 
     def __init__(self, parent=None):
         """Initialize the main window."""
         super(MainWindow, self).__init__(parent)
+
+    def event(self, event):
+        if event.type() == QtCore.QEvent.Gesture:
+            self.signal_gesture.emit(event)
+            return True
+        return super().event(event)
 
     def closeEvent(self, event):
         """Manage the close event."""
