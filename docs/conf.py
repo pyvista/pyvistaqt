@@ -18,6 +18,7 @@ import numpy as np
 pyvista.set_error_output_file('errors.txt')
 # Ensure that offscreen rendering is used for docs generation
 pyvista.OFF_SCREEN = True # Not necessary - simply an insurance policy
+pyvista.BUILDING_GALLERY = True
 # Preferred plotting style for documentation
 pyvista.set_plot_theme('document')
 pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
@@ -66,7 +67,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyVista'
+project = u'PyVistaQt'
 year = datetime.date.today().year
 copyright = u'2017-{}, The PyVista Developers'.format(year)
 author = u'Alex Kaszynski and Bane Sullivan'
@@ -111,23 +112,22 @@ todo_include_todos = False
 import sphinx_rtd_theme
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-# html_context = {
-#     # Enable the "Edit in GitHub link within the header of each page.
-#     'display_github': False,
-#     # Set the following variables to generate the resulting github URL for each page.
-#     # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
-#     'github_user': 'pyvista',
-#     'github_repo': 'pyvista',
-#     'github_version': 'master/docs/',
-#     'menu_links_name': 'Getting Connected',
-#     'menu_links': [
-#         ('<i class="fa fa-slack fa-fw"></i> Slack Community', 'http://slack.pyvista.org'),
-#         ('<i class="fa fa-comment fa-fw"></i> Support', 'https://github.com/pyvista/pyvista-support'),
-#         ('<i class="fa fa-github fa-fw"></i> Source Code', 'https://github.com/pyvista/pyvista'),
-#         ('<i class="fa fa-gavel fa-fw"></i> Contributing', 'https://github.com/pyvista/pyvista/blob/master/CONTRIBUTING.md'),
-#         ('<i class="fa fa-file-text fa-fw"></i> The Paper', 'https://doi.org/10.21105/joss.01450'),
-#     ],
-# }
+html_context = {
+    # Enable the "Edit in GitHub link within the header of each page.
+    'display_github': False,
+    # Set the following variables to generate the resulting github URL for each page.
+    # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
+    'github_user': 'pyvista',
+    'github_repo': 'pyvistaqt',
+    'github_version': 'master/docs/',
+    'menu_links_name': 'Getting Connected',
+    'menu_links': [
+        ('<i class="fa fa-slack fa-fw"></i> Slack Community', 'http://slack.pyvista.org'),
+        ('<i class="fa fa-comment fa-fw"></i> Support', 'https://github.com/pyvista/pyvista-support'),
+        ('<i class="fa fa-github fa-fw"></i> Source Code', 'https://github.com/pyvista/pyvistaqt'),
+        ('<i class="fa fa-gavel fa-fw"></i> Contributing', 'https://github.com/pyvista/pyvistaqt/blob/master/CONTRIBUTING.md'),
+    ],
+}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

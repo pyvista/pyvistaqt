@@ -3,6 +3,16 @@
 
 Overview
 ********
+
+.. image:: https://img.shields.io/pypi/v/pyvistaqt
+   :alt: PyPI
+
+.. image:: https://dev.azure.com/pyvista/PyVista/_apis/build/status/pyvista.pyvistaqt?branchName=master
+   :target: https://dev.azure.com/pyvista/PyVista/_build/latest?definitionId=9&branchName=master
+
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+   :target: https://opensource.org/licenses/MIT
+
 The python package ``pyvistaqt`` extends the
 functionality of ``pyvista`` through the usage of ``PyQt5``.  Since ``PyQt5`` operates in a separate thread than VTK, you can similtaniously have an active VTK plot and a non-blocking Python session.
 
@@ -12,6 +22,12 @@ functionality of ``pyvista`` through the usage of ``PyQt5``.  Since ``PyQt5`` op
     pyvistaqt BackgroundPlotter
 
 
+.. toctree::
+   :hidden:
+
+   self
+
+
 Getting Started
 ***************
 
@@ -19,13 +35,18 @@ Installation using ``pip`` is::
 
     $ pip install pyvistaqt
 
-You can also visit `PyPi <https://pypi.org/project/pyvistaqt/>`_ or
+You can also visit `PyPI <https://pypi.org/project/pyvistaqt/>`_ or
 `GitHub <https://github.com/pyvista/pyvistaqt>`_ to download the source.
+
+Once installed, use the :class:`pyvistaqt.BackgroundPlotter` like any PyVista
+plotter.
 
 
 Brief Example
 *************
-Create an instance of the ``BackgroundPlotter`` and plot a sphere.
+
+Create an instance of the :class:`pyvistaqt.BackgroundPlotter` and plot a
+sphere.
 
 .. code:: python
 

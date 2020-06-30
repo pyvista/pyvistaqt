@@ -2,6 +2,17 @@
 PyVistaQt
 #########
 
+
+.. image:: https://img.shields.io/pypi/v/pyvistaqt
+   :alt: PyPI
+
+.. image:: https://dev.azure.com/pyvista/PyVista/_apis/build/status/pyvista.pyvistaqt?branchName=master
+   :target: https://dev.azure.com/pyvista/PyVista/_build/latest?definitionId=9&branchName=master
+
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+   :target: https://opensource.org/licenses/MIT
+
+
 ``pyvistaqt`` is a helper module for ``pyvista`` to enable you to
 plot using ``pyqt`` by placing a vtk-widget into a background render.
 This can be quite useful when you desire to update your plot in
