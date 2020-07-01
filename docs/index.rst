@@ -42,6 +42,12 @@ Installation using ``pip`` is::
 
     $ pip install pyvistaqt
 
+
+To install this package with ``conda`` run::
+
+    $ conda install -c conda-forge pyvistaqt
+
+
 You can also visit `PyPI <https://pypi.org/project/pyvistaqt/>`_ or
 `GitHub <https://github.com/pyvista/pyvistaqt>`_ to download the source.
 
@@ -50,7 +56,7 @@ plotter.
 
 
 Brief Example
-*************
+~~~~~~~~~~~~~
 
 Create an instance of the :class:`pyvistaqt.BackgroundPlotter` and plot a
 sphere.
@@ -68,14 +74,16 @@ sphere.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Introduction
+   :caption: Getting Started
    :hidden:
 
    usage
+   api_reference
 
 
 License
-=======
+*******
+
 While ``pyvistaqt`` is under the MIT license, ``pyqt5`` is subject to
 the GPL license.  Please see deails at
 `Riverbank License FAQ <https://www.riverbankcomputing.com/commercial/license-faq>`_.

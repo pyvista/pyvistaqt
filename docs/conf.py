@@ -6,8 +6,6 @@ if sys.version_info >= (3, 0):
     faulthandler.enable()
 
 sys.path.insert(0, os.path.abspath('.'))
-# import make_external_gallery
-# make_external_gallery.make_example_gallery()
 
 
 # -- pyvista configuration ---------------------------------------------------
@@ -51,6 +49,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx_copybutton',
               'sphinx.ext.extlinks',
               'sphinx.ext.coverage',
+              'sphinx.ext.intersphinx'
               ]
 
 
@@ -146,58 +145,14 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pyvistadoc'
+htmlhelp_basename = 'pyvistaqtdoc'
 
 
-# -- Options for LaTeX output ---------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'point_size': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {'https://docs.python.org/': None,
+                       'https://docs.pyvista.org/': None,
 }
 
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title,
-#  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (master_doc, 'pyvista.tex', u'pyvista Documentation',
-     author, 'manual'),
-]
-
-
-# -- Options for manual page output ---------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'pyvista', u'pyvista Documentation',
-     [author], 1)
-]
-
-
-# -- Options for Texinfo output -------------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [
-    (master_doc, 'pyvista', u'pyvista Documentation',
-     author, 'pyvista', 'A Streamlined Python Interface for the Visualization Toolkit',
-     'Miscellaneous'),
-]
 
 # -- Custom 404 page
 
