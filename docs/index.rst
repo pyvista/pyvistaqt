@@ -71,7 +71,7 @@ sphere.
    :caption: Introduction
    :hidden:
 
-   qt_plotting
+   usage
 
 
 License
