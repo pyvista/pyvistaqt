@@ -28,11 +28,12 @@ real-time.
 Documentation
 =============
 
-Refer to the `documentation <http://docs.pyvista.org/>`_ for detailed
-installation and usage details for the core package which is used
-alongside this package.
+For the installation and usage of this package, please visit the
+`PyVistaQt documentation <http://qtdocs.pyvista.org/>`_.
 
-For the installation and usage to the `pyvistaqt documentation <http://qtdocs.pyvista.org/>`_ the usage of this module.
+Refer to the `PyVista documentation <http://docs.pyvista.org/>`_ for detailed
+installation and usage details of the core package which is used
+alongside this package.
 
 For general questions about the project, its applications, or about software
 usage, please create an issue in the `pyvista/pyvista-support`_ repository
@@ -48,13 +49,21 @@ The project support team can be reached at `info@pyvista.org`_.
 Installation
 ============
 
-PyVista can be installed from `PyPI <https://pypi.org/project/pyvistaqt/>`_
-using ``pip`` on Python >= 3.5::
+Installation using ``pip`` is::
 
-    pip install pyvistaqt
+    $ pip install pyvistaqt
 
-You can also visit `PyPi <https://pypi.org/project/pyvistaqt/>`_ or
+
+To install this package with ``conda`` run::
+
+    $ conda install -c conda-forge pyvistaqt
+
+
+You can also visit `PyPI <https://pypi.org/project/pyvistaqt/>`_ or
 `GitHub <https://github.com/pyvista/pyvistaqt>`_ to download the source.
+
+Once installed, use the ``pyvistaqt.BackgroundPlotter`` like any PyVista
+plotter.
 
 
 Contributing
