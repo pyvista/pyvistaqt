@@ -1,35 +1,40 @@
-"""Qt interactive plotter.
+"""
+Diagram
+^^^^^^^
 
-Inheritance
-===========
+.. code-block:: none
 
-BackgroundPlotter
-+-- QtInteractor
-    |-- QVTKRenderWindowInteractor
-    |   +-- QWidget
-    +-- BasePlotter
+    BackgroundPlotter
+    +-- QtInteractor
+        |-- QVTKRenderWindowInteractor
+        |   +-- QWidget
+        +-- BasePlotter
 
-MainWindow
-+-- QMainWindow
+    MainWindow
+    +-- QMainWindow
 
-Usage
-=====
-BackgroundPlotter.__init__(...)
-|-- self.app_window = MainWindow()
-|-- self.frame = QFrame(parent=self.app_window)
-+-- QtInteractor.__init__(parent=self.frame)
-    |-- QVTKRenderWindowInteractor.__init__(parent=parent)
-    |   +-- QWidget.__init__(parent, flags)
-    |-- BasePlotter.__init__(...)
-    +-- self.ren_win = self.GetRenderWindow()
+Implementation
+^^^^^^^^^^^^^^
 
-Because QVTKRenderWindowInteractor calls QWidget.__init__, this will actually
-trigger BasePlotter.__init__ to be called with no arguments. This cannot be
-solved (at least) because using `super()` because
-QVTKRenderWindowInteractor.__init__ does not use super() (also it might not
-be fixable because Qt is doing something in QWidget which is probably separate
-from the super() process). We can fix this by preventing BasePlotter.__init__
-by being called by temporarily monkey-patching it with a no-op __init__.
+.. code-block:: none
+
+    BackgroundPlotter.__init__(...)
+    |-- self.app_window = MainWindow()
+    |-- self.frame = QFrame(parent=self.app_window)
+    +-- QtInteractor.__init__(parent=self.frame)
+        |-- QVTKRenderWindowInteractor.__init__(parent=parent)
+        |   +-- QWidget.__init__(parent, flags)
+        |-- BasePlotter.__init__(...)
+        +-- self.ren_win = self.GetRenderWindow()
+
+Because ``QVTKRenderWindowInteractor`` calls ``QWidget.__init__``, this will
+actually trigger ``BasePlotter.__init__`` to be called with no arguments.
+This cannot be solved (at least) because using ``super()`` because
+``QVTKRenderWindowInteractor.__init__`` does not use ``super()``, and also it
+might not be fixable because Qt is doing something in ``QWidget`` which is
+probably entirely separate from the Python ``super()`` process.
+We fix this by internally by temporarily monkey-patching
+``BasePlotter.__init__`` with a no-op ``__init__``.
 """
 import contextlib
 import os
@@ -422,6 +427,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         log.debug('QtInteractor init stop')
 
     def gesture_event(self, event):
+        """Handle gesture events."""
         pinch = event.gesture(QtCore.Qt.PinchGesture)
         if pinch:
             self.camera.Zoom(pinch.scaleFactor())
