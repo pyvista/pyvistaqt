@@ -1,6 +1,8 @@
 API Reference
 -------------
 
+.. contents::
+   :local:
 
 Background Plotter
 ~~~~~~~~~~~~~~~~~~
@@ -25,7 +27,6 @@ Background Plotter
 QtInteractor
 ~~~~~~~~~~~~
 
-
 .. rubric:: Attributes
 
 .. autoautosummary:: pyvistaqt.QtInteractor
@@ -40,3 +41,9 @@ QtInteractor
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+Class inheritance
+~~~~~~~~~~~~~~~~~
+
+.. automodule:: pyvistaqt.plotting
