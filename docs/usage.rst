@@ -1,7 +1,7 @@
 .. _qt_ref:
 
-pyvistaqt Usage
----------------
+Usage
+-----
 
 PyVista has an interface for placing plots in ``pyvistaqt`` that extends the
 functionality of the ``QVTKRenderWindowInteractor`` class.
@@ -9,6 +9,28 @@ The ``pyvistaqt.QtInteractor`` class allows you to have the same functionality
 of the ``Plotter`` class within a ``PyQt5`` application.
 This simplifies adding meshes, updating, and controlling them when using
 ``PyQt5``.
+
+
+Background Plotting
+~~~~~~~~~~~~~~~~~~~
+
+Normal PyVista plotting windows exhibit blocking behavior, but it is possible
+to plot in the background and update the plotter in real-time using the
+``BackgroundPlotter`` object.  This requires ``pyvistaqt``, but otherwise appears
+and functions like a normal PyVista ``Plotter`` instance.  For example:
+
+.. code:: python
+
+    import pyvista as pv
+    from pyvistaqt import BackgroundPlotter
+
+    sphere = pv.Sphere()
+
+    plotter = BackgroundPlotter()
+    plotter.add_mesh(sphere)
+
+    # can now operate on the sphere and have it updated in the background
+    sphere.points *= 0.5
 
 
 Example PyQt5 PyVista QtInteractor
@@ -77,42 +99,3 @@ sphere to an empty plotting window.
     :width: 600pt
 
     PyQt5 pyvista QtInteractor
-
-
-Background Plotting
-~~~~~~~~~~~~~~~~~~~
-
-Normal PyVista plotting windows exhibit blocking behavior, but it is possible
-to plot in the background and update the plotter in real-time using the
-``BackgroundPlotter`` object.  This requires ``pyvistaqt``, but otherwise appears
-and functions like a normal PyVista ``Plotter`` instance.  For example:
-
-.. code:: python
-
-    import pyvista as pv
-    from pyvistaqt import BackgroundPlotter
-
-    sphere = pv.Sphere()
-
-    plotter = BackgroundPlotter()
-    plotter.add_mesh(sphere)
-
-    # can now operate on the sphere and have it updated in the background
-    sphere.points *= 0.5
-
-
-
-.. rubric:: Attributes
-
-.. autoautosummary:: pyvistaqt.BackgroundPlotter
-   :attributes:
-
-.. rubric:: Methods
-
-.. autoautosummary:: pyvistaqt.BackgroundPlotter
-   :methods:
-
-.. autoclass:: pyvistaqt.BackgroundPlotter
-   :members:
-   :undoc-members:
-   :show-inheritance:

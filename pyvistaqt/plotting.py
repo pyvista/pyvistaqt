@@ -1,9 +1,48 @@
-"""Qt interactive plotter."""
+"""
+Diagram
+^^^^^^^
+
+.. code-block:: none
+
+    BackgroundPlotter
+    +-- QtInteractor
+        |-- QVTKRenderWindowInteractor
+        |   +-- QWidget
+        +-- BasePlotter
+
+    MainWindow
+    +-- QMainWindow
+
+Implementation
+^^^^^^^^^^^^^^
+
+.. code-block:: none
+
+    BackgroundPlotter.__init__(...)
+    |-- self.app_window = MainWindow()
+    |-- self.frame = QFrame(parent=self.app_window)
+    +-- QtInteractor.__init__(parent=self.frame)
+        |-- QVTKRenderWindowInteractor.__init__(parent=parent)
+        |   +-- QWidget.__init__(parent, flags)
+        |-- BasePlotter.__init__(...)
+        +-- self.ren_win = self.GetRenderWindow()
+
+Because ``QVTKRenderWindowInteractor`` calls ``QWidget.__init__``, this will
+actually trigger ``BasePlotter.__init__`` to be called with no arguments.
+This cannot be solved (at least) because using ``super()`` because
+``QVTKRenderWindowInteractor.__init__`` does not use ``super()``, and also it
+might not be fixable because Qt is doing something in ``QWidget`` which is
+probably entirely separate from the Python ``super()`` process.
+We fix this by internally by temporarily monkey-patching
+``BasePlotter.__init__`` with a no-op ``__init__``.
+"""
+import contextlib
 import os
 import platform
 import time
 import warnings
 from functools import wraps
+import logging
 
 import numpy as np
 import vtk
@@ -23,6 +62,9 @@ from qtpy.QtWidgets import (QMenuBar, QVBoxLayout, QHBoxLayout,
                             QSlider, QAction, QDialog, QFormLayout,
                             QFileDialog)
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+log = logging.getLogger('pyvistaqt')
+log.setLevel(logging.CRITICAL)
+log.addHandler(logging.StreamHandler())
 
 
 # for display bugs due to older intel integrated GPUs, setting
@@ -254,50 +296,17 @@ def pad_image(arr, max_size=400):
     return resample_image(img, max_size=max_size)
 
 
-class QVTKRenderWindowInteractorAdapter(QObject):
-    """Adapter class for QVTKRenderWindowInteractor that uses super()."""
-
-    def __init__(self, parent, **kwargs):
-        """Initialize the internal interactor."""
-        self.interactor = QVTKRenderWindowInteractor(parent=parent)
-        self.interactor.dragEnterEvent = self.dragEnterEvent
-        self.interactor.dropEvent = self.dropEvent
-        super(QVTKRenderWindowInteractorAdapter, self).__init__(**kwargs)
-
-    def GetRenderWindow(self):
-        """Get the render window."""
-        return self.interactor.GetRenderWindow()
-
-    def setWindowTitle(self, title):
-        """Set the window title."""
-        return self.interactor.setWindowTitle(title)
-
-    def SetInteractorStyle(self, style):
-        """Set the interactor style."""
-        return self.interactor.SetInteractorStyle(style)
-
-    def show(self):
-        """Show the window."""
-        return self.interactor.show()
-
-    def close(self):
-        """Close the window."""
-        return self.interactor.close()
-
-    def setAcceptDrops(self, state):
-        """Enable drop event or not."""
-        self.interactor.setAcceptDrops(state)
-
-    def dragEnterEvent(self, event):
-        """Manage drag event."""
-        pass
-
-    def dropEvent(self, event):
-        """Manage drop event."""
-        pass
+@contextlib.contextmanager
+def _no_BasePlotter_init():
+    init = BasePlotter.__init__
+    BasePlotter.__init__ = lambda x: None
+    try:
+        yield
+    finally:
+        BasePlotter.__init__ = init
 
 
-class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
+class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     """Extend QVTKRenderWindowInteractor class.
 
     This adds the methods available to pyvista.Plotter.
@@ -339,8 +348,19 @@ class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
                  point_smoothing=False, polygon_smoothing=False,
                  splitting_position=None, auto_update=5.0, **kwargs):
         """Initialize Qt interactor."""
-        super(QtInteractor, self).__init__(parent=parent, **kwargs)
-        self.parent = parent
+        log.debug('QtInteractor init start')
+        # Cannot use super() here because
+        # QVTKRenderWindowInteractor silently swallows all kwargs
+        # because they use **kwargs in their constructor...
+        qvtk_kwargs = dict(parent=parent)
+        for key in ('stereo', 'iren', 'rw', 'wflags'):
+            if key in kwargs:
+                qvtk_kwargs[key] = kwargs.pop(key)
+        with _no_BasePlotter_init():
+            QVTKRenderWindowInteractor.__init__(self, **qvtk_kwargs)
+        BasePlotter.__init__(self, **kwargs)
+        # backward compat for when we had this as a separate class
+        self.interactor = self
 
         if multi_samples is None:
             multi_samples = rcParams['multi_samples']
@@ -402,8 +422,17 @@ class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
                 for renderer in self.renderers:
                     renderer.enable_depth_peeling()
 
-        self._first_time = False # Crucial!
+        self._first_time = False  # Crucial!
         self.view_isometric()
+        log.debug('QtInteractor init stop')
+
+    def gesture_event(self, event):
+        """Handle gesture events."""
+        pinch = event.gesture(QtCore.Qt.PinchGesture)
+        if pinch:
+            self.camera.Zoom(pinch.scaleFactor())
+            event.accept()
+        return True
 
     def key_press_event(self, obj, event):
         """Call `key_press_event` using a signal."""
@@ -553,7 +582,7 @@ class QtInteractor(QVTKRenderWindowInteractorAdapter, BasePlotter):
         if hasattr(self, "render_timer"):
             self.render_timer.stop()
         BasePlotter.close(self)
-        QVTKRenderWindowInteractorAdapter.close(self)
+        QVTKRenderWindowInteractor.close(self)
 
 
 class BackgroundPlotter(QtInteractor):
@@ -625,6 +654,7 @@ class BackgroundPlotter(QtInteractor):
                  off_screen=None, allow_quit_keypress=True,
                  toolbar=True, menu_bar=True, **kwargs):
         """Initialize the qt plotter."""
+        log.debug('BackgroundPlotter init start')
         if not isinstance(menu_bar, bool):
             raise TypeError("Expected type for ``menu_bar`` is bool"
                             " but {} was given.".format(type(menu_bar)))
@@ -664,11 +694,17 @@ class BackgroundPlotter(QtInteractor):
         self.app_window = MainWindow()
         self.app_window.setWindowTitle(kwargs.get('title', rcParams['title']))
 
-        self.frame = QFrame()
+        self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
+        self.app_window.setCentralWidget(self.frame)
+        vlayout = QVBoxLayout()
+        self.frame.setLayout(vlayout)
         super(BackgroundPlotter, self).__init__(parent=self.frame,
                                                 off_screen=off_screen,
                                                 **kwargs)
+        vlayout.addWidget(self)
+        self.app_window.grabGesture(QtCore.Qt.PinchGesture)
+        self.app_window.signal_gesture.connect(self.gesture_event)
         self.app_window.signal_close.connect(self._close)
 
         self.main_menu = None
@@ -681,12 +717,6 @@ class BackgroundPlotter(QtInteractor):
         self.saved_cameras_tool_bar = None
         if toolbar:
             self.add_toolbars()
-
-        vlayout = QVBoxLayout()
-        vlayout.addWidget(self.interactor)
-
-        self.frame.setLayout(vlayout)
-        self.app_window.setCentralWidget(self.frame)
 
         if off_screen is None:
             off_screen = pyvista.OFF_SCREEN
@@ -704,6 +734,7 @@ class BackgroundPlotter(QtInteractor):
 
         # Keypress events
         self.add_key_event("S", self._qt_screenshot)  # shift + s
+        log.debug('BackgroundPlotter init stop')
 
     def reset_key_events(self):
         """Reset all of the key press events to their defaults.
@@ -834,10 +865,13 @@ class MainWindow(QMainWindow):
     """Convenience MainWindow that manages the application."""
 
     signal_close = Signal()
+    signal_gesture = Signal(QtCore.QEvent)
 
-    def __init__(self, parent=None):
-        """Initialize the main window."""
-        super(MainWindow, self).__init__(parent)
+    def event(self, event):
+        if event.type() == QtCore.QEvent.Gesture:
+            self.signal_gesture.emit(event)
+            return True
+        return super().event(event)
 
     def closeEvent(self, event):
         """Manage the close event."""
