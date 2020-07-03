@@ -15,11 +15,7 @@ coverage:
         target: 90%
         threshold: 1%
         base: auto 
-        flags:
-          - unit
-        paths:
-          - "src"
-       # advanced
+        # advanced
         branches:
           - master
         if_not_found: success
