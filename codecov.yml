@@ -6,3 +6,23 @@ comment:
   require_head: yes       # [yes :: must have a head report to post]
   branches:               # branch names that can post comment
     - "master"
+
+coverage:
+  status:
+    project:
+      default:
+        # basic
+        target: 90%
+        threshold: 1%
+        base: auto 
+        flags:
+          - unit
+        paths:
+          - "src"
+       # advanced
+        branches:
+          - master
+        if_not_found: success
+        if_ci_failed: error
+        informational: false
+        only_pulls: false
