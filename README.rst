@@ -19,6 +19,9 @@ PyVistaQt
    :target: https://opensource.org/licenses/MIT
    :alt: MIT License
 
+.. image:: https://codecov.io/gh/pyvista/pyvistaqt/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/pyvista/pyvistaqt
+  :alt: Codecov
 
 ``pyvistaqt`` is a helper module for ``pyvista`` to enable you to
 plot using ``pyqt`` by placing a vtk-widget into a background render.
