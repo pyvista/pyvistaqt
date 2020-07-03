@@ -15,8 +15,6 @@ coverage:
         target: 90%
         threshold: 1%
         base: auto 
-        flags:
-          - unit
         # advanced
         branches:
           - master
