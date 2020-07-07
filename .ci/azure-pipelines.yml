@@ -143,7 +143,7 @@ jobs:
 
   - script: |
       pip install pytest-azurepipelines
-      pytest -v --cov pyvistaqt
+      pytest --cov=pyvistaqt
     displayName: 'Test Core API'
 
   - script: |
