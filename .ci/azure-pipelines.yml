@@ -146,10 +146,14 @@ jobs:
       pytest --cov=pyvistaqt pyvistaqt
     displayName: 'Test Core API'
 
-  - script: |
+  - script: |  # this must be right after the core API
       bash <(curl -s https://codecov.io/bash)
     displayName: 'Upload coverage to codecov.io'
     condition: eq(variables['python.version'], '3.7')
+
+  - script: |
+      pytest -v --doctest-modules pyvistaqt
+    displayName: 'Test Package Docstrings'
 
   - script: |
       pip install twine
