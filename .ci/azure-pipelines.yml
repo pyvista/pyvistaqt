@@ -143,12 +143,8 @@ jobs:
 
   - script: |
       pip install pytest-azurepipelines
-      pytest --cov=pyvistaqt
+      pytest --cov=pyvistaqt pyvistaqt
     displayName: 'Test Core API'
-
-  - script: |
-      pytest -v --doctest-modules pyvistaqt
-    displayName: 'Test Package Docstrings'
 
   - script: |
       bash <(curl -s https://codecov.io/bash)
