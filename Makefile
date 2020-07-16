@@ -21,9 +21,9 @@ coverage:
 	@pytest -v --cov pyvistaqt
 
 coverage-xml:
-	@echo "Running coverage"
+	@echo "Reporting XML coverage"
 	@pytest -v --cov pyvistaqt --cov-report xml
 
 coverage-html:
-	@echo "Running coverage"
+	@echo "Reporting HTML coverage"
 	@pytest -v --cov pyvistaqt --cov-report html
