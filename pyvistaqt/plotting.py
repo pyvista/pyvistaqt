@@ -273,8 +273,7 @@ class ScaleAxesDialog(QDialog):
 def resample_image(arr, max_size=400):
     """Resample a square image to an image of max_size."""
     dim = np.max(arr.shape[0:2])
-    if dim < max_size:
-        max_size = dim
+    max_size = min(max_size, dim)
     x, y, _ = arr.shape
     sx = int(np.ceil(x / max_size))
     sy = int(np.ceil(y / max_size))
