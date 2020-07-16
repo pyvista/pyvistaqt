@@ -890,7 +890,7 @@ class Counter(QObject):
         if isinstance(count, int) and count > 0:
             self.count = count
         elif count > 0:
-            raise TypeError('Expected `count` to be'
+            raise TypeError('Expected type of `count` to be'
                             '`int` but got: {}'.format(type(count)))
         else:
             raise ValueError('count is not strictly positive.')

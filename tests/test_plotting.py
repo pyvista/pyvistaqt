@@ -7,7 +7,7 @@ import pyvista
 import vtk
 from pyvista.plotting import system_supports_plotting, Renderer
 from pyvistaqt.plotting import (QVTKRenderWindowInteractor, QTimer,
-                                 _create_menu_bar)
+                                 Counter, _create_menu_bar)
 from pyvistaqt import QtInteractor, MainWindow, BackgroundPlotter
 
 from PyQt5.Qt import (QMainWindow, QFrame, QVBoxLayout, QMenuBar,
@@ -57,6 +57,20 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+def test_counter(qtbot):
+    with pytest.raises(TypeError, match='type of'):
+        Counter(count=0.5)
+    with pytest.raises(ValueError, match='strictly positive'):
+        Counter(count=-1)
+
+    timeout = 300
+    counter = Counter(count=1)
+    assert counter.count == 1
+    with qtbot.wait_signals([counter.signal_finished], timeout=timeout):
+        counter.decrease()
+    assert counter.count == 0
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
