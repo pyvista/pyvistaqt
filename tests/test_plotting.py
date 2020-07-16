@@ -5,6 +5,7 @@ import pytest
 
 import pyvista
 import vtk
+from pyvista import rcParams
 from pyvista.plotting import system_supports_plotting, Renderer
 from pyvistaqt.plotting import (QVTKRenderWindowInteractor, QTimer,
                                  Counter, _create_menu_bar)
@@ -57,6 +58,17 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+def test_depth_peeling():
+    plotter = BackgroundPlotter()
+    assert not plotter.renderer.GetUseDepthPeeling()
+    plotter.close()
+    rcParams["depth_peeling"]["enabled"] = True
+    plotter = BackgroundPlotter()
+    assert plotter.renderer.GetUseDepthPeeling()
+    plotter.close()
+    rcParams["depth_peeling"]["enabled"] = False
 
 
 def test_counter(qtbot):
