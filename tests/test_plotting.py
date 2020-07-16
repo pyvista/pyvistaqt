@@ -85,6 +85,25 @@ def test_off_screen(qtbot):
     plotter.close()
 
 
+def test_smoothing(qtbot):
+    plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
+    assert not plotter.ren_win.GetPolygonSmoothing()
+    assert not plotter.ren_win.GetLineSmoothing()
+    assert not plotter.ren_win.GetPointSmoothing()
+    plotter.close()
+    plotter = BackgroundPlotter(
+        polygon_smoothing=True,
+        line_smoothing=True,
+        point_smoothing=True,
+    )
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.ren_win.GetPolygonSmoothing()
+    assert plotter.ren_win.GetLineSmoothing()
+    assert plotter.ren_win.GetPointSmoothing()
+    plotter.close()
+
+
 def test_counter(qtbot):
     with pytest.raises(TypeError, match='type of'):
         Counter(count=0.5)
