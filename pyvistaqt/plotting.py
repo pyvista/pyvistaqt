@@ -522,7 +522,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._menu_close_action = file_menu.addAction('Exit', self.app_window.close)
 
         view_menu = self.main_menu.addMenu('View')
-        view_menu.addAction('Toggle Eye Dome Lighting', self._toggle_edl)
+        self._edl_action = view_menu.addAction('Toggle Eye Dome Lighting', self._toggle_edl)
         view_menu.addAction('Scale Axes', self.scale_axes_dialog)
         view_menu.addAction('Clear All', self.clear)
 
@@ -531,7 +531,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         tool_menu.addAction('Enable Cell Picking (visible)', lambda: self.enable_cell_picking(through=False))
 
         cam_menu = view_menu.addMenu('Camera')
-        cam_menu.addAction('Toggle Parallel Projection', self._toggle_parallel_projection)
+        self._parallel_projection_action = cam_menu.addAction('Toggle Parallel Projection', self._toggle_parallel_projection)
 
         view_menu.addSeparator()
         # Orientation marker

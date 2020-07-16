@@ -367,6 +367,8 @@ def test_background_plotting_menu_bar(qtbot):
     assert _hasattr(plotter, "app_window", MainWindow)
     assert _hasattr(plotter, "main_menu", QMenuBar)
     assert _hasattr(plotter, "_menu_close_action", QAction)
+    assert _hasattr(plotter, "_edl_action", QAction)
+    assert _hasattr(plotter, "_parallel_projection_action", QAction)
 
     window = plotter.app_window
     main_menu = plotter.main_menu
@@ -374,6 +376,20 @@ def test_background_plotting_menu_bar(qtbot):
 
     with qtbot.wait_exposed(window, timeout=500):
         window.show()
+
+    # EDL action
+    assert not hasattr(plotter.renderer, 'edl_pass')
+    plotter._edl_action.trigger()
+    assert hasattr(plotter.renderer, 'edl_pass')
+    # and now test reset
+    plotter._edl_action.trigger()
+
+    # Parallel projection action
+    assert not plotter.camera.GetParallelProjection()
+    plotter._parallel_projection_action.trigger()
+    assert plotter.camera.GetParallelProjection()
+    # and now test reset
+    plotter._parallel_projection_action.trigger()
 
     assert main_menu.isVisible()
     plotter.close()
