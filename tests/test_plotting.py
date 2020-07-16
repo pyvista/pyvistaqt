@@ -74,6 +74,17 @@ def test_depth_peeling(qtbot):
     rcParams["depth_peeling"]["enabled"] = False
 
 
+def test_off_screen(qtbot):
+    plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
+    assert not plotter.ren_win.GetOffScreenRendering()
+    plotter.close()
+    plotter = BackgroundPlotter(off_screen=True)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.ren_win.GetOffScreenRendering()
+    plotter.close()
+
+
 def test_counter(qtbot):
     with pytest.raises(TypeError, match='type of'):
         Counter(count=0.5)
