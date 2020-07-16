@@ -60,12 +60,14 @@ class TstWindow(MainWindow):
         self.vtk_widget.reset_camera()
 
 
-def test_depth_peeling():
+def test_depth_peeling(qtbot):
     plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
     assert not plotter.renderer.GetUseDepthPeeling()
     plotter.close()
     rcParams["depth_peeling"]["enabled"] = True
     plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
     assert plotter.renderer.GetUseDepthPeeling()
     plotter.close()
     rcParams["depth_peeling"]["enabled"] = False
