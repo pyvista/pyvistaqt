@@ -5,9 +5,10 @@ import pytest
 
 import pyvista
 import vtk
+from pyvista import rcParams
 from pyvista.plotting import system_supports_plotting, Renderer
 from pyvistaqt.plotting import (QVTKRenderWindowInteractor, QTimer,
-                                 _create_menu_bar)
+                                 Counter, _create_menu_bar)
 from pyvistaqt import QtInteractor, MainWindow, BackgroundPlotter
 
 from PyQt5.Qt import (QMainWindow, QFrame, QVBoxLayout, QMenuBar,
@@ -24,7 +25,8 @@ class TstWindow(MainWindow):
         vlayout = QVBoxLayout()
         self.vtk_widget = QtInteractor(
             parent=self.frame,
-            off_screen=off_screen
+            off_screen=off_screen,
+            stereo=False,
         )
         vlayout.addWidget(self.vtk_widget.interactor)
 
@@ -57,6 +59,63 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+def test_depth_peeling(qtbot):
+    plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
+    assert not plotter.renderer.GetUseDepthPeeling()
+    plotter.close()
+    rcParams["depth_peeling"]["enabled"] = True
+    plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.renderer.GetUseDepthPeeling()
+    plotter.close()
+    rcParams["depth_peeling"]["enabled"] = False
+
+
+def test_off_screen(qtbot):
+    plotter = BackgroundPlotter(off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    assert not plotter.ren_win.GetOffScreenRendering()
+    plotter.close()
+    plotter = BackgroundPlotter(off_screen=True)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.ren_win.GetOffScreenRendering()
+    plotter.close()
+
+
+def test_smoothing(qtbot):
+    plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
+    assert not plotter.ren_win.GetPolygonSmoothing()
+    assert not plotter.ren_win.GetLineSmoothing()
+    assert not plotter.ren_win.GetPointSmoothing()
+    plotter.close()
+    plotter = BackgroundPlotter(
+        polygon_smoothing=True,
+        line_smoothing=True,
+        point_smoothing=True,
+    )
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.ren_win.GetPolygonSmoothing()
+    assert plotter.ren_win.GetLineSmoothing()
+    assert plotter.ren_win.GetPointSmoothing()
+    plotter.close()
+
+
+def test_counter(qtbot):
+    with pytest.raises(TypeError, match='type of'):
+        Counter(count=0.5)
+    with pytest.raises(ValueError, match='strictly positive'):
+        Counter(count=-1)
+
+    timeout = 300
+    counter = Counter(count=1)
+    assert counter.count == 1
+    with qtbot.wait_signals([counter.signal_finished], timeout=timeout):
+        counter.decrease()
+    assert counter.count == 0
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
@@ -353,6 +412,8 @@ def test_background_plotting_menu_bar(qtbot):
     assert _hasattr(plotter, "app_window", MainWindow)
     assert _hasattr(plotter, "main_menu", QMenuBar)
     assert _hasattr(plotter, "_menu_close_action", QAction)
+    assert _hasattr(plotter, "_edl_action", QAction)
+    assert _hasattr(plotter, "_parallel_projection_action", QAction)
 
     window = plotter.app_window
     main_menu = plotter.main_menu
@@ -360,6 +421,20 @@ def test_background_plotting_menu_bar(qtbot):
 
     with qtbot.wait_exposed(window, timeout=500):
         window.show()
+
+    # EDL action
+    assert not hasattr(plotter.renderer, 'edl_pass')
+    plotter._edl_action.trigger()
+    assert hasattr(plotter.renderer, 'edl_pass')
+    # and now test reset
+    plotter._edl_action.trigger()
+
+    # Parallel projection action
+    assert not plotter.camera.GetParallelProjection()
+    plotter._parallel_projection_action.trigger()
+    assert plotter.camera.GetParallelProjection()
+    # and now test reset
+    plotter._parallel_projection_action.trigger()
 
     assert main_menu.isVisible()
     plotter.close()
