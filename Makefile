@@ -15,3 +15,15 @@ codespell:
 pydocstyle:
 	@echo "Running pydocstyle"
 	@pydocstyle pyvista
+
+coverage:
+	@echo "Running coverage"
+	@pytest -v --cov pyvistaqt
+
+coverage-xml:
+	@echo "Running coverage"
+	@pytest -v --cov pyvistaqt --cov-report xml
+
+coverage-html:
+	@echo "Running coverage"
+	@pytest -v --cov pyvistaqt --cov-report html
