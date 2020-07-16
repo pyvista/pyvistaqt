@@ -25,7 +25,8 @@ class TstWindow(MainWindow):
         vlayout = QVBoxLayout()
         self.vtk_widget = QtInteractor(
             parent=self.frame,
-            off_screen=off_screen
+            off_screen=off_screen,
+            stereo=False,
         )
         vlayout.addWidget(self.vtk_widget.interactor)
 
