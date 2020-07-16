@@ -75,7 +75,7 @@ def test_depth_peeling(qtbot):
 
 
 def test_off_screen(qtbot):
-    plotter = BackgroundPlotter()
+    plotter = BackgroundPlotter(off_screen=False)
     qtbot.addWidget(plotter.app_window)
     assert not plotter.ren_win.GetOffScreenRendering()
     plotter.close()
