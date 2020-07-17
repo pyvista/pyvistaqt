@@ -14,7 +14,7 @@ jobs:
     - name: Python Code Quality and Lint
       uses: ricardochaves/python-lint@v1.1.0
       with:
-        python-root-list: meshioplt
+        python-root-list: pyvistaqt
         use-pylint: false
         use-pycodestyle: false
         use-flake8: false
