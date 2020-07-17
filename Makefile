@@ -7,7 +7,7 @@ CODESPELL_IGNORE ?= "ignore_words.txt"
 
 all: doctest
 
-doctest: black codespell pydocstyle
+doctest: codespell pydocstyle
 
 black:
 	@echo "Running black"
