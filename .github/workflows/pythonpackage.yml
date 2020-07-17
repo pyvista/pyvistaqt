@@ -19,8 +19,8 @@ jobs:
         use-pycodestyle: true
         use-flake8: true
         use-black: true
-        use-mypy: false
-        use-isort: false
+        use-mypy: true
+        use-isort: true
         extra-pylint-options: --disable=F0401
         extra-pycodestyle-options: --max-line-length=88 --ignore="W503"
         extra-mypy-options: --no-implicit-optional
