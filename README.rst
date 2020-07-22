@@ -23,6 +23,10 @@ PyVistaQt
   :target: https://codecov.io/gh/pyvista/pyvistaqt
   :alt: Codecov
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
+  :target: https://github.com/psf/black
+  :alt: black
+
 ``pyvistaqt`` is a helper module for ``pyvista`` to enable you to
 plot using ``pyqt`` by placing a vtk-widget into a background render.
 This can be quite useful when you desire to update your plot in
