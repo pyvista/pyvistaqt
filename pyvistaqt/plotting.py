@@ -37,40 +37,26 @@ We fix this by internally by temporarily monkey-patching
 ``BasePlotter.__init__`` with a no-op ``__init__``.
 """
 import contextlib
+import logging
 import os
 import platform
 import time
 import warnings
 from functools import wraps
-import logging
 
 import numpy as np
-import vtk
-
 import pyvista
-from pyvista.utilities import conditional_decorator, threaded
 import scooby
-
+import vtk
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import (QAction, QDialog, QDoubleSpinBox, QFileDialog,
+                             QFormLayout, QFrame, QHBoxLayout, QMainWindow,
+                             QMenuBar, QSlider, QVBoxLayout)
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
-
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QTimer
+from pyvista.utilities import conditional_decorator, threaded
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5 import QtGui
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import (
-    QMenuBar,
-    QVBoxLayout,
-    QHBoxLayout,
-    QDoubleSpinBox,
-    QFrame,
-    QMainWindow,
-    QSlider,
-    QAction,
-    QDialog,
-    QFormLayout,
-    QFileDialog,
-)
 
 log = logging.getLogger("pyvistaqt")
 log.setLevel(logging.CRITICAL)
