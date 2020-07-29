@@ -47,17 +47,11 @@ import logging
 import numpy as np
 import vtk
 
-import pyvista
-from pyvista.utilities import conditional_decorator, threaded
 import scooby
 
-from pyvista.plotting.plotting import BasePlotter
-from pyvista.plotting.theme import rcParams
-
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QTimer
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5 import QtGui
-from PyQt5 import QtCore
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QTimer
 from PyQt5.QtWidgets import (
     QMenuBar,
     QVBoxLayout,
@@ -71,6 +65,11 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QFileDialog,
 )
+
+import pyvista
+from pyvista.utilities import conditional_decorator, threaded
+from pyvista.plotting.plotting import BasePlotter
+from pyvista.plotting.theme import rcParams
 
 log = logging.getLogger("pyvistaqt")
 log.setLevel(logging.CRITICAL)
@@ -101,13 +100,13 @@ class FileDialog(QFileDialog):
     dlg_accepted = pyqtSignal(str)
 
     def __init__(
-        self,
-        parent=None,
-        filefilter=None,
-        save_mode=True,
-        show=True,
-        callback=None,
-        directory=False,
+            self,
+            parent=None,
+            filefilter=None,
+            save_mode=True,
+            show=True,
+            callback=None,
+            directory=False,
     ):
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
@@ -151,6 +150,7 @@ class DoubleSlider(QSlider):
     https://gist.github.com/dennis-tra/994a65d6165a328d4eabaadbaedac2cc
 
     """
+    # pylint: disable=C0103
 
     def __init__(self, *args, **kwargs):
         """Initialize the double slider."""
@@ -227,12 +227,14 @@ class RangeGroup(QHBoxLayout):
         self.spinbox.valueChanged.connect(self.update_value)
         self.spinbox.valueChanged.connect(callback)
 
-    def update_spinbox(self, value):
+    def update_spinbox(self, unused):
         """Set the value of the internal spinbox."""
+        del unused
         self.spinbox.setValue(self.slider.value())
 
-    def update_value(self, value):
+    def update_value(self, unused):
         """Update the value of the internal slider."""
+        del unused
         # if self.spinbox.value() < self.minimum:
         #     self.spinbox.setValue(self.minimum)
         # elif self.spinbox.value() > self.maximum:
@@ -288,8 +290,9 @@ class ScaleAxesDialog(QDialog):
         if show:  # pragma: no cover
             self.show()
 
-    def update_scale(self, value):
+    def update_scale(self, unused):
         """Update the scale of all actors in the plotter."""
+        del unused
         self.plotter.set_scale(
             self.x_slider_group.value,
             self.y_slider_group.value,
@@ -364,23 +367,24 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         updating the render window when actors are change without
         being automatically ``Modified``.
     """
+    # pylint: disable=C0103
 
     # Signals must be class attributes
     render_signal = pyqtSignal()
     key_press_event_signal = pyqtSignal(vtk.vtkGenericRenderWindowInteractor, str)
 
     def __init__(
-        self,
-        parent=None,
-        title=None,
-        off_screen=None,
-        multi_samples=None,
-        line_smoothing=False,
-        point_smoothing=False,
-        polygon_smoothing=False,
-        splitting_position=None,
-        auto_update=5.0,
-        **kwargs
+            self,
+            parent=None,
+            title=None,
+            off_screen=None,
+            multi_samples=None,
+            line_smoothing=False,
+            point_smoothing=False,
+            polygon_smoothing=False,
+            splitting_position=None,
+            auto_update=5.0,
+            **kwargs
     ):
         """Initialize Qt interactor."""
         log.debug("QtInteractor init start")
@@ -394,6 +398,16 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         with _no_BasePlotter_init():
             QVTKRenderWindowInteractor.__init__(self, **qvtk_kwargs)
         BasePlotter.__init__(self, **kwargs)
+
+        self.url = None
+        self.default_camera_tool_bar = None
+        self.saved_camera_positions = None
+        self.saved_cameras_tool_bar = None
+        self.main_menu = None
+        self._menu_close_action = None
+        self._edl_action = None
+        self._parallel_projection_action = None
+
         # backward compat for when we had this as a separate class
         self.interactor = self
 
@@ -508,7 +522,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     self.add_mesh(pyvista.read(filename))
                 except Exception as e:
                     print(str(e))
-                    pass
 
     def add_toolbars(self):
         """Add the toolbars."""
@@ -517,7 +530,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             action = QAction(key, self.app_window)
             action.triggered.connect(method)
             tool_bar.addAction(action)
-            return
 
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
@@ -550,8 +562,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             CLEAR_CAMS_BUTTON_TEXT,
             self.clear_camera_positions,
         )
-
-        return
 
     def add_menu_bar(self):
         """Add the main menu bar."""
@@ -617,7 +627,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             )
             if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)
-        return
 
     def clear_camera_positions(self):
         """Clear all camera positions."""
@@ -626,7 +635,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                 if action.text() not in [SAVE_CAM_BUTTON_TEXT, CLEAR_CAMS_BUTTON_TEXT]:
                     self.saved_cameras_tool_bar.removeAction(action)
         self.saved_camera_positions = []
-        return
 
     def close(self):
         """Quit application."""
@@ -704,15 +712,15 @@ class BackgroundPlotter(QtInteractor):
     ICON_TIME_STEP = 5.0
 
     def __init__(
-        self,
-        show=True,
-        app=None,
-        window_size=None,
-        off_screen=None,
-        allow_quit_keypress=True,
-        toolbar=True,
-        menu_bar=True,
-        **kwargs
+            self,
+            show=True,
+            app=None,
+            window_size=None,
+            off_screen=None,
+            allow_quit_keypress=True,
+            toolbar=True,
+            menu_bar=True,
+            **kwargs
     ):
         """Initialize the qt plotter."""
         log.debug("BackgroundPlotter init start")
@@ -833,7 +841,7 @@ class BackgroundPlotter(QtInteractor):
     def update_app_icon(self):
         """Update the app icon if the user is not trying to resize the window."""
         if os.name == "nt" or not hasattr(
-            self, "_last_window_size"
+                self, "_last_window_size"
         ):  # pragma: no cover
             # DO NOT EVEN ATTEMPT TO UPDATE ICON ON WINDOWS
             return
@@ -843,7 +851,7 @@ class BackgroundPlotter(QtInteractor):
             # This means the user is resizing it so ignore update.
             pass
         elif (
-            cur_time - self._last_update_time > BackgroundPlotter.ICON_TIME_STEP
+                cur_time - self._last_update_time > BackgroundPlotter.ICON_TIME_STEP
         ) and self._last_camera_pos != self.camera_position:
             # its been a while since last update OR
             # the camera position has changed and its been at least one second
@@ -938,11 +946,13 @@ class BackgroundPlotter(QtInteractor):
 
 class MainWindow(QMainWindow):
     """Convenience MainWindow that manages the application."""
+    # pylint: disable=C0103
 
     signal_close = pyqtSignal()
     signal_gesture = pyqtSignal(QtCore.QEvent)
 
     def event(self, event):
+        """Manage events."""
         if event.type() == QtCore.QEvent.Gesture:
             self.signal_gesture.emit(event)
             return True
