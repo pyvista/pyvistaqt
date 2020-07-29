@@ -1,7 +1,9 @@
 # Simple makefile to simplify repetitive build env management tasks under posix
 
-BLACK_DIRS ?= ./pyvistaqt/
-CODESPELL_DIRS ?= ./pyvistaqt ./tests
+SRC_DIR = ./pyvistaqt
+BLACK_DIRS ?= $(SRC_DIR)
+PYLINT_DIRS ?= $(SRC_DIR)
+CODESPELL_DIRS ?= $(SRC_DIR) ./tests
 CODESPELL_SKIP ?= "*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
 CODESPELL_IGNORE ?= "ignore_words.txt"
 
@@ -12,6 +14,10 @@ doctest: codespell pydocstyle
 black:
 	@echo "Running black"
 	@black $(BLACK_DIRS)
+
+pylint:
+	@echo "Running pylint"
+	@pylint $(PYLINT_DIRS)
 
 codespell:
 	@echo "Running codespell"
