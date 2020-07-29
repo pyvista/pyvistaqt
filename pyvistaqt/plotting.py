@@ -50,9 +50,19 @@ import scooby
 import vtk
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import (QAction, QDialog, QDoubleSpinBox, QFileDialog,
-                             QFormLayout, QFrame, QHBoxLayout, QMainWindow,
-                             QMenuBar, QSlider, QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QAction,
+    QDialog,
+    QDoubleSpinBox,
+    QFileDialog,
+    QFormLayout,
+    QFrame,
+    QHBoxLayout,
+    QMainWindow,
+    QMenuBar,
+    QSlider,
+    QVBoxLayout,
+)
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
