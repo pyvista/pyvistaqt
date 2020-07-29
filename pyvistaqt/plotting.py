@@ -71,9 +71,9 @@ from pyvista.utilities import conditional_decorator, threaded
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 
-log = logging.getLogger("pyvistaqt")
-log.setLevel(logging.CRITICAL)
-log.addHandler(logging.StreamHandler())
+LOG = logging.getLogger("pyvistaqt")
+LOG.setLevel(logging.CRITICAL)
+LOG.addHandler(logging.StreamHandler())
 
 
 # for display bugs due to older intel integrated GPUs, setting
@@ -82,9 +82,9 @@ log.addHandler(logging.StreamHandler())
 # changing it from the default 'QWidget'.
 # See https://github.com/pyvista/pyvista/pull/693
 
-# log is unused at the moment
-# log = logging.getLogger(__name__)
-# log.setLevel('DEBUG')
+# LOG is unused at the moment
+# LOG = logging.getLogger(__name__)
+# LOG.setLevel('DEBUG')
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
@@ -387,7 +387,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             **kwargs
     ):
         """Initialize Qt interactor."""
-        log.debug("QtInteractor init start")
+        LOG.debug("QtInteractor init start")
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
         # because they use **kwargs in their constructor...
@@ -473,7 +473,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         self._first_time = False  # Crucial!
         self.view_isometric()
-        log.debug("QtInteractor init stop")
+        LOG.debug("QtInteractor init stop")
 
     def gesture_event(self, event):
         """Handle gesture events."""
@@ -723,7 +723,7 @@ class BackgroundPlotter(QtInteractor):
             **kwargs
     ):
         """Initialize the qt plotter."""
-        log.debug("BackgroundPlotter init start")
+        LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
             raise TypeError(
                 "Expected type for ``menu_bar`` is bool"
@@ -810,7 +810,7 @@ class BackgroundPlotter(QtInteractor):
 
         # Keypress events
         self.add_key_event("S", self._qt_screenshot)  # shift + s
-        log.debug("BackgroundPlotter init stop")
+        LOG.debug("BackgroundPlotter init stop")
 
     def reset_key_events(self):
         """Reset all of the key press events to their defaults.
