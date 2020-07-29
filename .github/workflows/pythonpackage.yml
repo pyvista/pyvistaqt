@@ -20,4 +20,4 @@ jobs:
         use-flake8: false
         use-black: true
         use-mypy: false
-        use-isort: false
+        use-isort: true
