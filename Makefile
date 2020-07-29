@@ -15,7 +15,7 @@ black:
 	@black $(BLACK_DIRS)
 
 isort:
-	@echo "Running black"
+	@echo "Running isort"
 	@isort $(ISORT_DIRS)
 
 codespell:
