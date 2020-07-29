@@ -304,14 +304,14 @@ def resample_image(arr, max_size=400):
     """Resample a square image to an image of max_size."""
     dim = np.max(arr.shape[0:2])
     max_size = min(max_size, dim)
-    x, y, _ = arr.shape
-    sx = int(np.ceil(x / max_size))
-    sy = int(np.ceil(y / max_size))
+    x_val, y_val, _ = arr.shape
+    sx_val = int(np.ceil(x_val / max_size))
+    sy_val = int(np.ceil(y_val / max_size))
     img = np.zeros((max_size, max_size, 3), dtype=arr.dtype)
-    arr = arr[0:-1:sx, 0:-1:sy, :]
-    xl = (max_size - arr.shape[0]) // 2
-    yl = (max_size - arr.shape[1]) // 2
-    img[xl : arr.shape[0] + xl, yl : arr.shape[1] + yl, :] = arr
+    arr = arr[0:-1:sx_val, 0:-1:sy_val, :]
+    xl_val = (max_size - arr.shape[0]) // 2
+    yl_val = (max_size - arr.shape[1]) // 2
+    img[xl_val : arr.shape[0] + xl_val, yl_val : arr.shape[1] + yl_val, :] = arr
     return img
 
 
