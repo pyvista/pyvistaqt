@@ -1,6 +1,7 @@
+import datetime
 import os
 import sys
-import datetime
+
 if sys.version_info >= (3, 0):
     import faulthandler
     faulthandler.enable()
@@ -8,10 +9,12 @@ if sys.version_info >= (3, 0):
 sys.path.insert(0, os.path.abspath('.'))
 
 
+import numpy as np
 # -- pyvista configuration ---------------------------------------------------
 import pyvista
+
 import pyvistaqt
-import numpy as np
+
 # Manage errors
 pyvista.set_error_output_file('errors.txt')
 # Ensure that offscreen rendering is used for docs generation
@@ -27,6 +30,7 @@ if not os.path.exists(pyvista.FIGURE_PATH):
 
 # SG warnins
 import warnings
+
 warnings.filterwarnings(
     "ignore",
     category=UserWarning,
@@ -109,6 +113,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 import sphinx_rtd_theme
+
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_context = {
@@ -162,11 +167,11 @@ notfound_context = {
 notfound_no_urls_prefix = True
 
 
-# -- Autosummary options
-from sphinx.ext.autosummary import Autosummary
-from sphinx.ext.autosummary import get_documenter
 from docutils.parsers.rst import directives
+# -- Autosummary options
+from sphinx.ext.autosummary import Autosummary, get_documenter
 from sphinx.util.inspect import safe_getattr
+
 
 class AutoAutoSummary(Autosummary):
 

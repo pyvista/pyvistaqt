@@ -2,17 +2,16 @@ import os
 
 import numpy as np
 import pytest
-
 import pyvista
 import vtk
+from PyQt5.Qt import (QAction, QFrame, QMainWindow, QMenuBar, QToolBar,
+                      QVBoxLayout)
 from pyvista import rcParams
-from pyvista.plotting import system_supports_plotting, Renderer
-from pyvistaqt.plotting import (QVTKRenderWindowInteractor, QTimer,
-                                 Counter, _create_menu_bar)
-from pyvistaqt import QtInteractor, MainWindow, BackgroundPlotter
+from pyvista.plotting import Renderer, system_supports_plotting
 
-from PyQt5.Qt import (QMainWindow, QFrame, QVBoxLayout, QMenuBar,
-                      QAction, QToolBar)
+from pyvistaqt import BackgroundPlotter, MainWindow, QtInteractor
+from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
+                                _create_menu_bar)
 
 NO_PLOTTING = not system_supports_plotting()
 
@@ -120,7 +119,7 @@ def test_counter(qtbot):
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_qt_interactor(qtbot):
-    from pyvista.plotting.plotting import close_all, _ALL_PLOTTERS
+    from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
 
@@ -507,7 +506,7 @@ def test_background_plotting_add_callback(qtbot):
     False,
     ])
 def test_background_plotting_close(qtbot, close_event, empty_scene):
-    from pyvista.plotting.plotting import close_all, _ALL_PLOTTERS
+    from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
 
