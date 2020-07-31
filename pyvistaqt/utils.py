@@ -34,8 +34,7 @@ class DoubleSlider(QSlider):
     def value(self):
         """Return the value of the slider."""
         return (
-            float(super().value()) / self._max_int *
-            self._value_range + self._min_value
+            float(super().value()) / self._max_int * self._value_range + self._min_value
         )
 
     def setValue(self, value):
