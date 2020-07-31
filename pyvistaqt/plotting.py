@@ -656,7 +656,7 @@ class BackgroundPlotter(QtInteractor):
     window_size : list, optional
         Window size in pixels.  Defaults to ``[1024, 768]``
 
-    off_screen: bool, optional
+    off_screen : bool, optional
         Renders off screen when True.  Useful for automated
         screenshots or debug testing.
 
