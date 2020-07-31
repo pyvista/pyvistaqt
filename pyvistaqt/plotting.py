@@ -518,7 +518,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
 
-        def view_vector(*args):
+        def _view_vector(*args):
             return self.view_vector(*args)
 
         cvec_setters = {
