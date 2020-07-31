@@ -2,9 +2,11 @@
 
 BLACK_DIRS ?= ./pyvistaqt/
 ISORT_DIRS ?= ./pyvistaqt/
+PYCODESTYLE_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
 CODESPELL_SKIP ?= "*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
 CODESPELL_IGNORE ?= "ignore_words.txt"
+EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203"
 
 all: doctest
 
@@ -17,6 +19,10 @@ black:
 isort:
 	@echo "Running isort"
 	@isort $(ISORT_DIRS)
+
+pycodestyle:
+	@echo "Running pycodestyle"
+	@pycodestyle $(PYCODESTYLE_DIRS) $(EXTRA_PYCODESTYLE_OPTIONS)
 
 codespell:
 	@echo "Running codespell"
