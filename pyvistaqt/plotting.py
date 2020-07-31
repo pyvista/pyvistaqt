@@ -660,7 +660,7 @@ class BackgroundPlotter(QtInteractor):
         Renders off screen when True.  Useful for automated
         screenshots or debug testing.
 
-    allow_quit_keypress: bool, optional
+    allow_quit_keypress : bool, optional
         Allow user to exit by pressing ``"q"``.
 
     menu_bar: bool, optional
