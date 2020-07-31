@@ -653,7 +653,7 @@ class BackgroundPlotter(QtInteractor):
     app: PyQt5.QtWidgets.QApplication, optional
         Creates a `QApplication` if left as `None`.
 
-    window_size: list, optional
+    window_size : list, optional
         Window size in pixels.  Defaults to ``[1024, 768]``
 
     off_screen: bool, optional
