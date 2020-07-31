@@ -349,7 +349,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     line_smoothing : bool, optional
         If True, enable line smothing
 
-    point_smoothing: bool, optional
+    point_smoothing : bool, optional
         If True, enable point smothing
 
     polygon_smoothing: bool, optional
