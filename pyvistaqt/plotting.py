@@ -346,7 +346,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         good default but 8 will have better results with a potential
         impact on performance.
 
-    line_smoothing: bool, optional
+    line_smoothing : bool, optional
         If True, enable line smothing
 
     point_smoothing: bool, optional
