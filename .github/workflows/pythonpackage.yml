@@ -22,3 +22,4 @@ jobs:
         use-mypy: false
         use-isort: true
         extra-pycodestyle-options: --ignore=E501,E203
+        extra-flake8-options: --ignore=E501,E203
