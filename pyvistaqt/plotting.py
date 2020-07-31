@@ -646,7 +646,7 @@ class BackgroundPlotter(QtInteractor):
 
     Parameters
     ----------
-    show: bool, optional
+    show : bool, optional
         Show the plotting window.  If ``False``, show this window by
         running ``show()``
 
