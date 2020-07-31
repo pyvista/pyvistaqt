@@ -62,7 +62,7 @@ from pyvista.utilities import conditional_decorator, threaded
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from .window import MainWindow
 from .counter import Counter
-from .dialog import FileDialog, ScaleAxesDialog
+from .dialog import FileDialog, DoubleSlider, RangeGroup, ScaleAxesDialog
 
 log = logging.getLogger("pyvistaqt")
 log.setLevel(logging.CRITICAL)
