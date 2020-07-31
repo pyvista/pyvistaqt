@@ -669,7 +669,7 @@ class BackgroundPlotter(QtInteractor):
     toolbar : bool, optional
        Display the default camera toolbar. Defaults to True.
 
-    title: str, optional
+    title : str, optional
         Title of plotting window.
 
     multi_samples: int, optional
