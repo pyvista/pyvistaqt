@@ -15,6 +15,10 @@ black:
 	@echo "Running black"
 	@black $(BLACK_DIRS)
 
+isort:
+	@echo "Running isort"
+	@isort $(ISORT_DIRS)
+
 pylint:
 	@echo "Running pylint"
 	@pylint $(PYLINT_DIRS)
