@@ -17,7 +17,7 @@ jobs:
         python-root-list: pyvistaqt
         use-pylint: false
         use-pycodestyle: false
-        use-flake8: false
+        use-flake8: true
         use-black: true
         use-mypy: false
         use-isort: true
