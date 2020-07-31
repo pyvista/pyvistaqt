@@ -338,7 +338,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     parent :
         Qt parent.
 
-    title: str, optional
+    title : str, optional
         Title of plotting window.
 
     multi_samples: int, optional
