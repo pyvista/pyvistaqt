@@ -666,7 +666,7 @@ class BackgroundPlotter(QtInteractor):
     menu_bar: bool, optional
         Display the default main menu. Defaults to True.
 
-    toolbar: bool, optional
+    toolbar : bool, optional
        Display the default camera toolbar. Defaults to True.
 
     title: str, optional
