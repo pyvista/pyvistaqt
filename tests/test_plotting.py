@@ -4,13 +4,13 @@ import numpy as np
 import pytest
 import pyvista
 import vtk
-from PyQt5.Qt import (QAction, QFrame, QMenuBar, QToolBar,
+from PyQt5.Qt import (QAction, QFrame, QMainWindow, QMenuBar, QToolBar,
                       QVBoxLayout)
 from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 
-from pyvistaqt import BackgroundPlotter, MainWindow, Counter, QtInteractor
-from pyvistaqt.plotting import (QTimer, QVTKRenderWindowInteractor,
+from pyvistaqt import BackgroundPlotter, MainWindow, QtInteractor
+from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
                                 _create_menu_bar)
 
 NO_PLOTTING = not system_supports_plotting()
