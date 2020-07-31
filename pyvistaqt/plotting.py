@@ -335,7 +335,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     Parameters
     ----------
-    parent:
+    parent :
         Qt parent.
 
     title: str, optional
