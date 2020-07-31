@@ -28,7 +28,7 @@ pycodestyle:
 
 flake8:
 	@echo "Running flake8"
-	@pycodestyle $(FLAKE8_DIRS) $(EXTRA_FLAKE8_OPTIONS)
+	@flake8 $(FLAKE8_DIRS) $(EXTRA_FLAKE8_OPTIONS)
 
 codespell:
 	@echo "Running codespell"
