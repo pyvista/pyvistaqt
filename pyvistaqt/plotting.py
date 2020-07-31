@@ -650,7 +650,7 @@ class BackgroundPlotter(QtInteractor):
         Show the plotting window.  If ``False``, show this window by
         running ``show()``
 
-    app: PyQt5.QtWidgets.QApplication, optional
+    app : PyQt5.QtWidgets.QApplication, optional
         Creates a `QApplication` if left as `None`.
 
     window_size : list, optional
