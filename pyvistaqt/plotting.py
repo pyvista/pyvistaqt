@@ -341,7 +341,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     title : str, optional
         Title of plotting window.
 
-    multi_samples: int, optional
+    multi_samples : int, optional
         The number of multi-samples used to mitigate aliasing. 4 is a
         good default but 8 will have better results with a potential
         impact on performance.
