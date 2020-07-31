@@ -1,12 +1,13 @@
 import os
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
     QDialog,
+    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
-    QDoubleSpinBox,
     QSlider,
 )
 

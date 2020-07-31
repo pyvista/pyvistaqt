@@ -45,24 +45,21 @@ import warnings
 from functools import wraps
 
 import numpy as np
-import pyvista
 import scooby
 import vtk
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QTimer, pyqtSignal
-from PyQt5.QtWidgets import (
-    QAction,
-    QFrame,
-    QMenuBar,
-    QVBoxLayout,
-)
+from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
+from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+import pyvista
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from .window import MainWindow
+
 from .counter import Counter
-from .dialog import FileDialog, DoubleSlider, RangeGroup, ScaleAxesDialog
+from .dialog import DoubleSlider, FileDialog, RangeGroup, ScaleAxesDialog
+from .window import MainWindow
 
 log = logging.getLogger("pyvistaqt")
 log.setLevel(logging.CRITICAL)
