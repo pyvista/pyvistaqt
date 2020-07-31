@@ -919,7 +919,7 @@ class BackgroundPlotter(QtInteractor):
             Function to be called with no arguments.
         interval : int
             Time interval between calls to `func` in milliseconds.
-        count: int, optional
+        count : int, optional
             Number of times `func` will be called. If None,
             `func` will be called until the main window is closed.
 
