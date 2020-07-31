@@ -915,7 +915,7 @@ class BackgroundPlotter(QtInteractor):
 
         Parameters
         ----------
-        func: callable
+        func : callable
             Function to be called with no arguments.
         interval: int
             Time interval between calls to `func` in milliseconds.
