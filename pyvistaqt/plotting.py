@@ -349,13 +349,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     line_smoothing : bool, optional
         If True, enable line smothing
 
-    point_smoothing: bool, optional
+    point_smoothing : bool, optional
         If True, enable point smothing
 
-    polygon_smoothing: bool, optional
+    polygon_smoothing : bool, optional
         If True, enable polygon smothing
 
-    auto_update: float, bool, optional
+    auto_update : float, bool, optional
         Automatic update rate in seconds.  Useful for automatically
         updating the render window when actors are change without
         being automatically ``Modified``.
@@ -646,41 +646,41 @@ class BackgroundPlotter(QtInteractor):
 
     Parameters
     ----------
-    show: bool, optional
+    show : bool, optional
         Show the plotting window.  If ``False``, show this window by
         running ``show()``
 
-    app: PyQt5.QtWidgets.QApplication, optional
+    app : PyQt5.QtWidgets.QApplication, optional
         Creates a `QApplication` if left as `None`.
 
-    window_size: list, optional
+    window_size : list, optional
         Window size in pixels.  Defaults to ``[1024, 768]``
 
-    off_screen: bool, optional
+    off_screen : bool, optional
         Renders off screen when True.  Useful for automated
         screenshots or debug testing.
 
-    allow_quit_keypress: bool, optional
+    allow_quit_keypress : bool, optional
         Allow user to exit by pressing ``"q"``.
 
     menu_bar: bool, optional
         Display the default main menu. Defaults to True.
 
-    toolbar: bool, optional
+    toolbar : bool, optional
        Display the default camera toolbar. Defaults to True.
 
-    title: str, optional
+    title : str, optional
         Title of plotting window.
 
-    multi_samples: int, optional
+    multi_samples : int, optional
         The number of multi-samples used to mitigate aliasing. 4 is a
         good default but 8 will have better results with a potential
         impact on performance.
 
-    line_smoothing: bool, optional
+    line_smoothing : bool, optional
         If True, enable line smothing
 
-    point_smoothing: bool, optional
+    point_smoothing : bool, optional
         If True, enable point smothing
 
     polygon_smoothing : bool, optional
