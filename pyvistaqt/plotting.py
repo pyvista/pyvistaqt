@@ -686,7 +686,7 @@ class BackgroundPlotter(QtInteractor):
     polygon_smoothing : bool, optional
         If True, enable polygon smothing
 
-    auto_update: float, bool, optional
+    auto_update : float, bool, optional
         Automatic update rate in seconds.  Useful for automatically
         updating the render window when actors are change without
         being automatically ``Modified``.  If set to ``True``, update
