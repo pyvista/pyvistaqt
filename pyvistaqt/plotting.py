@@ -304,7 +304,7 @@ def resample_image(arr, max_size=400):
     arr = arr[0:-1:sx, 0:-1:sy, :]
     xl = (max_size - arr.shape[0]) // 2
     yl = (max_size - arr.shape[1]) // 2
-    img[xl: arr.shape[0] + xl, yl: arr.shape[1] + yl, :] = arr
+    img[xl : arr.shape[0] + xl, yl : arr.shape[1] + yl, :] = arr
     return img
 
 
@@ -314,7 +314,7 @@ def pad_image(arr, max_size=400):
     img = np.zeros((dim, dim, 3), dtype=arr.dtype)
     xl = (dim - arr.shape[0]) // 2
     yl = (dim - arr.shape[1]) // 2
-    img[xl: arr.shape[0] + xl, yl: arr.shape[1] + yl, :] = arr
+    img[xl : arr.shape[0] + xl, yl : arr.shape[1] + yl, :] = arr
     return resample_image(img, max_size=max_size)
 
 
@@ -517,7 +517,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
-        def view_vector(*args): return self.view_vector(*args)
+
+        def view_vector(*args):
+            return self.view_vector(*args)
+
         cvec_setters = {
             # Viewing vector then view up vector
             "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
