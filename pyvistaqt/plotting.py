@@ -44,9 +44,9 @@ import time
 import warnings
 from functools import wraps
 
-import numpy as np
+import numpy as np # type: ignore
 import pyvista
-import scooby
+import scooby # type: ignore
 import vtk
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
