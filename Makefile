@@ -1,7 +1,7 @@
 # Simple makefile to simplify repetitive build env management tasks under posix
 
 BLACK_DIRS ?= ./pyvistaqt/
-ISORT_DIRS ?= ./pyvistaqt/
+ISORT_DIRS ?= ./pyvistaqt/*.py
 PYCODESTYLE_DIRS ?= ./pyvistaqt/
 FLAKE8_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
