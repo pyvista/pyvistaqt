@@ -299,11 +299,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             action = QAction(key, self.app_window)
             action.triggered.connect(method)
             tool_bar.addAction(action)
-            return
+            return action
 
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
-        _view_vector = lambda *args: self.view_vector(*args)
+
+        def _view_vector(*args):
+            return self.view_vector(*args)
+
         cvec_setters = {
             # Viewing vector then view up vector
             "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
@@ -315,7 +318,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
         }
         for key, method in cvec_setters.items():
-            _add_action(self.default_camera_tool_bar, key, method)
+            self._view_action = _add_action(self.default_camera_tool_bar, key, method)
         _add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
 
         # Saved camera locations toolbar
@@ -561,6 +564,9 @@ class BackgroundPlotter(QtInteractor):
         self._menu_close_action = None
         if menu_bar:
             self.add_menu_bar()
+
+        # member variable for testing only
+        self._view_action = None
 
         self.default_camera_tool_bar = None
         self.saved_camera_positions = None

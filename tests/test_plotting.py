@@ -393,6 +393,9 @@ def test_background_plotting_toolbar(qtbot):
     assert default_camera_tool_bar.isVisible()
     assert saved_cameras_tool_bar.isVisible()
 
+    # triggering a view action
+    plotter._view_action.trigger()
+
     plotter.close()
 
 
