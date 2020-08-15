@@ -136,7 +136,9 @@ def drag_enter_event(event):
         warnings.warn("Exception when dropping files: %s" % str(exception))
 
 
-class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
+class QtInteractor(
+    QVTKRenderWindowInteractor, BasePlotter
+):  # pylint: disable=too-many-instance-attributes
     """Extend QVTKRenderWindowInteractor class.
 
     This adds the methods available to pyvista.Plotter.
@@ -435,7 +437,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         QVTKRenderWindowInteractor.close(self)
 
 
-class BackgroundPlotter(QtInteractor):
+class BackgroundPlotter(QtInteractor):  # pylint: disable=too-many-instance-attributes
     """Qt interactive plotter.
 
     Background plotter for pyvista that allows you to maintain an
