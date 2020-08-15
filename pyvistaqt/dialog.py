@@ -182,7 +182,11 @@ class RangeGroup(QHBoxLayout):
 
 
 class ScaleAxesDialog(QDialog):
-    """Dialog to control axes scaling."""
+    """
+    Dialog to control axes scaling.
+    """
+
+    # pylint: disable=too-few-public-methods
 
     accepted = pyqtSignal(float)
     signal_close = pyqtSignal()
