@@ -169,7 +169,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         being automatically ``Modified``.
     """
 
-    # pylint: disable=too-many-arguments
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-statements
@@ -189,7 +188,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         polygon_smoothing=False,
         auto_update=5.0,
         **kwargs
-    ):
+    ): # pylint: disable=too-many-arguments
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
         # Cannot use super() here because
@@ -503,7 +502,6 @@ class BackgroundPlotter(QtInteractor):
     """
 
     # pylint: disable=too-many-ancestors
-    # pylint: disable=too-many-arguments
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-statements
 
@@ -519,7 +517,7 @@ class BackgroundPlotter(QtInteractor):
         toolbar=True,
         menu_bar=True,
         **kwargs
-    ):
+    ): # pylint: disable=too-many-arguments
         """Initialize the qt plotter."""
         LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
