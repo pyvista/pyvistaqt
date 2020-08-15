@@ -155,11 +155,11 @@ class RangeGroup(QHBoxLayout):
         self.spinbox.valueChanged.connect(self.update_value)
         self.spinbox.valueChanged.connect(callback)
 
-    def update_spinbox(self, value):
+    def update_spinbox(self, value): # pylint: disable=unused-argument
         """Set the value of the internal spinbox."""
         self.spinbox.setValue(self.slider.value())
 
-    def update_value(self, value):
+    def update_value(self, value): # pylint: disable=unused-argument
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
         #     self.spinbox.setValue(self.minimum)
