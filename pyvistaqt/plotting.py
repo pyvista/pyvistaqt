@@ -119,22 +119,6 @@ def _no_base_plotter_init():
         BasePlotter.__init__ = init
 
 
-def drag_enter_event(event):
-    """Event is called when something is dropped onto the vtk window.
-
-    Only triggers event when event contains file paths that
-    exist.  User can drop anything in this window and we only want
-    to allow files.
-    """
-    try:
-        for url in event.mimeData().urls():
-            if os.path.isfile(url.path()):
-                # only call accept on files
-                event.accept()
-    except OSError as exception:
-        warnings.warn("Exception when dropping files: %s" % str(exception))
-
-
 class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     """Extend QVTKRenderWindowInteractor class.
 
