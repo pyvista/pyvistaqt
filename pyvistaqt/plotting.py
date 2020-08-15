@@ -332,7 +332,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         }
         for key, method in cvec_setters.items():
             self._view_action = _add_action(self.default_camera_tool_bar, key, method)
-        _add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
+        _add_action(self.default_camera_tool_bar, "Reset", self.reset_camera())
 
         # Saved camera locations toolbar
         self.saved_camera_positions = []
@@ -372,7 +372,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
         tool_menu.addAction(
             "Enable Cell Picking (visible)",
-            lambda: self.enable_cell_picking(through=False),
+            self.enable_cell_picking(through=False),
         )
 
         cam_menu = view_menu.addMenu("Camera")
