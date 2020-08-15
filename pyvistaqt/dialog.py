@@ -1,3 +1,6 @@
+"""
+TODO: Add docstring
+"""
 import os
 
 from PyQt5 import QtCore

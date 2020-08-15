@@ -1,8 +1,13 @@
+"""
+TODO: Add docstring.
+"""
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 
 class Counter(QObject):
-    """Counter augmented with a Qt timer."""
+    """
+    Counter classCounter augmented with a Qt timer.
+    """
 
     signal_finished = pyqtSignal()
 
