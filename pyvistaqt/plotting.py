@@ -49,10 +49,12 @@ import vtk
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QTimer, pyqtSignal
 from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
+from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+import pyvista
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import DoubleSlider, FileDialog, RangeGroup, ScaleAxesDialog
@@ -75,7 +77,6 @@ log.addHandler(logging.StreamHandler())
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
-
 
 
 def resample_image(arr, max_size=400):
@@ -113,6 +114,22 @@ def _no_BasePlotter_init():
         BasePlotter.__init__ = init
 
 
+def dragEnterEvent(event):
+    """Event is called when something is dropped onto the vtk window.
+
+    Only triggers event when event contains file paths that
+    exist.  User can drop anything in this window and we only want
+    to allow files.
+    """
+    try:
+        for url in event.mimeData().urls():
+            if os.path.isfile(url.path()):
+                # only call accept on files
+                event.accept()
+    except Exception as e:
+        warnings.warn("Exception when dropping files: %s" % str(e))
+
+
 class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     """Extend QVTKRenderWindowInteractor class.
 
@@ -145,6 +162,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         updating the render window when actors are change without
         being automatically ``Modified``.
     """
+
     # pylint: disable=C0103
 
     # Signals must be class attributes
@@ -152,17 +170,17 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     key_press_event_signal = pyqtSignal(vtk.vtkGenericRenderWindowInteractor, str)
 
     def __init__(
-            self,
-            parent=None,
-            title=None,
-            off_screen=None,
-            multi_samples=None,
-            line_smoothing=False,
-            point_smoothing=False,
-            polygon_smoothing=False,
-            splitting_position=None,
-            auto_update=5.0,
-            **kwargs
+        self,
+        parent=None,
+        title=None,
+        off_screen=None,
+        multi_samples=None,
+        line_smoothing=False,
+        point_smoothing=False,
+        polygon_smoothing=False,
+        splitting_position=None,
+        auto_update=5.0,
+        **kwargs
     ):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
@@ -274,21 +292,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     def render(self):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
-
-    def dragEnterEvent(self, event):
-        """Event is called when something is dropped onto the vtk window.
-
-        Only triggers event when event contains file paths that
-        exist.  User can drop anything in this window and we only want
-        to allow files.
-        """
-        try:
-            for url in event.mimeData().urls():
-                if os.path.isfile(url.path()):
-                    # only call accept on files
-                    event.accept()
-        except Exception as e:
-            warnings.warn("Exception when dropping files: %s" % str(e))
 
     def dropEvent(self, event):
         """Event is called after dragEnterEvent."""
@@ -494,15 +497,15 @@ class BackgroundPlotter(QtInteractor):
     ICON_TIME_STEP = 5.0
 
     def __init__(
-            self,
-            show=True,
-            app=None,
-            window_size=None,
-            off_screen=None,
-            allow_quit_keypress=True,
-            toolbar=True,
-            menu_bar=True,
-            **kwargs
+        self,
+        show=True,
+        app=None,
+        window_size=None,
+        off_screen=None,
+        allow_quit_keypress=True,
+        toolbar=True,
+        menu_bar=True,
+        **kwargs
     ):
         """Initialize the qt plotter."""
         LOG.debug("BackgroundPlotter init start")
@@ -626,7 +629,7 @@ class BackgroundPlotter(QtInteractor):
     def update_app_icon(self):
         """Update the app icon if the user is not trying to resize the window."""
         if os.name == "nt" or not hasattr(
-                self, "_last_window_size"
+            self, "_last_window_size"
         ):  # pragma: no cover
             # DO NOT EVEN ATTEMPT TO UPDATE ICON ON WINDOWS
             return
@@ -636,7 +639,7 @@ class BackgroundPlotter(QtInteractor):
             # This means the user is resizing it so ignore update.
             pass
         elif (
-                cur_time - self._last_update_time > BackgroundPlotter.ICON_TIME_STEP
+            cur_time - self._last_update_time > BackgroundPlotter.ICON_TIME_STEP
         ) and self._last_camera_pos != self.camera_position:
             # its been a while since last update OR
             # the camera position has changed and its been at least one second
