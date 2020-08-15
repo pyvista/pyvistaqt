@@ -99,7 +99,7 @@ class DoubleSlider(QSlider):
             float(super().value()) / self._max_int * self._value_range + self._min_value
         )
 
-    def set_value(self, value):
+    def setValue(self, value):
         """Set the value of the slider."""
         super().set_value(
             int((value - self._min_value) / self._value_range * self._max_int)
