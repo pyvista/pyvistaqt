@@ -103,7 +103,7 @@ class DoubleSlider(QSlider):
 
     def setValue(self, value):  # pylint: disable=invalid-name
         """Set the value of the slider."""
-        super().set_value(
+        super().setValue(
             int((value - self._min_value) / self._value_range * self._max_int)
         )
 
@@ -113,7 +113,7 @@ class DoubleSlider(QSlider):
             raise ValueError("Minimum limit cannot be higher than maximum")
 
         self._min_value = value
-        self.set_value(self.value())
+        self.setValue(self.value())
 
     def set_maximum(self, value):
         """Set the maximum value of the slider."""
@@ -121,7 +121,7 @@ class DoubleSlider(QSlider):
             raise ValueError("Minimum limit cannot be higher than maximum")
 
         self._max_value = value
-        self.set_value(self.value())
+        self.setValue(self.value())
 
 
 # this is redefined from above because the above object is a dummy object
@@ -138,7 +138,7 @@ class RangeGroup(QHBoxLayout):
         self.slider.setTickInterval(0.1)
         self.slider.set_minimum(minimum)
         self.slider.set_maximum(maximum)
-        self.slider.set_value(value)
+        self.slider.setValue(value)
 
         self.minimum = minimum
         self.maximum = maximum
@@ -157,17 +157,17 @@ class RangeGroup(QHBoxLayout):
 
     def update_spinbox(self):
         """Set the value of the internal spinbox."""
-        self.spinbox.set_value(self.slider.value())
+        self.spinbox.setValue(self.slider.value())
 
     def update_value(self):
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
-        #     self.spinbox.set_value(self.minimum)
+        #     self.spinbox.setValue(self.minimum)
         # elif self.spinbox.value() > self.maximum:
-        #     self.spinbox.set_value(self.maximum)
+        #     self.spinbox.setValue(self.maximum)
 
         self.slider.blockSignals(True)
-        self.slider.set_value(self.spinbox.value())
+        self.slider.setValue(self.spinbox.value())
         self.slider.blockSignals(False)
 
     @property
@@ -178,7 +178,7 @@ class RangeGroup(QHBoxLayout):
     @value.setter
     def value(self, new_value):
         """Set the value of the internal slider."""
-        self.slider.set_value(new_value)
+        self.slider.setValue(new_value)
 
 
 class ScaleAxesDialog(QDialog):
