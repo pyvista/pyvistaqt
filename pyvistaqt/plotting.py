@@ -616,6 +616,7 @@ class BackgroundPlotter(QtInteractor):
         """
         super(BackgroundPlotter, self).reset_key_events()
         if self.allow_quit_keypress:
+            # pylint: disable=unnecessary-lambda
             self.add_key_event("q", lambda: self.close())
 
     def scale_axes_dialog(self, show=True):
