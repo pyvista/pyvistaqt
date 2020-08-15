@@ -47,9 +47,6 @@ from functools import wraps
 import numpy as np
 import scooby
 import vtk
-from PyQt5 import QtCore
-from PyQt5.QtCore import QTimer, pyqtSignal
-from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 import pyvista
@@ -65,7 +62,9 @@ if scooby.in_ipython():  # pragma: no cover
     from IPython import get_ipython
     from IPython.external.qt_for_kernel import QtGui
 else:
-    from PyQt5 import QtGui
+    from PyQt5.QtCore import QTimer, pyqtSignal
+    from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
+    from PyQt5 import QtCore, QtGui
 
 log = logging.getLogger("pyvistaqt")
 log.setLevel(logging.CRITICAL)
