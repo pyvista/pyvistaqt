@@ -285,7 +285,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     # only call accept on files
                     event.accept()
         except Exception as exception:
-            warnings.warn("Exception when dropping files: %s" % str(exception)
+            warnings.warn("Exception when dropping files: %s" % str(exception))
 
     def dropEvent(self, event):  # pylint: disable=invalid-name
         """Event is called after dragEnterEvent."""
