@@ -173,6 +173,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         **kwargs
     ):  # pylint: disable=too-many-arguments
         """Initialize Qt interactor."""
+
+        self.url=None
+
         LOG.debug("QtInteractor init start")
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
