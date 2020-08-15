@@ -138,7 +138,7 @@ def drag_enter_event(event):
 
 class QtInteractor(
     QVTKRenderWindowInteractor, BasePlotter
-):  # pylint: disable=too-many-instance-attributes
+):
     """Extend QVTKRenderWindowInteractor class.
 
     This adds the methods available to pyvista.Plotter.
@@ -172,6 +172,10 @@ class QtInteractor(
     """
 
     # pylint: disable=invalid-name
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-statements
 
     # Signals must be class attributes
     render_signal = pyqtSignal()
@@ -188,7 +192,7 @@ class QtInteractor(
         polygon_smoothing=False,
         auto_update=5.0,
         **kwargs
-    ):  # pylint: disable=too-many-arguments
+    ):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
         # Cannot use super() here because
@@ -337,6 +341,7 @@ class QtInteractor(
             "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
         }
         for key, method in cvec_setters.items():
+            # pylint: disable=attribute-defined-outside-init
             self._view_action = _add_action(self.default_camera_tool_bar, key, method)
         _add_action(self.default_camera_tool_bar, "Reset", self.reset_camera())
 
@@ -437,7 +442,7 @@ class QtInteractor(
         QVTKRenderWindowInteractor.close(self)
 
 
-class BackgroundPlotter(QtInteractor):  # pylint: disable=too-many-instance-attributes
+class BackgroundPlotter(QtInteractor):
     """Qt interactive plotter.
 
     Background plotter for pyvista that allows you to maintain an
@@ -500,6 +505,11 @@ class BackgroundPlotter(QtInteractor):  # pylint: disable=too-many-instance-attr
     >>> _ = plotter.add_mesh(pv.Sphere())
     """
 
+    # pylint: disable=too-many-ancestors
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-statements
+
     ICON_TIME_STEP = 5.0
 
     def __init__(
@@ -512,7 +522,7 @@ class BackgroundPlotter(QtInteractor):  # pylint: disable=too-many-instance-attr
         toolbar=True,
         menu_bar=True,
         **kwargs
-    ):  # pylint: disable=too-many-arguments
+    ):
         """Initialize the qt plotter."""
         LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
@@ -548,6 +558,7 @@ class BackgroundPlotter(QtInteractor):  # pylint: disable=too-many-instance-attr
 
         # run within python
         if app is None:
+            # pylint: disable=import-outside-toplevel
             from PyQt5.QtWidgets import QApplication
 
             app = QApplication.instance()
