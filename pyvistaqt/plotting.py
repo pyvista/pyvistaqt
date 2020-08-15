@@ -284,7 +284,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                 if os.path.isfile(url.path()):
                     # only call accept on files
                     event.accept()
-        except Exception as exception:
+        except IOError as exception:
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
     def dropEvent(self, event):  # pylint: disable=invalid-name
