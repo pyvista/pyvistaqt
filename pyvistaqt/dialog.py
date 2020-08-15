@@ -195,7 +195,7 @@ class ScaleAxesDialog(QDialog):
         """Initialize the scaling dialog."""
         super(ScaleAxesDialog, self).__init__(parent)
         self.setGeometry(300, 300, 50, 50)
-        self.set_minimumWidth(500)
+        self.setMinimumWidth(500)
         self.signal_close.connect(self.close)
         self.plotter = plotter
         self.plotter.app_window.signal_close.connect(self.close)
