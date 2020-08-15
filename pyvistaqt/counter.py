@@ -9,6 +9,8 @@ class Counter(QObject):
     Counter classCounter augmented with a Qt timer.
     """
 
+    # pylint: disable=too-few-public-method
+
     signal_finished = pyqtSignal()
 
     def __init__(self, count):
