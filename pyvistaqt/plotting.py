@@ -169,7 +169,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         being automatically ``Modified``.
     """
 
-    # pylint: disable=invalid-name
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-instance-attributes
@@ -302,7 +301,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
-    def dropEvent(self, event):
+    def dropEvent(self, event):  # pylint: disable=invalid-name
         """Event is called after drag_enter_event."""
         for url in event.mimeData().urls():
             self.url = url
@@ -310,8 +309,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             if os.path.isfile(filename):
                 try:
                     self.add_mesh(pyvista.read(filename))
-                except IOError as e:
-                    print(str(e))
+                except IOError as exception:
+                    print(str(exception))
 
     def add_toolbars(self):
         """Add the toolbars."""
