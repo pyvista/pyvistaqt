@@ -186,7 +186,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         polygon_smoothing=False,
         auto_update=5.0,
         **kwargs
-    ):
+    ):  # pylint: disable=too-many-arguments
         """Initialize Qt interactor."""
         log.debug("QtInteractor init start")
         # Cannot use super() here because
@@ -510,7 +510,7 @@ class BackgroundPlotter(QtInteractor):
         toolbar=True,
         menu_bar=True,
         **kwargs
-    ):
+    ):  # pylint: disable=too-many-arguments
         """Initialize the qt plotter."""
         log.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
