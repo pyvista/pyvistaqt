@@ -169,7 +169,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         being automatically ``Modified``.
     """
 
-    # pylint: disable=C0103
+    # pylint: disable=invalid-name
 
     # Signals must be class attributes
     render_signal = pyqtSignal()
