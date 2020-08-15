@@ -22,7 +22,7 @@ class FileDialog(QFileDialog):
     the dialog was property closed.
     """
 
-    # pylint: disable=too-few-public-method
+    # pylint: disable=too-few-public-methods
 
     dlg_accepted = pyqtSignal(str)
 

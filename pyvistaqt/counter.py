@@ -9,7 +9,7 @@ class Counter(QObject):
     Counter classCounter augmented with a Qt timer.
     """
 
-    # pylint: disable=too-few-public-method
+    # pylint: disable=too-few-public-methods
 
     signal_finished = pyqtSignal()
 
