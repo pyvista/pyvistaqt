@@ -159,7 +159,7 @@ class RangeGroup(QHBoxLayout):
         """Set the value of the internal spinbox."""
         self.spinbox.setValue(self.slider.value())
 
-    def update_value(self):
+    def update_value(self, value):
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
         #     self.spinbox.setValue(self.minimum)
