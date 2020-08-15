@@ -200,16 +200,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         with _no_base_plotter_init():
             QVTKRenderWindowInteractor.__init__(self, **qvtk_kwargs)
         BasePlotter.__init__(self, **kwargs)
-
-        self.url = None
-        self.default_camera_tool_bar = None
-        self.saved_camera_positions = None
-        self.saved_cameras_tool_bar = None
-        self.main_menu = None
-        self._menu_close_action = None
-        self._edl_action = None
-        self._parallel_projection_action = None
-
         # backward compat for when we had this as a separate class
         self.interactor = self
 
