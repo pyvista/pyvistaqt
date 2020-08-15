@@ -36,6 +36,7 @@ probably entirely separate from the Python ``super()`` process.
 We fix this by internally by temporarily monkey-patching
 ``BasePlotter.__init__`` with a no-op ``__init__``.
 """
+import scooby
 import contextlib
 import logging
 import os
@@ -71,9 +72,9 @@ log.addHandler(logging.StreamHandler())
 # changing it from the default 'QWidget'.
 # See https://github.com/pyvista/pyvista/pull/693
 
-# LOG is unused at the moment
-# LOG = logging.getLogger(__name__)
-# LOG.setLevel('DEBUG')
+# log is unused at the moment
+# log = logging.getLogger(__name__)
+# log.setLevel('DEBUG')
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
@@ -508,7 +509,7 @@ class BackgroundPlotter(QtInteractor):
         **kwargs
     ):
         """Initialize the qt plotter."""
-        LOG.debug("BackgroundPlotter init start")
+        log.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
             raise TypeError(
                 "Expected type for ``menu_bar`` is bool"
@@ -598,7 +599,7 @@ class BackgroundPlotter(QtInteractor):
 
         # Keypress events
         self.add_key_event("S", self._qt_screenshot)  # shift + s
-        LOG.debug("BackgroundPlotter init stop")
+        log.debug("BackgroundPlotter init stop")
 
     def reset_key_events(self):
         """Reset all of the key press events to their defaults.
