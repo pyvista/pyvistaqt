@@ -173,6 +173,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         **kwargs
     ):  # pylint: disable=too-many-arguments
         """Initialize Qt interactor."""
+        LOG.debug("QtInteractor init start")
 
         self.url = None
         self.default_camera_tool_bar = None
