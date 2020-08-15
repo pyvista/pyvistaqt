@@ -22,13 +22,13 @@ class FileDialog(QFileDialog):
     dlg_accepted = pyqtSignal(str)
 
     def __init__(
-            self,
-            parent=None,
-            filefilter=None,
-            save_mode=True,
-            show=True,
-            callback=None,
-            directory=False,
+        self,
+        parent=None,
+        filefilter=None,
+        save_mode=True,
+        show=True,
+        callback=None,
+        directory=False,
     ):
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
