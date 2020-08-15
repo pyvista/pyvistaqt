@@ -115,7 +115,7 @@ class DoubleSlider(QSlider):
         self._min_value = value
         self.setValue(self.value())
 
-    def set_maximum(self, value):
+    def setMaximum(self, value):
         """Set the maximum value of the slider."""
         if value < self._min_value:  # pragma: no cover
             raise ValueError("Minimum limit cannot be higher than maximum")
