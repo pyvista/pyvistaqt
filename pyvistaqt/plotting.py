@@ -174,7 +174,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     ):  # pylint: disable=too-many-arguments
         """Initialize Qt interactor."""
 
-        self.url=None
+        self.default_camera_tool_bar = None
+        self.saved_camera_positions = None
+        self.saved_camera_positions = None
+        self.saved_cameras_tool_bar = None
+        self.main_menu = None
+        self._menu_close_action = None
+        self._edl_action = None
+        self._parallel_projection_action = None
 
         LOG.debug("QtInteractor init start")
         # Cannot use super() here because
