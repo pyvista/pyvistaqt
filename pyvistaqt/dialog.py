@@ -136,8 +136,8 @@ class RangeGroup(QHBoxLayout):
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
         self.slider.setTickInterval(0.1)
-        self.slider.set_minimum(minimum)
-        self.slider.set_maximum(maximum)
+        self.slider.setMinimum(minimum)
+        self.slider.setMaximum(maximum)
         self.slider.setValue(value)
 
         self.minimum = minimum
