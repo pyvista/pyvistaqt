@@ -288,7 +288,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             warnings.warn("Exception when dropping files: %s" % str(e))
 
     def dropEvent(self, event):  # pylint: disable=invalid-name
-        """Event is called after drag_enter_event."""
+        """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():
             self.url = url
             filename = self.url.path()
