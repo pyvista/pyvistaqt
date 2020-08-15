@@ -365,7 +365,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         tool_menu = self.main_menu.addMenu("Tools")
         tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
         tool_menu.addAction(
-            "Enable Cell Picking (visible)", self.enable_cell_picking(through=False),
+            "Enable Cell Picking (visible)",
+            lambda: self.enable_cell_picking(through=False),
         )
 
         cam_menu = view_menu.addMenu("Camera")
