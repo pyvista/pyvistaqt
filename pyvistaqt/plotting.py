@@ -656,9 +656,10 @@ class BackgroundPlotter(QtInteractor):
 
             # Update app icon as preview of the window
             img = pad_image(self.image)
+            # pylint: disable=unsubscriptable-object
             qimage = QtGui.QImage(
                 img.copy(), img.shape[1], img.shape[0], QtGui.QImage.Format_RGB888
-            ) # pylint: disable=unsubscriptable-object
+            )
             icon = QtGui.QIcon(QtGui.QPixmap.fromImage(qimage))
 
             self.app.setWindowIcon(icon)
