@@ -36,7 +36,6 @@ probably entirely separate from the Python ``super()`` process.
 We fix this by internally by temporarily monkey-patching
 ``BasePlotter.__init__`` with a no-op ``__init__``.
 """
-import scooby
 import contextlib
 import logging
 import os
@@ -46,6 +45,7 @@ import warnings
 from functools import wraps
 
 import numpy as np
+import scooby
 import vtk
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QTimer, pyqtSignal
