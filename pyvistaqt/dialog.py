@@ -22,13 +22,13 @@ class FileDialog(QFileDialog):
     dlg_accepted = pyqtSignal(str)
 
     def __init__(
-        self,
-        parent=None,
-        filefilter=None,
-        save_mode=True,
-        show=True,
-        callback=None,
-        directory=False,
+            self,
+            parent=None,
+            filefilter=None,
+            save_mode=True,
+            show=True,
+            callback=None,
+            directory=False,
     ):
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
@@ -209,7 +209,7 @@ class ScaleAxesDialog(QDialog):
         if show:  # pragma: no cover
             self.show()
 
-    def update_scale(self, value):
+    def update_scale(self):
         """Update the scale of all actors in the plotter."""
         self.plotter.set_scale(
             self.x_slider_group.value,

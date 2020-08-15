@@ -183,7 +183,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         **kwargs
     ):
         """Initialize Qt interactor."""
-        LOG.debug("QtInteractor init start")
+        # LOG.debug("QtInteractor init start")
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
         # because they use **kwargs in their constructor...
@@ -269,7 +269,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         self._first_time = False  # Crucial!
         self.view_isometric()
-        LOG.debug("QtInteractor init stop")
+        # LOG.debug("QtInteractor init stop")
 
     def gesture_event(self, event):
         """Handle gesture events."""
