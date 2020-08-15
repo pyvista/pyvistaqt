@@ -412,6 +412,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if hasattr(self, "saved_cameras_tool_bar"):
 
             def load_camera_position():
+                # pylint: disable=attribute-defined-outside-init
                 self.camera_position = camera_position
 
             self.saved_cameras_tool_bar.addAction(
