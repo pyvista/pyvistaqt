@@ -45,14 +45,13 @@ import warnings
 from functools import wraps
 
 import numpy as np
+import pyvista
 import scooby
 import vtk
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-
-import pyvista
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
+from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
