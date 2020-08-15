@@ -47,7 +47,7 @@ from functools import wraps
 import numpy as np
 import scooby
 import vtk
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, pyqtSignal
 from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -60,6 +60,12 @@ from pyvista.utilities import conditional_decorator, threaded
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .window import MainWindow
+
+if scooby.in_ipython():  # pragma: no cover
+    from IPython import get_ipython
+    from IPython.external.qt_for_kernel import QtGui
+else:
+    from PyQt5 import QtGui
 
 log = logging.getLogger("pyvistaqt")
 log.setLevel(logging.CRITICAL)
@@ -531,12 +537,9 @@ class BackgroundPlotter(QtInteractor):
 
         # ipython magic
         if scooby.in_ipython():  # pragma: no cover
-            from IPython import get_ipython
 
             ipython = get_ipython()
             ipython.magic("gui qt")
-
-            from IPython.external.qt_for_kernel import QtGui
 
             QtGui.QApplication.instance()
         else:
