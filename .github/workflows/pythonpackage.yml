@@ -16,7 +16,6 @@ jobs:
       with:
         python-root-list: pyvistaqt
         use-pylint: true
-        extra-pylint-options: --disable=F0401
         use-pycodestyle: true
         use-flake8: false
         use-black: true
