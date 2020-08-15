@@ -185,7 +185,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._edl_action = None
         self._parallel_projection_action = None
         self._view_action = None
-        self.camera_position = None
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
