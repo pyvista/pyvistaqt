@@ -179,7 +179,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         line_smoothing=False,
         point_smoothing=False,
         polygon_smoothing=False,
-        splitting_position=None,
         auto_update=5.0,
         **kwargs
     ):
