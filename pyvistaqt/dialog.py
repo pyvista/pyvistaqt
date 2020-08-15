@@ -79,8 +79,8 @@ class DoubleSlider(QSlider):
         self.decimals = 5
         self._max_int = 10 ** self.decimals
 
-        super().setMinimum(0)
-        super().setMaximum(self._max_int)
+        super().set_minimum(0)
+        super().set_maximum(self._max_int)
 
         self._min_value = 0.0
         self._max_value = 20.0
@@ -96,27 +96,27 @@ class DoubleSlider(QSlider):
             float(super().value()) / self._max_int * self._value_range + self._min_value
         )
 
-    def setValue(self, value):
+    def set_value(self, value):
         """Set the value of the slider."""
-        super().setValue(
+        super().set_value(
             int((value - self._min_value) / self._value_range * self._max_int)
         )
 
-    def setMinimum(self, value):
+    def set_minimum(self, value):
         """Set the minimum value of the slider."""
         if value > self._max_value:  # pragma: no cover
             raise ValueError("Minimum limit cannot be higher than maximum")
 
         self._min_value = value
-        self.setValue(self.value())
+        self.set_value(self.value())
 
-    def setMaximum(self, value):
+    def set_maximum(self, value):
         """Set the maximum value of the slider."""
         if value < self._min_value:  # pragma: no cover
             raise ValueError("Minimum limit cannot be higher than maximum")
 
         self._max_value = value
-        self.setValue(self.value())
+        self.set_value(self.value())
 
 
 # this is redefined from above because the above object is a dummy object
@@ -129,9 +129,9 @@ class RangeGroup(QHBoxLayout):
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
         self.slider.setTickInterval(0.1)
-        self.slider.setMinimum(minimum)
-        self.slider.setMaximum(maximum)
-        self.slider.setValue(value)
+        self.slider.set_minimum(minimum)
+        self.slider.set_maximum(maximum)
+        self.slider.set_value(value)
 
         self.minimum = minimum
         self.maximum = maximum
@@ -150,17 +150,17 @@ class RangeGroup(QHBoxLayout):
 
     def update_spinbox(self):
         """Set the value of the internal spinbox."""
-        self.spinbox.setValue(self.slider.value())
+        self.spinbox.set_value(self.slider.value())
 
     def update_value(self):
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
-        #     self.spinbox.setValue(self.minimum)
+        #     self.spinbox.set_value(self.minimum)
         # elif self.spinbox.value() > self.maximum:
-        #     self.spinbox.setValue(self.maximum)
+        #     self.spinbox.set_value(self.maximum)
 
         self.slider.blockSignals(True)
-        self.slider.setValue(self.spinbox.value())
+        self.slider.set_value(self.spinbox.value())
         self.slider.blockSignals(False)
 
     @property
@@ -171,7 +171,7 @@ class RangeGroup(QHBoxLayout):
     @value.setter
     def value(self, new_value):
         """Set the value of the internal slider."""
-        self.slider.setValue(new_value)
+        self.slider.set_value(new_value)
 
 
 class ScaleAxesDialog(QDialog):
@@ -184,7 +184,7 @@ class ScaleAxesDialog(QDialog):
         """Initialize the scaling dialog."""
         super(ScaleAxesDialog, self).__init__(parent)
         self.setGeometry(300, 300, 50, 50)
-        self.setMinimumWidth(500)
+        self.set_minimumWidth(500)
         self.signal_close.connect(self.close)
         self.plotter = plotter
         self.plotter.app_window.signal_close.connect(self.close)

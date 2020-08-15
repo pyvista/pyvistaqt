@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
             return True
         return super().event(event)
 
-    def closeEvent(self, event):
+    def close_event(self, event):
         """Manage the close event."""
         self.signal_close.emit()
         event.accept()

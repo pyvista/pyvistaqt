@@ -84,14 +84,14 @@ def resample_image(arr, max_size=400):
     """Resample a square image to an image of max_size."""
     dim = np.max(arr.shape[0:2])
     max_size = min(max_size, dim)
-    x_val, y_val, _ = arr.shape
-    sx_val = int(np.ceil(x_val / max_size))
-    sy_val = int(np.ceil(y_val / max_size))
+    x_size, y_size, _ = arr.shape
+    s_x = int(np.ceil(x_size / max_size))
+    s_y = int(np.ceil(y_size / max_size))
     img = np.zeros((max_size, max_size, 3), dtype=arr.dtype)
-    arr = arr[0:-1:sx_val, 0:-1:sy_val, :]
-    xl_val = (max_size - arr.shape[0]) // 2
-    yl_val = (max_size - arr.shape[1]) // 2
-    img[xl_val : arr.shape[0] + xl_val, yl_val : arr.shape[1] + yl_val, :] = arr
+    arr = arr[0:-1:s_x, 0:-1:s_y, :]
+    x_l = (max_size - arr.shape[0]) // 2
+    y_l = (max_size - arr.shape[1]) // 2
+    img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
     return img
 
 
@@ -99,14 +99,14 @@ def pad_image(arr, max_size=400):
     """Pad an image to a square then resamples to max_size."""
     dim = np.max(arr.shape)
     img = np.zeros((dim, dim, 3), dtype=arr.dtype)
-    xl = (dim - arr.shape[0]) // 2
-    yl = (dim - arr.shape[1]) // 2
-    img[xl : arr.shape[0] + xl, yl : arr.shape[1] + yl, :] = arr
+    x_l = (dim - arr.shape[0]) // 2
+    y_l = (dim - arr.shape[1]) // 2
+    img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
     return resample_image(img, max_size=max_size)
 
 
 @contextlib.contextmanager
-def _no_BasePlotter_init():
+def _no_base_plotter_init():
     init = BasePlotter.__init__
     BasePlotter.__init__ = lambda x: None
     try:
@@ -115,7 +115,7 @@ def _no_BasePlotter_init():
         BasePlotter.__init__ = init
 
 
-def dragEnterEvent(event):
+def drag_enter_event(event):
     """Event is called when something is dropped onto the vtk window.
 
     Only triggers event when event contains file paths that
@@ -127,8 +127,8 @@ def dragEnterEvent(event):
             if os.path.isfile(url.path()):
                 # only call accept on files
                 event.accept()
-    except Exception as e:
-        warnings.warn("Exception when dropping files: %s" % str(e))
+    except Exception as exception:
+        warnings.warn("Exception when dropping files: %s" % str(exception))
 
 
 class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
@@ -192,7 +192,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         for key in ("stereo", "iren", "rw", "wflags"):
             if key in kwargs:
                 qvtk_kwargs[key] = kwargs.pop(key)
-        with _no_BasePlotter_init():
+        with _no_base_plotter_init():
             QVTKRenderWindowInteractor.__init__(self, **qvtk_kwargs)
         BasePlotter.__init__(self, **kwargs)
 
@@ -295,7 +295,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         return self.render_signal.emit()
 
     def dropEvent(self, event):
-        """Event is called after dragEnterEvent."""
+        """Event is called after drag_enter_event."""
         for url in event.mimeData().urls():
             self.url = url
             filename = self.url.path()
