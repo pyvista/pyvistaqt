@@ -174,6 +174,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     ):  # pylint: disable=too-many-arguments
         """Initialize Qt interactor."""
 
+        self.url = None
         self.default_camera_tool_bar = None
         self.saved_camera_positions = None
         self.saved_camera_positions = None
@@ -336,6 +337,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         for key, method in cvec_setters.items():
             # pylint: disable=attribute-defined-outside-init
             self._view_action = _add_action(self.default_camera_tool_bar, key, method)
+        # pylint: disable=unnecessary-lambda
         _add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
 
         # Saved camera locations toolbar
