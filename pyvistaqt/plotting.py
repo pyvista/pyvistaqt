@@ -273,7 +273,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
-    def dragEnterEvent(self, event):
+    def dragEnterEvent(self, event): # pylint: disable=invalid-name
         """Event is called when something is dropped onto the vtk window.
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
@@ -284,8 +284,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                 if os.path.isfile(url.path()):
                     # only call accept on files
                     event.accept()
-        except Exception as e:
-            warnings.warn("Exception when dropping files: %s" % str(e))
+        except Exception as exception:
+            warnings.warn("Exception when dropping files: %s" % str(exception)
 
     def dropEvent(self, event):  # pylint: disable=invalid-name
         """Event is called after dragEnterEvent."""
