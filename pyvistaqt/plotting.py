@@ -336,7 +336,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
         }
         for key, method in cvec_setters.items():
-            # pylint: disable=attribute-defined-outside-init
             self._view_action = _add_action(self.default_camera_tool_bar, key, method)
         # pylint: disable=unnecessary-lambda
         _add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
