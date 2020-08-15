@@ -132,7 +132,7 @@ def drag_enter_event(event):
             if os.path.isfile(url.path()):
                 # only call accept on files
                 event.accept()
-    except Exception as exception:
+    except OSError as exception:
         warnings.warn("Exception when dropping files: %s" % str(exception))
 
 
@@ -306,7 +306,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             if os.path.isfile(filename):
                 try:
                     self.add_mesh(pyvista.read(filename))
-                except Exception as e:
+                except IOError as e:
                     print(str(e))
 
     def add_toolbars(self):
