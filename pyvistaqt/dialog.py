@@ -84,8 +84,8 @@ class DoubleSlider(QSlider):
         self.decimals = 5
         self._max_int = 10 ** self.decimals
 
-        super().set_minimum(0)
-        super().set_maximum(self._max_int)
+        super().setMinimum(0)
+        super().setMaximum(self._max_int)
 
         self._min_value = 0.0
         self._max_value = 20.0
