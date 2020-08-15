@@ -184,6 +184,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._menu_close_action = None
         self._edl_action = None
         self._parallel_projection_action = None
+        self._view_action = None
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
