@@ -46,38 +46,21 @@ from functools import wraps
 
 import numpy as np
 import vtk
-
-import scooby
-
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QTimer
-from PyQt5.QtWidgets import (
-    QAction,
-    QDialog,
-    QDoubleSpinBox,
-    QFileDialog,
-    QFormLayout,
-    QFrame,
-    QHBoxLayout,
-    QMainWindow,
-    QMenuBar,
-    QSlider,
-    QVBoxLayout,
-)
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QTimer, pyqtSignal
+from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
-import pyvista
-from pyvista.utilities import conditional_decorator, threaded
-from pyvista.plotting.plotting import BasePlotter
-from pyvista.plotting.theme import rcParams
+from .counter import Counter
+from .dialog import DoubleSlider, FileDialog, RangeGroup, ScaleAxesDialog
+from .window import MainWindow
 
-LOG = logging.getLogger("pyvistaqt")
-LOG.setLevel(logging.CRITICAL)
-LOG.addHandler(logging.StreamHandler())
+log = logging.getLogger("pyvistaqt")
+log.setLevel(logging.CRITICAL)
+log.addHandler(logging.StreamHandler())
 
 
 # for display bugs due to older intel integrated GPUs, setting
@@ -93,215 +76,6 @@ LOG.addHandler(logging.StreamHandler())
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
 
-
-class FileDialog(QFileDialog):
-    """Generic file query.
-
-    It emits a signal when a file is selected and
-    the dialog was property closed.
-    """
-
-    dlg_accepted = pyqtSignal(str)
-
-    def __init__(
-            self,
-            parent=None,
-            filefilter=None,
-            save_mode=True,
-            show=True,
-            callback=None,
-            directory=False,
-    ):
-        """Initialize the file dialog."""
-        super(FileDialog, self).__init__(parent)
-
-        if filefilter is not None:
-            self.setNameFilters(filefilter)
-
-        self.setOption(QFileDialog.DontUseNativeDialog)
-        self.accepted.connect(self.emit_accepted)
-
-        if directory:
-            self.FileMode(QFileDialog.DirectoryOnly)
-            self.setOption(QFileDialog.ShowDirsOnly, True)
-
-        if save_mode:
-            self.setAcceptMode(QFileDialog.AcceptSave)
-
-        if callback is not None:
-            self.dlg_accepted.connect(callback)
-
-        if show:  # pragma: no cover
-            self.show()
-
-    def emit_accepted(self):
-        """Send signal that the file dialog was closed properly.
-
-        Sends:
-        filename
-
-        """
-        if self.result():
-            filename = self.selectedFiles()[0]
-            if os.path.isdir(os.path.dirname(filename)):
-                self.dlg_accepted.emit(filename)
-
-
-class DoubleSlider(QSlider):
-    """Double precision slider.
-
-    Reference:
-    https://gist.github.com/dennis-tra/994a65d6165a328d4eabaadbaedac2cc
-
-    """
-    # pylint: disable=C0103
-
-    def __init__(self, *args, **kwargs):
-        """Initialize the double slider."""
-        super().__init__(*args, **kwargs)
-        self.decimals = 5
-        self._max_int = 10 ** self.decimals
-
-        super().setMinimum(0)
-        super().setMaximum(self._max_int)
-
-        self._min_value = 0.0
-        self._max_value = 20.0
-
-    @property
-    def _value_range(self):
-        """Return the value range of the slider."""
-        return self._max_value - self._min_value
-
-    def value(self):
-        """Return the value of the slider."""
-        return (
-            float(super().value()) / self._max_int * self._value_range + self._min_value
-        )
-
-    def setValue(self, value):
-        """Set the value of the slider."""
-        super().setValue(
-            int((value - self._min_value) / self._value_range * self._max_int)
-        )
-
-    def setMinimum(self, value):
-        """Set the minimum value of the slider."""
-        if value > self._max_value:  # pragma: no cover
-            raise ValueError("Minimum limit cannot be higher than maximum")
-
-        self._min_value = value
-        self.setValue(self.value())
-
-    def setMaximum(self, value):
-        """Set the maximum value of the slider."""
-        if value < self._min_value:  # pragma: no cover
-            raise ValueError("Minimum limit cannot be higher than maximum")
-
-        self._max_value = value
-        self.setValue(self.value())
-
-
-# this is redefined from above because the above object is a dummy object
-# we use dummy objects to allow the module to import when PyQt5 isn't installed
-class RangeGroup(QHBoxLayout):
-    """Range group box widget."""
-
-    def __init__(self, parent, callback, minimum=0.0, maximum=20.0, value=1.0):
-        """Initialize the range widget."""
-        super(RangeGroup, self).__init__(parent)
-        self.slider = DoubleSlider(QtCore.Qt.Horizontal)
-        self.slider.setTickInterval(0.1)
-        self.slider.setMinimum(minimum)
-        self.slider.setMaximum(maximum)
-        self.slider.setValue(value)
-
-        self.minimum = minimum
-        self.maximum = maximum
-
-        self.spinbox = QDoubleSpinBox(
-            value=value, minimum=minimum, maximum=maximum, decimals=4
-        )
-
-        self.addWidget(self.slider)
-        self.addWidget(self.spinbox)
-
-        # Connect slider to spinbox
-        self.slider.valueChanged.connect(self.update_spinbox)
-        self.spinbox.valueChanged.connect(self.update_value)
-        self.spinbox.valueChanged.connect(callback)
-
-    def update_spinbox(self, unused):
-        """Set the value of the internal spinbox."""
-        del unused
-        self.spinbox.setValue(self.slider.value())
-
-    def update_value(self, unused):
-        """Update the value of the internal slider."""
-        del unused
-        # if self.spinbox.value() < self.minimum:
-        #     self.spinbox.setValue(self.minimum)
-        # elif self.spinbox.value() > self.maximum:
-        #     self.spinbox.setValue(self.maximum)
-
-        self.slider.blockSignals(True)
-        self.slider.setValue(self.spinbox.value())
-        self.slider.blockSignals(False)
-
-    @property
-    def value(self):
-        """Return the value of the internal spinbox."""
-        return self.spinbox.value()
-
-    @value.setter
-    def value(self, new_value):
-        """Set the value of the internal slider."""
-        self.slider.setValue(new_value)
-
-
-class ScaleAxesDialog(QDialog):
-    """Dialog to control axes scaling."""
-
-    accepted = pyqtSignal(float)
-    signal_close = pyqtSignal()
-
-    def __init__(self, parent, plotter, show=True):
-        """Initialize the scaling dialog."""
-        super(ScaleAxesDialog, self).__init__(parent)
-        self.setGeometry(300, 300, 50, 50)
-        self.setMinimumWidth(500)
-        self.signal_close.connect(self.close)
-        self.plotter = plotter
-        self.plotter.app_window.signal_close.connect(self.close)
-
-        self.x_slider_group = RangeGroup(
-            parent, self.update_scale, value=plotter.scale[0]
-        )
-        self.y_slider_group = RangeGroup(
-            parent, self.update_scale, value=plotter.scale[1]
-        )
-        self.z_slider_group = RangeGroup(
-            parent, self.update_scale, value=plotter.scale[2]
-        )
-
-        form_layout = QFormLayout(self)
-        form_layout.addRow("X Scale", self.x_slider_group)
-        form_layout.addRow("Y Scale", self.y_slider_group)
-        form_layout.addRow("Z Scale", self.z_slider_group)
-
-        self.setLayout(form_layout)
-
-        if show:  # pragma: no cover
-            self.show()
-
-    def update_scale(self, unused):
-        """Update the scale of all actors in the plotter."""
-        del unused
-        self.plotter.set_scale(
-            self.x_slider_group.value,
-            self.y_slider_group.value,
-            self.z_slider_group.value,
-        )
 
 
 def resample_image(arr, max_size=400):
@@ -534,10 +308,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             action = QAction(key, self.app_window)
             action.triggered.connect(method)
             tool_bar.addAction(action)
+            return action
 
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
-        _view_vector = lambda *args: self.view_vector(*args)
+
+        def _view_vector(*args):
+            return self.view_vector(*args)
+
         cvec_setters = {
             # Viewing vector then view up vector
             "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
@@ -549,7 +327,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
         }
         for key, method in cvec_setters.items():
-            _add_action(self.default_camera_tool_bar, key, method)
+            self._view_action = _add_action(self.default_camera_tool_bar, key, method)
         _add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
 
         # Saved camera locations toolbar
@@ -792,6 +570,9 @@ class BackgroundPlotter(QtInteractor):
         if menu_bar:
             self.add_menu_bar()
 
+        # member variable for testing only
+        self._view_action = None
+
         self.default_camera_tool_bar = None
         self.saved_camera_positions = None
         self.saved_cameras_tool_bar = None
@@ -946,51 +727,6 @@ class BackgroundPlotter(QtInteractor):
             counter.signal_finished.connect(self._callback_timer.stop)
             self._callback_timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
-
-
-class MainWindow(QMainWindow):
-    """Convenience MainWindow that manages the application."""
-    # pylint: disable=C0103
-
-    signal_close = pyqtSignal()
-    signal_gesture = pyqtSignal(QtCore.QEvent)
-
-    def event(self, event):
-        """Manage events."""
-        if event.type() == QtCore.QEvent.Gesture:
-            self.signal_gesture.emit(event)
-            return True
-        return super().event(event)
-
-    def closeEvent(self, event):
-        """Manage the close event."""
-        self.signal_close.emit()
-        event.accept()
-
-
-class Counter(QObject):
-    """Counter augmented with a Qt timer."""
-
-    signal_finished = pyqtSignal()
-
-    def __init__(self, count):
-        """Initialize the counter."""
-        super(Counter, self).__init__()
-        if isinstance(count, int) and count > 0:
-            self.count = count
-        elif count > 0:
-            raise TypeError(
-                "Expected type of `count` to be" "`int` but got: {}".format(type(count))
-            )
-        else:
-            raise ValueError("count is not strictly positive.")
-
-    @pyqtSlot()
-    def decrease(self):
-        """Decrease the count."""
-        self.count -= 1
-        if self.count <= 0:
-            self.signal_finished.emit()
 
 
 def _create_menu_bar(parent):
