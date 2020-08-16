@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
 
     def event(self, event):
         """TODO: Add docstring"""
-        if event.type() == QtCore.QEvent.Gesture:
+        if event.type() == QtCore.QEvent.Gesture:  # pragma: no cover
             self.signal_gesture.emit(event)
             return True
         return super().event(event)
