@@ -29,7 +29,7 @@ class FileDialog(QFileDialog):
         show=True,
         callback=None,
         directory=False,
-    ):
+    ) -> None:
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
 
@@ -73,7 +73,7 @@ class DoubleSlider(QSlider):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """Initialize the double slider."""
         super().__init__(*args, **kwargs)
         self.decimals = 5
@@ -124,7 +124,7 @@ class DoubleSlider(QSlider):
 class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
-    def __init__(self, parent, callback, minimum=0.0, maximum=20.0, value=1.0):
+    def __init__(self, parent, callback, minimum=0.0, maximum=20.0, value=1.0) -> None:
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
@@ -180,7 +180,7 @@ class ScaleAxesDialog(QDialog):
     accepted = pyqtSignal(float)
     signal_close = pyqtSignal()
 
-    def __init__(self, parent, plotter, show=True):
+    def __init__(self, parent, plotter, show=True) -> None:
         """Initialize the scaling dialog."""
         super(ScaleAxesDialog, self).__init__(parent)
         self.setGeometry(300, 300, 50, 50)
