@@ -18,8 +18,9 @@ jobs:
         use-pylint: true
         extra-pylint-options: --disable=F0401
         use-pycodestyle: true
-        use-flake8: false
+        use-flake8: true
         use-black: true
         use-mypy: false
         use-isort: true
         extra-pycodestyle-options: --ignore=E501,E203
+        extra-flake8-options: --ignore=E501,E203
