@@ -302,8 +302,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     def dropEvent(self, event):  # pylint: disable=invalid-name
         """Event is called after dragEnterEvent."""
-        # pragma: no cover
-        for url in event.mimeData().urls():
+        for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
             filename = self.url.path()
             if os.path.isfile(filename):
