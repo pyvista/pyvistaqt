@@ -291,6 +291,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         exist.  User can drop anything in this window and we only want
         to allow files.
         """
+        # pragma: no cover
         try:
             for url in event.mimeData().urls():
                 if os.path.isfile(url.path()):
@@ -301,6 +302,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     def dropEvent(self, event):  # pylint: disable=invalid-name
         """Event is called after dragEnterEvent."""
+        # pragma: no cover
         for url in event.mimeData().urls():
             self.url = url
             filename = self.url.path()
