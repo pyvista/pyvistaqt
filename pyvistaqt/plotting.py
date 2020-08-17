@@ -43,13 +43,14 @@ import platform
 import time
 import warnings
 from functools import wraps
+from typing import Callable, Optional, Tuple
 
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QTimer, pyqtSignal
+from PyQt5.QtCore import QSize, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
@@ -280,7 +281,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         except Exception as e:
             warnings.warn("Exception when dropping files: %s" % str(e))
 
-    def dropEvent(self, event):
+    def dropEvent(self, event) -> None:
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():
             self.url = url
@@ -338,7 +339,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         return
 
-    def add_menu_bar(self):
+    def add_menu_bar(self) -> None:
         """Add the main menu bar."""
         self.main_menu = _create_menu_bar(parent=self.app_window)
         self.app_window.signal_close.connect(self.main_menu.clear)
@@ -439,7 +440,7 @@ class BackgroundPlotter(QtInteractor):
     app : PyQt5.QtWidgets.QApplication, optional
         Creates a `QApplication` if left as `None`.
 
-    window_size : list, optional
+    window_size :
         Window size in pixels.  Defaults to ``[1024, 768]``
 
     off_screen : bool, optional
@@ -592,7 +593,7 @@ class BackgroundPlotter(QtInteractor):
         self.add_key_event("S", self._qt_screenshot)  # shift + s
         log.debug("BackgroundPlotter init stop")
 
-    def reset_key_events(self):
+    def reset_key_events(self) -> None:
         """Reset all of the key press events to their defaults.
 
         Handles closing configuration for q-key.
@@ -601,7 +602,7 @@ class BackgroundPlotter(QtInteractor):
         if self.allow_quit_keypress:
             self.add_key_event("q", lambda: self.close())
 
-    def scale_axes_dialog(self, show=True):
+    def scale_axes_dialog(self, show: Optional[bool] = True) -> ScaleAxesDialog:
         """Open scale axes dialog."""
         return ScaleAxesDialog(self.app_window, self, show=show)
 
@@ -651,7 +652,7 @@ class BackgroundPlotter(QtInteractor):
         # Update trackers
         self._last_window_size = self.window_size
 
-    def _qt_screenshot(self, show=True):
+    def _qt_screenshot(self, show: Optional[bool] = True) -> FileDialog:
         return FileDialog(
             self.app_window,
             filefilter=["Image File (*.png)", "JPEG (*.jpeg)"],
@@ -660,7 +661,7 @@ class BackgroundPlotter(QtInteractor):
             callback=self.screenshot,
         )
 
-    def _qt_export_vtkjs(self, show=True):
+    def _qt_export_vtkjs(self, show: Optional[bool] = True) -> FileDialog:
         """Spawn an save file dialog to export a vtkjs file."""
         return FileDialog(
             self.app_window,
@@ -675,19 +676,19 @@ class BackgroundPlotter(QtInteractor):
             return self.renderer.disable_eye_dome_lighting()
         return self.renderer.enable_eye_dome_lighting()
 
-    def _toggle_parallel_projection(self):
+    def _toggle_parallel_projection(self) -> None:
         if self.camera.GetParallelProjection():
             return self.disable_parallel_projection()
         return self.enable_parallel_projection()
 
     @property
-    def window_size(self):
+    def window_size(self) -> Tuple[int, int]:
         """Return render window size."""
         the_size = self.app_window.baseSize()
         return the_size.width(), the_size.height()
 
     @window_size.setter
-    def window_size(self, window_size):
+    def window_size(self, window_size: QSize) -> None:
         """Set the render window size."""
         self.app_window.setBaseSize(*window_size)
         self.app_window.resize(*window_size)
@@ -699,16 +700,21 @@ class BackgroundPlotter(QtInteractor):
         if not self._closed:
             self.app_window.close()
 
-    def add_callback(self, func, interval=1000, count=None):
+    def add_callback(
+        self,
+        func: Callable,
+        interval: Optional[int] = 1000,
+        count: Optional[int] = None,
+    ) -> None:
         """Add a function that can update the scene in the background.
 
         Parameters
         ----------
-        func : callable
+        func :
             Function to be called with no arguments.
-        interval : int
+        interval :
             Time interval between calls to `func` in milliseconds.
-        count : int, optional
+        count :
             Number of times `func` will be called. If None,
             `func` will be called until the main window is closed.
 
@@ -724,7 +730,7 @@ class BackgroundPlotter(QtInteractor):
             self.counters.append(counter)
 
 
-def _create_menu_bar(parent):
+def _create_menu_bar(parent: QVTKRenderWindowInteractor.QWidget) -> QMenuBar:
     """Create a menu bar.
 
     The menu bar is expected to behave consistently
