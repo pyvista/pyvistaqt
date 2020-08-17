@@ -6,7 +6,7 @@ class Counter(QObject):
 
     signal_finished = pyqtSignal()
 
-    def __init__(self, count) -> None:
+    def __init__(self, count: int) -> None:
         """Initialize the counter."""
         super(Counter, self).__init__()
         if isinstance(count, int) and count > 0:
