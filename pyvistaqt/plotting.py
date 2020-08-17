@@ -79,7 +79,7 @@ SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
 
 
-def resample_image(arr, max_size=400):
+def resample_image(arr: np.ndarray, max_size=400: int): -> np.ndarray
     """Resample a square image to an image of max_size."""
     dim = np.max(arr.shape[0:2])
     max_size = min(max_size, dim)
@@ -94,7 +94,7 @@ def resample_image(arr, max_size=400):
     return img
 
 
-def pad_image(arr, max_size=400):
+def pad_image(arr: np.ndarray, max_size=400: int): -> np.ndarray
     """Pad an image to a square then resamples to max_size."""
     dim = np.max(arr.shape)
     img = np.zeros((dim, dim, 3), dtype=arr.dtype)
@@ -105,7 +105,7 @@ def pad_image(arr, max_size=400):
 
 
 @contextlib.contextmanager
-def _no_BasePlotter_init():
+def _no_BasePlotter_init(): -> None
     init = BasePlotter.__init__
     BasePlotter.__init__ = lambda x: None
     try:
