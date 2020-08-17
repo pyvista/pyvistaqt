@@ -3,12 +3,15 @@
 BLACK_DIRS ?= ./pyvistaqt/
 ISORT_DIRS ?= ./pyvistaqt/*.py
 PYCODESTYLE_DIRS ?= ./pyvistaqt/
+MYPY_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
 CODESPELL_SKIP ?= "*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
 CODESPELL_IGNORE ?= "ignore_words.txt"
 EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203"
 
-all: doctest
+all: srctest doctest
+
+srctest: black isort pycodestyle mypy
 
 doctest: codespell pydocstyle
 
@@ -24,7 +27,11 @@ pycodestyle:
 	@echo "Running pycodestyle"
 	@pycodestyle $(PYCODESTYLE_DIRS) $(EXTRA_PYCODESTYLE_OPTIONS)
 
-codespell:
+mypy:
+	@echo "Running mypy"
+	@mypy $(MYPY_DIRS)
+
+ccodespell:
 	@echo "Running codespell"
 	@codespell $(CODESPELL_DIRS) -S $(CODESPELL_SKIP) -I $(CODESPELL_IGNORE)
 

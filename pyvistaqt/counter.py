@@ -19,7 +19,7 @@ class Counter(QObject):
             raise ValueError("count is not strictly positive.")
 
     @pyqtSlot()
-    def decrease(self):
+    def decrease(self) -> None:
         """Decrease the count."""
         self.count -= 1
         if self.count <= 0:

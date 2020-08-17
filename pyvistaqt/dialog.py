@@ -52,7 +52,7 @@ class FileDialog(QFileDialog):
         if show:  # pragma: no cover
             self.show()
 
-    def emit_accepted(self):
+    def emit_accepted(self) -> None:
         """Send signal that the file dialog was closed properly.
 
         Sends:

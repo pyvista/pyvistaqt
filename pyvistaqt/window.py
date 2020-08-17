@@ -9,13 +9,13 @@ class MainWindow(QMainWindow):
     signal_close = pyqtSignal()
     signal_gesture = pyqtSignal(QtCore.QEvent)
 
-    def event(self, event):
+    def event(self, event: QtCore.QEvent) -> bool:
         if event.type() == QtCore.QEvent.Gesture:
             self.signal_gesture.emit(event)
             return True
         return super().event(event)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QtCore.QEvent) -> None:
         """Manage the close event."""
         self.signal_close.emit()
         event.accept()

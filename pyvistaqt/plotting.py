@@ -79,7 +79,7 @@ SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
 
 
-def resample_image(arr: np.ndarray, max_size=400: int): -> np.ndarray
+def resample_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     """Resample a square image to an image of max_size."""
     dim = np.max(arr.shape[0:2])
     max_size = min(max_size, dim)
@@ -94,7 +94,7 @@ def resample_image(arr: np.ndarray, max_size=400: int): -> np.ndarray
     return img
 
 
-def pad_image(arr: np.ndarray, max_size=400: int): -> np.ndarray
+def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     """Pad an image to a square then resamples to max_size."""
     dim = np.max(arr.shape)
     img = np.zeros((dim, dim, 3), dtype=arr.dtype)
@@ -105,7 +105,7 @@ def pad_image(arr: np.ndarray, max_size=400: int): -> np.ndarray
 
 
 @contextlib.contextmanager
-def _no_BasePlotter_init(): -> None
+def _no_BasePlotter_init() -> None:
     init = BasePlotter.__init__
     BasePlotter.__init__ = lambda x: None
     try:
@@ -386,7 +386,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         # A final separator to separate OS options
         view_menu.addSeparator()
 
-    def save_camera_position(self):
+    def save_camera_position(self) -> None:
         """Save camera position to saved camera menu for recall."""
         self.saved_camera_positions.append(self.camera_position)
         ncam = len(self.saved_camera_positions)
@@ -394,7 +394,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         if hasattr(self, "saved_cameras_tool_bar"):
 
-            def load_camera_position():
+            def load_camera_position() -> None:
                 self.camera_position = camera_position
 
             self.saved_cameras_tool_bar.addAction(
@@ -404,7 +404,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                 self.add_key_event(str(ncam), load_camera_position)
         return
 
-    def clear_camera_positions(self):
+    def clear_camera_positions(self) -> None:
         """Clear all camera positions."""
         if hasattr(self, "saved_cameras_tool_bar"):
             for action in self.saved_cameras_tool_bar.actions():
@@ -413,7 +413,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.saved_camera_positions = []
         return
 
-    def close(self):
+    def close(self) -> None:
         """Quit application."""
         if self._closed:
             return
@@ -605,7 +605,7 @@ class BackgroundPlotter(QtInteractor):
         """Open scale axes dialog."""
         return ScaleAxesDialog(self.app_window, self, show=show)
 
-    def close(self):
+    def close(self) -> None:
         """Close the plotter.
 
         This function closes the window which in turn will
@@ -615,10 +615,10 @@ class BackgroundPlotter(QtInteractor):
         if not self._closed:
             self.app_window.close()
 
-    def _close(self):
+    def _close(self) -> None:
         super().close()
 
-    def update_app_icon(self):
+    def update_app_icon(self) -> None:
         """Update the app icon if the user is not trying to resize the window."""
         if os.name == "nt" or not hasattr(
             self, "_last_window_size"
@@ -694,7 +694,7 @@ class BackgroundPlotter(QtInteractor):
         # NOTE: setting BasePlotter is unnecessary and Segfaults CI
         # BasePlotter.window_size.fset(self, window_size)
 
-    def __del__(self):  # pragma: no cover
+    def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
         if not self._closed:
             self.app_window.close()
