@@ -65,7 +65,7 @@ if scooby.in_ipython():  # pragma: no cover
     from IPython import get_ipython
     from IPython.external.qt_for_kernel import QtGui
 else:
-    from PyQt5 import QtGui
+    from PyQt5 import QtGui  # pylint: disable=ungrouped-imports
 
 LOG = logging.getLogger("pyvistaqt")
 LOG.setLevel(logging.CRITICAL)
