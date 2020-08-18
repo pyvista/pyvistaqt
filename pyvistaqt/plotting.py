@@ -528,7 +528,7 @@ class BackgroundPlotter(QtInteractor):
         kwargs.pop("notebook", None)
 
         # ipython magic
-        if scooby.in_ipython():  # pragma: no cover
+        if scooby.in_ipython():
             from IPython import get_ipython
 
             ipython = get_ipython()
