@@ -87,7 +87,7 @@ def resample_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     x, y, _ = arr.shape
     sx = int(np.ceil(x / max_size))
     sy = int(np.ceil(y / max_size))
-    img = np.zeros((max_size, max_size, 3), dtype=arr.dtype)
+    img = np.zeros((max_size, max_size, arr.shape[2]), dtype=arr.dtype)
     arr = arr[0:-1:sx, 0:-1:sy, :]
     xl = (max_size - arr.shape[0]) // 2
     yl = (max_size - arr.shape[1]) // 2
@@ -98,7 +98,7 @@ def resample_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
 def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     """Pad an image to a square then resamples to max_size."""
     dim = np.max(arr.shape)
-    img = np.zeros((dim, dim, 3), dtype=arr.dtype)
+    img = np.zeros((dim, dim, arr.shape[2]), dtype=arr.dtype)
     xl = (dim - arr.shape[0]) // 2
     yl = (dim - arr.shape[1]) // 2
     img[xl : arr.shape[0] + xl, yl : arr.shape[1] + yl, :] = arr
@@ -450,11 +450,15 @@ class BackgroundPlotter(QtInteractor):
     allow_quit_keypress : bool, optional
         Allow user to exit by pressing ``"q"``.
 
+    toolbar : bool, optional
+       Display the default camera toolbar. Defaults to True.
+
     menu_bar: bool, optional
         Display the default main menu. Defaults to True.
 
-    toolbar : bool, optional
-       Display the default camera toolbar. Defaults to True.
+    update_app_icon : bool
+        If True, update_app_icon will be called automatically to update the
+        Qt app icon based on the current rendering output.
 
     title : str, optional
         Title of plotting window.
@@ -498,6 +502,7 @@ class BackgroundPlotter(QtInteractor):
         allow_quit_keypress=True,
         toolbar=True,
         menu_bar=True,
+        update_app_icon=False,
         **kwargs
     ) -> None:
         """Initialize the qt plotter."""
@@ -542,7 +547,7 @@ class BackgroundPlotter(QtInteractor):
 
             app = QApplication.instance()
             if not app:  # pragma: no cover
-                app = QApplication([""])
+                app = QApplication(["PyVista"])
 
         self.app = app
         self.app_window = MainWindow()
@@ -583,11 +588,18 @@ class BackgroundPlotter(QtInteractor):
             self.show()
 
         self.window_size = window_size
-        self._last_update_time = time.time() - BackgroundPlotter.ICON_TIME_STEP / 2
+        self._last_update_time = -np.inf
         self._last_window_size = self.window_size
         self._last_camera_pos = self.camera_position
 
-        self.add_callback(self.update_app_icon)
+        if update_app_icon:
+            self.add_callback(self.update_app_icon)
+        else:
+            self.set_icon(
+                os.path.join(
+                    os.path.dirname(__file__), "data", "pyvista_logo_square.png"
+                )
+            )
 
         # Keypress events
         self.add_key_event("S", self._qt_screenshot)  # shift + s
@@ -638,19 +650,51 @@ class BackgroundPlotter(QtInteractor):
             # the camera position has changed and its been at least one second
 
             # Update app icon as preview of the window
-            img = pad_image(self.image)
-            qimage = QtGui.QImage(
-                img.copy(), img.shape[1], img.shape[0], QtGui.QImage.Format_RGB888
-            )
-            icon = QtGui.QIcon(QtGui.QPixmap.fromImage(qimage))
-
-            self.app.setWindowIcon(icon)
+            self.set_icon(pad_image(self.image))
 
             # Update trackers
             self._last_update_time = cur_time
             self._last_camera_pos = self.camera_position
         # Update trackers
         self._last_window_size = self.window_size
+
+    def set_icon(self, img):
+        """Set the icon image.
+
+        Parameters
+        ----------
+        img : ndarray, shape (w, h, c) | str
+            The image. Should be uint8 and square (w == h).
+            Can have 3 or 4 color/alpha channels (``c``).
+            Can also be a string path that QIcon can load.
+
+        Notes
+        -----
+        Currently string paths can silently fail, so make sure your path
+        is something that produces a valid ``QIcon(img)``.
+        """
+        if not (
+            isinstance(img, np.ndarray)
+            and img.ndim == 3
+            and img.shape[0] == img.shape[1]
+            and img.dtype == np.uint8
+            and img.shape[-1] in (3, 4)
+        ) and not isinstance(img, str):
+            raise ValueError(
+                "img must be 3D uint8 ndarray with shape[1] == shape[2] and "
+                "shape[2] == 3 or 4, or str"
+            )
+        if isinstance(img, np.ndarray):
+            fmt_str = "Format_RGB"
+            fmt_str += ("A8" if img.shape[2] == 4 else "") + "888"
+            fmt = getattr(QtGui.QImage, fmt_str)
+            img = QtGui.QPixmap.fromImage(
+                QtGui.QImage(img.copy(), img.shape[1], img.shape[0], fmt)
+            )
+        # Currently no way to check if str/path is actually correct (want to
+        # allow resource paths and the like so os.path.isfile is no good)
+        # and icon.isNull() returns False even if the path is bogus.
+        self.app.setWindowIcon(QtGui.QIcon(img))
 
     def _qt_screenshot(self, show: Optional[bool] = True) -> FileDialog:
         return FileDialog(
