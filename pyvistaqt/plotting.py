@@ -152,7 +152,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         being automatically ``Modified``.
     """
 
-    # pylint: disable=too-many-branches
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-statements
 
@@ -172,6 +171,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         auto_update=5.0,
         **kwargs
     ):  # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
 
@@ -525,6 +525,7 @@ class BackgroundPlotter(QtInteractor):
         update_app_icon=False,
         **kwargs
     ):  # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
         LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
