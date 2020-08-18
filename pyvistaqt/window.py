@@ -1,5 +1,5 @@
 """
-TODO: Add docstring
+This module contains a Qt-compatible MainWindow class.
 """
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal

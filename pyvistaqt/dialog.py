@@ -1,5 +1,5 @@
 """
-TODO: Add docstring
+This module contains Qt dialog widgets.
 """
 import os
 
