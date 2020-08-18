@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
     signal_gesture = pyqtSignal(QtCore.QEvent)
 
     def event(self, event):
-        """TODO: Add docstring"""
+        """Manage window events and filter the gesture event."""
         if event.type() == QtCore.QEvent.Gesture:  # pragma: no cover
             self.signal_gesture.emit(event)
             return True
