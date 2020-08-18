@@ -1,5 +1,6 @@
 # Include docs
 include *.rst LICENSE
+include pyvistaqt/data/pyvista_logo_square.png
 recursive-include docs *.rst
 recursive-include docs *.py
 
