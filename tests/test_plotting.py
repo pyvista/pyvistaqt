@@ -60,7 +60,7 @@ class TstWindow(MainWindow):
         self.vtk_widget.reset_camera()
 
 
-def test_ipython():
+def test_ipython(qapp):
     import IPython
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
           "p = Plotter(show=False, off_screen=False); p.close()"
