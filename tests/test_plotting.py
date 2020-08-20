@@ -60,6 +60,12 @@ class TstWindow(MainWindow):
         self.vtk_widget.reset_camera()
 
 
+def test_ipython():
+    import IPython
+    cmd = "from pyvistaqt import BackgroundPlotter as Plotter; p = Plotter(); p.close()"
+    IPython.start_ipython(argv=["-c", cmd])
+
+
 def test_depth_peeling(qtbot):
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
