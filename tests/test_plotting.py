@@ -63,7 +63,7 @@ class TstWindow(MainWindow):
 def test_ipython():
     import IPython
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
-          "p = Plotter(off_screen=False); p.close()"
+          "p = Plotter(show=False, off_screen=False); p.close()"
     IPython.start_ipython(argv=["-c", cmd])
 
 
