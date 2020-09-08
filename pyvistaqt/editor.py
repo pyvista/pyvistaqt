@@ -76,6 +76,24 @@ class Editor(QDialog):
 
 def _get_renderer_widget(renderer):
     widget = QWidget()
+    layout = QVBoxLayout()
+
+    # axes
+    def _axes_callback(state):
+        if state:
+            renderer.show_axes()
+        else:
+            renderer.hide_axes()
+
+    axes = QCheckBox("Axes")
+    if hasattr(renderer, "axes_widget"):
+        axes.setChecked(renderer.axes_widget.GetEnabled())
+    else:
+        axes.setChecked(False)
+    axes.toggled.connect(_axes_callback)
+    layout.addWidget(axes)
+
+    widget.setLayout(layout)
     return widget
 
 
