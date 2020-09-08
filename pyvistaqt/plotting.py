@@ -797,6 +797,9 @@ class BackgroundPlotter(QtInteractor):
             self.counters.append(counter)
 
     def add_actor(self, *args, **kwargs):
+        actor = kwargs.get('actor', None)
+        if actor is None:
+            actor = args[0]
         name = kwargs.get('name', None)
         if name is None:
             name = actor.GetAddressAsString("")
