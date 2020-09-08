@@ -59,6 +59,7 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .window import MainWindow
+from .editor import Editor
 
 if scooby.in_ipython():  # pragma: no cover
     from IPython import get_ipython
@@ -523,6 +524,7 @@ class BackgroundPlotter(QtInteractor):
         allow_quit_keypress=True,
         toolbar=True,
         menu_bar=True,
+        editor=True,
         update_app_icon=False,
         **kwargs
     ):  # pylint: disable=too-many-arguments
@@ -590,6 +592,11 @@ class BackgroundPlotter(QtInteractor):
         self._menu_close_action = None
         if menu_bar:
             self.add_menu_bar()
+
+        self._actors = dict()
+        self.editor = None
+        if editor:
+            self.add_editor()
 
         # member variable for testing only
         self._view_action = None
@@ -788,6 +795,36 @@ class BackgroundPlotter(QtInteractor):
             counter.signal_finished.connect(self._callback_timer.stop)
             self._callback_timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
+
+    def add_actor(self, *args, **kwargs):
+        name = kwargs.get('name', None)
+        if name is None:
+            name = actor.GetAddressAsString("")
+        actor = super().add_actor(*args, **kwargs)
+        self._actors[name] = actor[0]
+        return actor
+
+    def remove_actor(self, actor, reset_camera=False):
+        if isinstance(actor, str):
+            name = actor
+        else:
+            name = actor.GetAddressAsString("")
+        super().remove_actor(actor, reset_camera)
+        self._actors[name] = None
+        return True
+
+    def clear(self):
+        super().clear()
+        self._actors.clear()
+
+    def add_editor(self):
+        self.editor = Editor(
+            parent=self.app_window,
+            actors=self._actors
+        )
+        self._editor_action = self.main_menu.addAction(
+            "Editor", self.editor.toggle
+        )
 
 
 def _create_menu_bar(parent):
