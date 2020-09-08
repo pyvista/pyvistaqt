@@ -5,7 +5,9 @@ This module contains the Qt scene editor.
 from PyQt5.QtWidgets import (
     QCheckBox,
     QDialog,
+    QDoubleSpinBox,
     QHBoxLayout,
+    QLabel,
     QListWidget,
     QStackedWidget,
     QVBoxLayout,
@@ -16,10 +18,10 @@ from PyQt5.QtWidgets import (
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent, actors):
+    def __init__(self, parent, renderers):
         """Initialize the Editor."""
         super().__init__(parent=parent)
-        self.actors = actors
+        self.renderers = renderers
 
         self.list_widget = QListWidget()
         self.stacked_widget = QStackedWidget()
@@ -39,11 +41,12 @@ class Editor(QDialog):
     def update(self):
         """Update the internal widget list."""
         self.list_widget.clear()
-        for name, actor in self.actors.items():
-            if actor is not None:
-                self.list_widget.addItem(name)
-                widget = _get_properties(actor)
-                self.stacked_widget.addWidget(widget)
+        for renderer in self.renderers:
+            for name, actor in renderer._actors.items():
+                if actor is not None:
+                    self.list_widget.addItem(name)
+                    widget = _get_properties(actor)
+                    self.stacked_widget.addWidget(widget)
 
     def toggle(self):
         """Toggle the editor visibility."""
@@ -58,11 +61,24 @@ def _get_properties(actor):
     widget = QWidget()
     layout = QVBoxLayout()
 
+    prop = actor.GetProperty()
+
     # visibility
     visibility = QCheckBox("Visibility")
     visibility.setChecked(actor.GetVisibility())
     visibility.toggled.connect(actor.SetVisibility)
     layout.addWidget(visibility)
+
+    if prop is not None:
+        # opacity
+        tmp_layout = QHBoxLayout()
+        opacity = QDoubleSpinBox()
+        opacity.setMaximum(1.0)
+        opacity.setValue(prop.GetOpacity())
+        opacity.valueChanged.connect(prop.SetOpacity)
+        tmp_layout.addWidget(QLabel("Opacity"))
+        tmp_layout.addWidget(opacity)
+        layout.addLayout(tmp_layout)
 
     widget.setLayout(layout)
     return widget

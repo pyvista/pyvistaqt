@@ -593,7 +593,6 @@ class BackgroundPlotter(QtInteractor):
         if menu_bar:
             self.add_menu_bar()
 
-        self._actors = dict()
         self.editor = None
         if editor and menu_bar:
             self.add_editor()
@@ -796,39 +795,9 @@ class BackgroundPlotter(QtInteractor):
             self._callback_timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
 
-    @wraps(pyvista.Renderer.add_actor)
-    def add_actor(self, *args, **kwargs):
-        """Wrap ``pyvista.Renderer.add_floor``."""
-        actor = kwargs.get("actor", None)
-        if actor is None:
-            actor = args[0]
-        name = kwargs.get("name", None)
-        if name is None:
-            name = actor.GetAddressAsString("")
-        actor = super().add_actor(*args, **kwargs)
-        self._actors[name] = actor[0]
-        return actor
-
-    @wraps(pyvista.Renderer.remove_actor)
-    def remove_actor(self, actor, reset_camera=False):
-        """Wrap ``pyvista.Renderer.remove_floor``."""
-        if isinstance(actor, str):
-            name = actor
-        else:
-            name = actor.GetAddressAsString("")
-        super().remove_actor(actor, reset_camera)
-        self._actors[name] = None
-        return True
-
-    @wraps(pyvista.BasePlotter.clear)
-    def clear(self):
-        """Wrap ``pyvista.BasePlotter.clear``."""
-        super().clear()
-        self._actors.clear()
-
     def add_editor(self):
         """Add the editor."""
-        self.editor = Editor(parent=self.app_window, actors=self._actors)
+        self.editor = Editor(parent=self.app_window, renderers=self.renderers)
         self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
 
 
