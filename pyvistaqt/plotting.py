@@ -58,8 +58,8 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
-from .window import MainWindow
 from .editor import Editor
+from .window import MainWindow
 
 if scooby.in_ipython():  # pragma: no cover
     from IPython import get_ipython
