@@ -797,10 +797,10 @@ class BackgroundPlotter(QtInteractor):
             self.counters.append(counter)
 
     def add_actor(self, *args, **kwargs):
-        actor = kwargs.get('actor', None)
+        actor = kwargs.get("actor", None)
         if actor is None:
             actor = args[0]
-        name = kwargs.get('name', None)
+        name = kwargs.get("name", None)
         if name is None:
             name = actor.GetAddressAsString("")
         actor = super().add_actor(*args, **kwargs)
@@ -821,13 +821,8 @@ class BackgroundPlotter(QtInteractor):
         self._actors.clear()
 
     def add_editor(self):
-        self.editor = Editor(
-            parent=self.app_window,
-            actors=self._actors
-        )
-        self._editor_action = self.main_menu.addAction(
-            "Editor", self.editor.toggle
-        )
+        self.editor = Editor(parent=self.app_window, actors=self._actors)
+        self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
 
 
 def _create_menu_bar(parent):

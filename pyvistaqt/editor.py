@@ -2,14 +2,22 @@
 This module contains the Qt scene editor.
 """
 
-from PyQt5.QtWidgets import (QListWidget, QStackedWidget,
-                             QDialog, QHBoxLayout, QWidget,
-                             QVBoxLayout, QCheckBox)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QHBoxLayout,
+    QListWidget,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class Editor(QDialog):
+    """Basic scene editor."""
 
     def __init__(self, parent, actors):
+        """Initialize the Editor."""
         super().__init__(parent=parent)
         self.actors = actors
 
@@ -19,8 +27,7 @@ class Editor(QDialog):
         self.layout.addWidget(self.list_widget)
         self.layout.addWidget(self.stacked_widget)
 
-        self.list_widget.currentRowChanged.connect(
-            self.stacked_widget.setCurrentIndex)
+        self.list_widget.currentRowChanged.connect(self.stacked_widget.setCurrentIndex)
         self.list_widget.setCurrentRow(0)
 
         self.setLayout(self.layout)
@@ -30,6 +37,7 @@ class Editor(QDialog):
         self.update()
 
     def update(self):
+        """Update the internal widget list."""
         self.list_widget.clear()
         for name, actor in self.actors.items():
             if actor is not None:
@@ -38,6 +46,7 @@ class Editor(QDialog):
                 self.stacked_widget.addWidget(widget)
 
     def toggle(self):
+        """Toggle the editor visibility."""
         self.update()
         if self.isVisible():
             self.hide()
@@ -52,9 +61,7 @@ def _get_properties(actor):
     # visibility
     visibility = QCheckBox("Visibility")
     visibility.setChecked(actor.GetVisibility())
-    visibility.toggled.connect(
-        lambda x: actor.SetVisibility(x)
-    )
+    visibility.toggled.connect(actor.SetVisibility)
     layout.addWidget(visibility)
 
     widget.setLayout(layout)
