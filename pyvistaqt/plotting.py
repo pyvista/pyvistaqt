@@ -796,7 +796,9 @@ class BackgroundPlotter(QtInteractor):
             self._callback_timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
 
+    @wraps(pyvista.Renderer.add_actor)
     def add_actor(self, *args, **kwargs):
+        """Wrap ``pyvista.Renderer.add_floor``."""
         actor = kwargs.get("actor", None)
         if actor is None:
             actor = args[0]
@@ -807,7 +809,9 @@ class BackgroundPlotter(QtInteractor):
         self._actors[name] = actor[0]
         return actor
 
+    @wraps(pyvista.Renderer.remove_actor)
     def remove_actor(self, actor, reset_camera=False):
+        """Wrap ``pyvista.Renderer.remove_floor``."""
         if isinstance(actor, str):
             name = actor
         else:
@@ -816,11 +820,14 @@ class BackgroundPlotter(QtInteractor):
         self._actors[name] = None
         return True
 
+    @wraps(pyvista.BasePlotter.clear)
     def clear(self):
+        """Wrap ``pyvista.BasePlotter.clear``."""
         super().clear()
         self._actors.clear()
 
     def add_editor(self):
+        """Add the editor."""
         self.editor = Editor(parent=self.app_window, actors=self._actors)
         self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
 
