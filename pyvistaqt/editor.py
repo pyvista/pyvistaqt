@@ -42,7 +42,8 @@ class Editor(QDialog):
         """Update the internal widget list."""
         self.list_widget.clear()
         for renderer in self.renderers:
-            for name, actor in renderer._actors.items():
+            actors = renderer._actors  # pylint: disable=protected-access
+            for name, actor in actors.items():
                 if actor is not None:
                     self.list_widget.addItem(name)
                     self.stacked_widget.addWidget(_get_actor_widget(actor))
