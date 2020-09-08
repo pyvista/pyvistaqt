@@ -45,8 +45,7 @@ class Editor(QDialog):
             for name, actor in renderer._actors.items():
                 if actor is not None:
                     self.list_widget.addItem(name)
-                    widget = _get_properties(actor)
-                    self.stacked_widget.addWidget(widget)
+                    self.stacked_widget.addWidget(_get_actor_widget(actor))
 
     def toggle(self):
         """Toggle the editor visibility."""
@@ -57,7 +56,7 @@ class Editor(QDialog):
             self.show()
 
 
-def _get_properties(actor):
+def _get_actor_widget(actor):
     widget = QWidget()
     layout = QVBoxLayout()
 
