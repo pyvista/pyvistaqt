@@ -595,7 +595,7 @@ class BackgroundPlotter(QtInteractor):
 
         self._actors = dict()
         self.editor = None
-        if editor:
+        if editor and menu_bar:
             self.add_editor()
 
         # member variable for testing only
