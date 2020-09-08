@@ -8,8 +8,9 @@ from PyQt5.QtWidgets import (
     QDoubleSpinBox,
     QHBoxLayout,
     QLabel,
-    QListWidget,
     QStackedWidget,
+    QTreeWidget,
+    QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
 )
@@ -23,14 +24,18 @@ class Editor(QDialog):
         super().__init__(parent=parent)
         self.renderers = renderers
 
-        self.list_widget = QListWidget()
+        self.tree_widget = QTreeWidget()
+        self.tree_widget.setHeaderHidden(True)
         self.stacked_widget = QStackedWidget()
         self.layout = QHBoxLayout()
-        self.layout.addWidget(self.list_widget)
+        self.layout.addWidget(self.tree_widget)
         self.layout.addWidget(self.stacked_widget)
 
-        self.list_widget.currentRowChanged.connect(self.stacked_widget.setCurrentIndex)
-        self.list_widget.setCurrentRow(0)
+        def _selection_callback():
+            for item in self.tree_widget.selectedItems():
+                self.stacked_widget.setCurrentIndex(item._idx)
+
+        self.tree_widget.itemSelectionChanged.connect(_selection_callback)
 
         self.setLayout(self.layout)
         self.setWindowTitle("Editor")
@@ -40,13 +45,25 @@ class Editor(QDialog):
 
     def update(self):
         """Update the internal widget list."""
-        self.list_widget.clear()
-        for renderer in self.renderers:
+        self.tree_widget.clear()
+        widget_idx = 0
+        for idx, renderer in enumerate(self.renderers):
             actors = renderer._actors  # pylint: disable=protected-access
+            top_item = QTreeWidgetItem(self.tree_widget, ["Renderer {}".format(idx)])
+            top_item._idx = widget_idx
+            self.tree_widget.addTopLevelItem(top_item)
+            self.stacked_widget.insertWidget(widget_idx, _get_renderer_widget(renderer))
+            widget_idx += 1
             for name, actor in actors.items():
                 if actor is not None:
-                    self.list_widget.addItem(name)
-                    self.stacked_widget.addWidget(_get_actor_widget(actor))
+                    child_item = QTreeWidgetItem(top_item, [name])
+                    child_item._idx = widget_idx
+                    top_item.addChild(child_item)
+                    self.stacked_widget.insertWidget(
+                        widget_idx, _get_actor_widget(actor)
+                    )
+                    widget_idx += 1
+            top_item.setExpanded(True)
 
     def toggle(self):
         """Toggle the editor visibility."""
@@ -55,6 +72,11 @@ class Editor(QDialog):
             self.hide()
         else:
             self.show()
+
+
+def _get_renderer_widget(renderer):
+    widget = QWidget()
+    return widget
 
 
 def _get_actor_widget(actor):
