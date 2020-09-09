@@ -2,6 +2,7 @@
 This module contains the Qt scene editor.
 """
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -33,7 +34,8 @@ class Editor(QDialog):
 
         def _selection_callback():
             for item in self.tree_widget.selectedItems():
-                self.stacked_widget.setCurrentIndex(item._idx)
+                widget_idx = item.data(0, Qt.ItemDataRole.UserRole)
+                self.stacked_widget.setCurrentIndex(widget_idx)
 
         self.tree_widget.itemSelectionChanged.connect(_selection_callback)
 
@@ -46,24 +48,19 @@ class Editor(QDialog):
     def update(self):
         """Update the internal widget list."""
         self.tree_widget.clear()
-        widget_idx = 0
         for idx, renderer in enumerate(self.renderers):
             actors = renderer._actors  # pylint: disable=protected-access
+            widget_idx = self.stacked_widget.addWidget(_get_renderer_widget(renderer))
             top_item = QTreeWidgetItem(self.tree_widget, ["Renderer {}".format(idx)])
-            top_item._idx = widget_idx
+            top_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
             self.tree_widget.addTopLevelItem(top_item)
-            self.stacked_widget.insertWidget(widget_idx, _get_renderer_widget(renderer))
-            widget_idx += 1
             for name, actor in actors.items():
                 if actor is not None:
+                    widget_idx = self.stacked_widget.addWidget(_get_actor_widget(actor))
                     child_item = QTreeWidgetItem(top_item, [name])
-                    child_item._idx = widget_idx
+                    child_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
                     top_item.addChild(child_item)
-                    self.stacked_widget.insertWidget(
-                        widget_idx, _get_actor_widget(actor)
-                    )
-                    widget_idx += 1
-            top_item.setExpanded(True)
+        self.tree_widget.expandAll()
 
     def toggle(self):
         """Toggle the editor visibility."""
