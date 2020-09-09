@@ -5,7 +5,8 @@ import pytest
 import pyvista
 import vtk
 from PyQt5.Qt import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
-from PyQt5.QtWidgets import QTreeWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
 from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 
@@ -127,7 +128,10 @@ def test_editor(qtbot):
     assert_hasattr(plotter, "editor", Editor)
 
     # add at least an actor
+    plotter.subplot(0, 0)
     plotter.add_mesh(pyvista.Sphere())
+    plotter.subplot(1, 0)
+    plotter.show_axes()
 
     editor = plotter.editor
     assert not editor.isVisible()
@@ -137,12 +141,29 @@ def test_editor(qtbot):
 
     assert_hasattr(editor, "tree_widget", QTreeWidget)
     tree_widget = editor.tree_widget
-    top_item = tree_widget.topLevelItem(0)
+    top_item = tree_widget.topLevelItem(0)  # any renderer will do
     assert top_item is not None
 
     # simulate selection
     with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=500):
         top_item.setSelected(True)
+
+    # toggle all the renderer-associated checkboxes twice
+    # to ensure that slots are called for True and False
+    assert_hasattr(editor, "stacked_widget", QStackedWidget)
+    stacked_widget = editor.stacked_widget
+    page_idx = top_item.data(0, Qt.ItemDataRole.UserRole)
+    page_widget = stacked_widget.widget(page_idx)
+    page_layout = page_widget.layout()
+    number_of_widgets = page_layout.count()
+    for widget_idx in range(number_of_widgets):
+        widget_item = page_layout.itemAt(widget_idx)
+        widget = widget_item.widget()
+        if isinstance(widget, QCheckBox):
+            with qtbot.wait_signals([widget.toggled], timeout=500):
+                widget.toggle()
+            with qtbot.wait_signals([widget.toggled], timeout=500):
+                widget.toggle()
 
     # hide the editor for coverage
     editor.toggle()
