@@ -5,6 +5,7 @@ import pytest
 import pyvista
 import vtk
 from PyQt5.Qt import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
+from PyQt5.QtWidgets import QTreeWidget
 from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 
@@ -12,6 +13,7 @@ import pyvistaqt
 from pyvistaqt import BackgroundPlotter, MainWindow, QtInteractor
 from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
                                 _create_menu_bar)
+from pyvistaqt.editor import Editor
 
 NO_PLOTTING = not system_supports_plotting()
 
@@ -115,6 +117,41 @@ def test_counter(qtbot):
     with qtbot.wait_signals([counter.signal_finished], timeout=timeout):
         counter.decrease()
     assert counter.count == 0
+
+
+@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
+def test_editor(qtbot):
+    # editor=True by default
+    plotter = BackgroundPlotter(shape=(2, 1))
+    qtbot.addWidget(plotter.app_window)
+    assert_hasattr(plotter, "editor", Editor)
+
+    # add at least an actor
+    plotter.add_mesh(pyvista.Sphere())
+
+    editor = plotter.editor
+    assert not editor.isVisible()
+    with qtbot.wait_exposed(editor, timeout=500):
+        editor.toggle()
+    assert editor.isVisible()
+
+    assert_hasattr(editor, "tree_widget", QTreeWidget)
+    tree_widget = editor.tree_widget
+    top_item = tree_widget.topLevelItem(0)
+    assert top_item is not None
+
+    # simulate selection
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=500):
+        top_item.setSelected(True)
+
+    # hide the editor for coverage
+    editor.toggle()
+    plotter.close()
+
+    plotter = BackgroundPlotter(editor=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.editor is None
+    plotter.close()
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
