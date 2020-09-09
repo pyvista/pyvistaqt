@@ -122,6 +122,8 @@ def test_counter(qtbot):
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_editor(qtbot):
+    timeout = 1000  # adjusted timeout for MacOS
+
     # editor=True by default
     plotter = BackgroundPlotter(shape=(2, 1))
     qtbot.addWidget(plotter.app_window)
@@ -135,7 +137,7 @@ def test_editor(qtbot):
 
     editor = plotter.editor
     assert not editor.isVisible()
-    with qtbot.wait_exposed(editor, timeout=500):
+    with qtbot.wait_exposed(editor, timeout=timeout):
         editor.toggle()
     assert editor.isVisible()
 
@@ -145,7 +147,7 @@ def test_editor(qtbot):
     assert top_item is not None
 
     # simulate selection
-    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=500):
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=timeout):
         top_item.setSelected(True)
 
     # toggle all the renderer-associated checkboxes twice
