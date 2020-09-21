@@ -68,7 +68,6 @@ def test_ipython(qapp):
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
           "p = Plotter(show=False, off_screen=False); p.close(); exit()"
     IPython.start_ipython(argv=["-c", cmd])
-    raise SystemExit
 
 
 def test_depth_peeling(qtbot):
