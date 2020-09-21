@@ -1,3 +1,6 @@
+"""
+This module contains Qt dialog widgets.
+"""
 import os
 
 from PyQt5 import QtCore
@@ -19,6 +22,8 @@ class FileDialog(QFileDialog):
     the dialog was property closed.
     """
 
+    # pylint: disable=too-few-public-methods
+
     dlg_accepted = pyqtSignal(str)
 
     def __init__(
@@ -29,7 +34,7 @@ class FileDialog(QFileDialog):
         show=True,
         callback=None,
         directory=False,
-    ):
+    ):  # pylint: disable=too-many-arguments
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
 
@@ -96,13 +101,13 @@ class DoubleSlider(QSlider):
             float(super().value()) / self._max_int * self._value_range + self._min_value
         )
 
-    def setValue(self, value):
+    def setValue(self, value):  # pylint: disable=invalid-name
         """Set the value of the slider."""
         super().setValue(
             int((value - self._min_value) / self._value_range * self._max_int)
         )
 
-    def setMinimum(self, value):
+    def setMinimum(self, value):  # pylint: disable=invalid-name
         """Set the minimum value of the slider."""
         if value > self._max_value:  # pragma: no cover
             raise ValueError("Minimum limit cannot be higher than maximum")
@@ -110,7 +115,7 @@ class DoubleSlider(QSlider):
         self._min_value = value
         self.setValue(self.value())
 
-    def setMaximum(self, value):
+    def setMaximum(self, value):  # pylint: disable=invalid-name
         """Set the maximum value of the slider."""
         if value < self._min_value:  # pragma: no cover
             raise ValueError("Minimum limit cannot be higher than maximum")
@@ -124,7 +129,9 @@ class DoubleSlider(QSlider):
 class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
-    def __init__(self, parent, callback, minimum=0.0, maximum=20.0, value=1.0):
+    def __init__(
+        self, parent, callback, minimum=0.0, maximum=20.0, value=1.0
+    ):  # pylint: disable=too-many-arguments
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
@@ -148,11 +155,11 @@ class RangeGroup(QHBoxLayout):
         self.spinbox.valueChanged.connect(self.update_value)
         self.spinbox.valueChanged.connect(callback)
 
-    def update_spinbox(self, value):
+    def update_spinbox(self, value):  # pylint: disable=unused-argument
         """Set the value of the internal spinbox."""
         self.spinbox.setValue(self.slider.value())
 
-    def update_value(self, value):
+    def update_value(self, value):  # pylint: disable=unused-argument
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
         #     self.spinbox.setValue(self.minimum)
@@ -175,7 +182,11 @@ class RangeGroup(QHBoxLayout):
 
 
 class ScaleAxesDialog(QDialog):
-    """Dialog to control axes scaling."""
+    """
+    Dialog to control axes scaling.
+    """
+
+    # pylint: disable=too-few-public-methods
 
     accepted = pyqtSignal(float)
     signal_close = pyqtSignal()
@@ -209,7 +220,7 @@ class ScaleAxesDialog(QDialog):
         if show:  # pragma: no cover
             self.show()
 
-    def update_scale(self, value):
+    def update_scale(self):
         """Update the scale of all actors in the plotter."""
         self.plotter.set_scale(
             self.x_slider_group.value,
