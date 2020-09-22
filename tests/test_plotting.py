@@ -1,4 +1,5 @@
 import os
+import platform
 
 import numpy as np
 import pytest
@@ -61,6 +62,14 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+@pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
+def test_ipython(qapp):
+    import IPython
+    cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
+          "p = Plotter(show=False, off_screen=False); p.close(); exit()"
+    IPython.start_ipython(argv=["-c", cmd])
 
 
 def test_depth_peeling(qtbot):

@@ -62,7 +62,7 @@ from .editor import Editor
 from .window import MainWindow
 
 if scooby.in_ipython():  # pragma: no cover
-    from IPython import get_ipython
+    # pylint: disable=unused-import
     from IPython.external.qt_for_kernel import QtGui
 else:
     from PyQt5 import QtGui  # pylint: disable=ungrouped-imports
@@ -515,7 +515,7 @@ class BackgroundPlotter(QtInteractor):
 
     ICON_TIME_STEP = 5.0
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals
         self,
         show=True,
         app=None,
@@ -554,9 +554,15 @@ class BackgroundPlotter(QtInteractor):
 
         # ipython magic
         if scooby.in_ipython():  # pragma: no cover
+            # pylint: disable=import-outside-toplevel
+            from IPython import get_ipython
 
             ipython = get_ipython()
             ipython.magic("gui qt")
+
+            # pylint: disable=redefined-outer-name
+            # pylint: disable=import-outside-toplevel
+            from IPython.external.qt_for_kernel import QtGui
 
             QtGui.QApplication.instance()
         else:
