@@ -559,6 +559,8 @@ class BackgroundPlotter(QtInteractor):
             ipython = get_ipython()
             ipython.magic("gui qt")
 
+            from IPython.external.qt_for_kernel import QtGui
+
             QtGui.QApplication.instance()
         else:
             ipython = None
