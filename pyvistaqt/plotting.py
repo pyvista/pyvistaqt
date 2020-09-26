@@ -426,7 +426,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Save camera position to saved camera menu for recall."""
         self.saved_camera_positions.append(self.camera_position)
         ncam = len(self.saved_camera_positions)
-        camera_position = self.camera_position[:]  # py2.7 copy compatibility
+        if not self.camera_position is None:
+            camera_position = self.camera_position[:]  # py2.7 copy compatibility
 
         if hasattr(self, "saved_cameras_tool_bar"):
 
