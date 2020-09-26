@@ -43,7 +43,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Callable, Optional, Tuple, List, Dict
+from typing import Callable, Optional, Tuple, List, Dict, Any, Type, Union
 
 import numpy as np  # type: ignore
 import pyvista
@@ -51,7 +51,7 @@ import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, pyqtSignal, QSize
-from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
+from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout, QToolBar, QApplication
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
@@ -132,24 +132,24 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     parent :
         Qt parent.
 
-    title : str, optional
+    title :
         Title of plotting window.
 
-    multi_samples : int, optional
+    multi_samples :
         The number of multi-samples used to mitigate aliasing. 4 is a
         good default but 8 will have better results with a potential
         impact on performance.
 
-    line_smoothing : bool, optional
+    line_smoothing :
         If True, enable line smothing
 
-    point_smoothing : bool, optional
+    point_smoothing :
         If True, enable point smothing
 
-    polygon_smoothing : bool, optional
+    polygon_smoothing :
         If True, enable polygon smothing
 
-    auto_update : float, bool, optional
+    auto_update :
         Automatic update rate in seconds.  Useful for automatically
         updating the render window when actors are change without
         being automatically ``Modified``.
@@ -165,15 +165,15 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        parent=None,
-        title=None,
-        off_screen=None,
-        multi_samples=None,
-        line_smoothing=False,
-        point_smoothing=False,
-        polygon_smoothing=False,
-        auto_update=5.0,
-        **kwargs
+        parent: MainWindow=None,
+        title: str=None,
+        off_screen: bool=None,
+        multi_samples: int=None,
+        line_smoothing: bool=False,
+        point_smoothing: bool=False,
+        polygon_smoothing: bool=False,
+        auto_update: Union[float, bool]=5.0,
+        **kwargs: Any
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
@@ -269,7 +269,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.view_isometric()
         LOG.debug("QtInteractor init stop")
 
-    def gesture_event(self, event) -> bool:
+    def gesture_event(self, event: Any) -> bool:
         """Handle gesture events."""
         pinch = event.gesture(QtCore.Qt.PinchGesture)
         if pinch:
@@ -277,12 +277,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             event.accept()
         return True
 
-    def key_press_event(self, obj, event) -> None:
+    def key_press_event(self, obj: Any, event: QtGui.keyPressEvent) -> None:
         """Call `key_press_event` using a signal."""
         self.key_press_event_signal.emit(obj, event)
 
     @wraps(BasePlotter.render)
-    def _render(self, *args, **kwargs) -> BasePlotter.render:
+    def _render(self, *args: Any, **kwargs: Any) -> BasePlotter.render:
         """Wrap ``BasePlotter.render``."""
         return BasePlotter.render(self, *args, **kwargs)
 
@@ -291,7 +291,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
-    def dragEnterEvent(self, event) -> None:  # pylint: disable=invalid-name,no-self-use
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:  # pylint: disable=invalid-name,no-self-use
         """Event is called when something is dropped onto the vtk window.
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
@@ -306,7 +306,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         except IOError as exception:  # pragma: no cover
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
-    def dropEvent(self, event) -> None:  # pylint: disable=invalid-name,useless-return
+    def dropEvent(self, event: QtGui.QDropEnterEvent) -> None:  # pylint: disable=invalid-name,useless-return
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
@@ -321,7 +321,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     def add_toolbars(self) -> None:  # pylint: disable=useless-return
         """Add the toolbars."""
 
-        def _add_action(tool_bar, key, method) -> QAction:
+        def _add_action(tool_bar: QToolBar, key: str, method: Any) -> QAction:
             action = QAction(key, self.app_window)
             action.triggered.connect(method)
             tool_bar.addAction(action)
@@ -330,7 +330,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
 
-        def _view_vector(*args) -> None:
+        def _view_vector(*args: Any) -> None:
             return self.view_vector(*args)
 
         cvec_setters = {
@@ -458,30 +458,30 @@ class BackgroundPlotter(QtInteractor):
 
     Parameters
     ----------
-    show : bool, optional
+    show :
         Show the plotting window.  If ``False``, show this window by
         running ``show()``
 
-    app : PyQt5.QtWidgets.QApplication, optional
+    app : optional
         Creates a `QApplication` if left as `None`.
 
     window_size :
         Window size in pixels.  Defaults to ``[1024, 768]``
 
-    off_screen : bool, optional
+    off_screen :
         Renders off screen when True.  Useful for automated
         screenshots or debug testing.
 
-    allow_quit_keypress : bool, optional
+    allow_quit_keypress :
         Allow user to exit by pressing ``"q"``.
 
-    toolbar : bool, optional
+    toolbar :
        Display the default camera toolbar. Defaults to True.
 
-    menu_bar: bool, optional
+    menu_bar:
         Display the default main menu. Defaults to True.
 
-    update_app_icon : bool
+    update_app_icon :
         If True, update_app_icon will be called automatically to update the
         Qt app icon based on the current rendering output.
 
@@ -526,16 +526,16 @@ class BackgroundPlotter(QtInteractor):
     # pylint: disable=too-many-locals
     def __init__(
         self,
-        show=True,
-        app=None,
-        window_size=None,
-        off_screen=None,
-        allow_quit_keypress=True,
-        toolbar=True,
-        menu_bar=True,
-        editor=True,
-        update_app_icon=False,
-        **kwargs
+        show: bool=True,
+        app: QApplication=None,
+        window_size: List[float]=None,
+        off_screen: bool=None,
+        allow_quit_keypress: bool=True,
+        toolbar: bool=True,
+        menu_bar: bool=True,
+        editor: bool=True,
+        update_app_icon: bool=False,
+        **kwargs: Any
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
@@ -700,12 +700,12 @@ class BackgroundPlotter(QtInteractor):
         # Update trackers
         self._last_window_size = self.window_size
 
-    def set_icon(self, img) -> None:
+    def set_icon(self, img: np.ndarray) -> None:
         """Set the icon image.
 
         Parameters
         ----------
-        img : ndarray, shape (w, h, c) | str
+        img : shape (w, h, c) | str
             The image. Should be uint8 and square (w == h).
             Can have 3 or 4 color/alpha channels (``c``).
             Can also be a string path that QIcon can load.

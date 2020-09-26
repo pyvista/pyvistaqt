@@ -13,7 +13,12 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QSlider,
 )
+from typing import List, Any
 
+import numpy as np  # type: ignore
+import pyvista as pv
+
+from .window import MainWindow
 
 class FileDialog(QFileDialog):
     """Generic file query.
@@ -29,12 +34,12 @@ class FileDialog(QFileDialog):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        parent=None,
-        filefilter=None,
-        save_mode=True,
-        show=True,
-        callback=None,
-        directory=False,
+        parent : MainWindow =None,
+        filefilter : List[str] =None,
+        save_mode : bool=True,
+        show : bool=True,
+        callback : np.ndarray=None,
+        directory : bool=False,
     ) -> None:
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
@@ -79,7 +84,7 @@ class DoubleSlider(QSlider):
 
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: None, **kwargs: None) -> None:
         """Initialize the double slider."""
         super().__init__(*args, **kwargs)
         self.decimals = 5
@@ -102,13 +107,13 @@ class DoubleSlider(QSlider):
             float(super().value()) / self._max_int * self._value_range + self._min_value
         )
 
-    def setValue(self, value) -> None:  # pylint: disable=invalid-name
+    def setValue(self, value: float) -> None:  # pylint: disable=invalid-name
         """Set the value of the slider."""
         super().setValue(
             int((value - self._min_value) / self._value_range * self._max_int)
         )
 
-    def setMinimum(self, value) -> None:  # pylint: disable=invalid-name
+    def setMinimum(self, value: float) -> None:  # pylint: disable=invalid-name
         """Set the minimum value of the slider."""
         if value > self._max_value:  # pragma: no cover
             raise ValueError("Minimum limit cannot be higher than maximum")
@@ -116,7 +121,7 @@ class DoubleSlider(QSlider):
         self._min_value = value
         self.setValue(self.value())
 
-    def setMaximum(self, value) -> None:  # pylint: disable=invalid-name
+    def setMaximum(self, value: float) -> None:  # pylint: disable=invalid-name
         """Set the maximum value of the slider."""
         if value < self._min_value:  # pragma: no cover
             raise ValueError("Minimum limit cannot be higher than maximum")
@@ -131,7 +136,7 @@ class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
     # pylint: disable=too-many-arguments,useless-return
-    def __init__(self, parent, callback, minimum=0.0, maximum=20.0, value=1.0) -> None:
+    def __init__(self, parent: MainWindow, callback: Any, minimum: float =0.0, maximum: float=20.0, value: float=1.0) -> None:
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
@@ -157,11 +162,11 @@ class RangeGroup(QHBoxLayout):
 
         return None
 
-    def update_spinbox(self, value) -> None:  # pylint: disable=unused-argument
+    def update_spinbox(self, value: float) -> None:  # pylint: disable=unused-argument
         """Set the value of the internal spinbox."""
         self.spinbox.setValue(self.slider.value())
 
-    def update_value(self, value) -> None:  # pylint: disable=unused-argument
+    def update_value(self, value: float) -> None:  # pylint: disable=unused-argument
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
         #     self.spinbox.setValue(self.minimum)
@@ -178,7 +183,7 @@ class RangeGroup(QHBoxLayout):
         return self.spinbox.value()
 
     @value.setter
-    def value(self, new_value) -> None:
+    def value(self, new_value: float) -> None:
         """Set the value of the internal slider."""
         self.slider.setValue(new_value)
 
@@ -193,7 +198,7 @@ class ScaleAxesDialog(QDialog):
     accepted = pyqtSignal(float)
     signal_close = pyqtSignal()
 
-    def __init__(self, parent, plotter, show=True) -> None:
+    def __init__(self, parent: MainWindow, plotter: pv.Plotter, show: bool=True) -> None:
         """Initialize the scaling dialog."""
         super(ScaleAxesDialog, self).__init__(parent)
         self.setGeometry(300, 300, 50, 50)

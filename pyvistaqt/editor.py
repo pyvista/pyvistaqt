@@ -1,6 +1,7 @@
 """
 This module contains the Qt scene editor.
 """
+from typing import List
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
@@ -15,12 +16,16 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from pyvista import Renderer
+import vtk
+
+from .window import MainWindow
 
 
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent, renderers) -> None:
+    def __init__(self, parent: MainWindow, renderers: List[Renderer]) -> None:
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
@@ -71,12 +76,12 @@ class Editor(QDialog):
             self.show()
 
 
-def _get_renderer_widget(renderer) -> QWidget:
+def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 
     # axes
-    def _axes_callback(state) -> None:
+    def _axes_callback(state: bool) -> None:
         if state:
             renderer.show_axes()
         else:
@@ -94,7 +99,7 @@ def _get_renderer_widget(renderer) -> QWidget:
     return widget
 
 
-def _get_actor_widget(actor) -> QWidget:
+def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 
