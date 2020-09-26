@@ -51,7 +51,6 @@ import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, QTimer, pyqtSignal
-
 # pylint: disable=unused-import
 from PyQt5.QtWidgets import (
     QAction,
@@ -188,12 +187,11 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
 
-        self.url = None
+        self.url: Optional[QtCore.QUrl] = None
         self.default_camera_tool_bar = None
-        self.saved_camera_positions = None
-        self.saved_camera_positions = None
-        self.saved_cameras_tool_bar = None
-        self.main_menu = None
+        self.saved_camera_positions: List[BasePlotter.camera_position] = None
+        self.saved_cameras_tool_bar: Optional[QToolBar] = None
+        self.main_menu: Optional[QMenuBar] = None
         self._menu_close_action = None
         self._edl_action = None
         self._parallel_projection_action = None
