@@ -539,7 +539,7 @@ class BackgroundPlotter(QtInteractor):
         self,
         show: bool = True,
         app: QApplication = None,
-        window_size: List[float] = None,
+        window_size: Optional[Tuple[int, int]] = None,
         off_screen: bool = None,
         allow_quit_keypress: bool = True,
         toolbar: bool = True,
@@ -627,7 +627,7 @@ class BackgroundPlotter(QtInteractor):
         self._view_action = None
 
         self.default_camera_tool_bar = None
-        self.saved_camera_positions = None
+        self.saved_camera_positions = []
         self.saved_cameras_tool_bar = None
         if toolbar:
             self.add_toolbars()
@@ -749,22 +749,22 @@ class BackgroundPlotter(QtInteractor):
         # and icon.isNull() returns False even if the path is bogus.
         self.app.setWindowIcon(QtGui.QIcon(img))
 
-    def _qt_screenshot(self, show: Optional[bool] = True) -> FileDialog:
+    def _qt_screenshot(self, show: bool = True) -> FileDialog:
         return FileDialog(
             self.app_window,
             filefilter=["Image File (*.png)", "JPEG (*.jpeg)"],
             show=show,
-            directory=os.getcwd(),
+            directory=bool(os.getcwd()),
             callback=self.screenshot,
         )
 
-    def _qt_export_vtkjs(self, show: Optional[bool] = True) -> FileDialog:
+    def _qt_export_vtkjs(self, show: bool = True) -> FileDialog:
         """Spawn an save file dialog to export a vtkjs file."""
         return FileDialog(
             self.app_window,
             filefilter=["VTK JS File(*.vtkjs)"],
             show=show,
-            directory=os.getcwd(),
+            directory=bool(os.getcwd()),
             callback=self.export_vtkjs,
         )
 
