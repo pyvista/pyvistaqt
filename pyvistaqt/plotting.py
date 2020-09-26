@@ -51,6 +51,7 @@ import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, QTimer, pyqtSignal
+# pylint: disable=unused-import
 from PyQt5.QtWidgets import (
     QAction,
     QApplication,
@@ -58,7 +59,7 @@ from PyQt5.QtWidgets import (
     QMenuBar,
     QToolBar,
     QVBoxLayout,
-) # pylint: disable=unused-import
+)
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
