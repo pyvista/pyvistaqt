@@ -43,7 +43,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, List
 
 import numpy as np  # type: ignore
 import pyvista
@@ -243,7 +243,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
             self.iren.Initialize()
 
-            self._observers = {}  # Map of events to observers of self.iren
+            self._observers: List[None] = {}  # Map of events to observers of self.iren
             self._add_observer("KeyPressEvent", self.key_press_event)
 
         # Make the render timer but only activate if using auto update
@@ -550,7 +550,7 @@ class BackgroundPlotter(QtInteractor):
             )
 
         self.active = True
-        self.counters = []
+        self.counters: List[Counter] = []
         self.allow_quit_keypress = allow_quit_keypress
 
         if window_size is None:
