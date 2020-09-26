@@ -49,8 +49,8 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QSize, QTimer, pyqtSignal
+from PyQt5 import QtCore
+from PyQt5.QtCore import QTimer, pyqtSignal
 from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
@@ -59,11 +59,18 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
+from .editor import Editor
 from .window import MainWindow
 
-log = logging.getLogger("pyvistaqt")
-log.setLevel(logging.CRITICAL)
-log.addHandler(logging.StreamHandler())
+if scooby.in_ipython():  # pragma: no cover
+    # pylint: disable=unused-import
+    from IPython.external.qt_for_kernel import QtGui
+else:
+    from PyQt5 import QtGui  # pylint: disable=ungrouped-imports
+
+LOG = logging.getLogger("pyvistaqt")
+LOG.setLevel(logging.CRITICAL)
+LOG.addHandler(logging.StreamHandler())
 
 
 # for display bugs due to older intel integrated GPUs, setting
@@ -72,9 +79,9 @@ log.addHandler(logging.StreamHandler())
 # changing it from the default 'QWidget'.
 # See https://github.com/pyvista/pyvista/pull/693
 
-# log is unused at the moment
-# log = logging.getLogger(__name__)
-# log.setLevel('DEBUG')
+# LOG is unused at the moment
+# LOG = logging.getLogger(__name__)
+# LOG.setLevel('DEBUG')
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
@@ -84,14 +91,14 @@ def resample_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     """Resample a square image to an image of max_size."""
     dim = np.max(arr.shape[0:2])
     max_size = min(max_size, dim)
-    x, y, _ = arr.shape
-    sx = int(np.ceil(x / max_size))
-    sy = int(np.ceil(y / max_size))
+    x_size, y_size, _ = arr.shape
+    s_x = int(np.ceil(x_size / max_size))
+    s_y = int(np.ceil(y_size / max_size))
     img = np.zeros((max_size, max_size, arr.shape[2]), dtype=arr.dtype)
-    arr = arr[0:-1:sx, 0:-1:sy, :]
-    xl = (max_size - arr.shape[0]) // 2
-    yl = (max_size - arr.shape[1]) // 2
-    img[xl : arr.shape[0] + xl, yl : arr.shape[1] + yl, :] = arr
+    arr = arr[0:-1:s_x, 0:-1:s_y, :]
+    x_l = (max_size - arr.shape[0]) // 2
+    y_l = (max_size - arr.shape[1]) // 2
+    img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
     return img
 
 
@@ -99,14 +106,14 @@ def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     """Pad an image to a square then resamples to max_size."""
     dim = np.max(arr.shape)
     img = np.zeros((dim, dim, arr.shape[2]), dtype=arr.dtype)
-    xl = (dim - arr.shape[0]) // 2
-    yl = (dim - arr.shape[1]) // 2
-    img[xl : arr.shape[0] + xl, yl : arr.shape[1] + yl, :] = arr
+    x_l = (dim - arr.shape[0]) // 2
+    y_l = (dim - arr.shape[1]) // 2
+    img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
     return resample_image(img, max_size=max_size)
 
 
 @contextlib.contextmanager
-def _no_BasePlotter_init() -> None:
+def _no_base_plotter_init() -> None:
     init = BasePlotter.__init__
     BasePlotter.__init__ = lambda x: None
     try:
@@ -148,6 +155,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         being automatically ``Modified``.
     """
 
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-statements
+
     # Signals must be class attributes
     render_signal = pyqtSignal()
     key_press_event_signal = pyqtSignal(vtk.vtkGenericRenderWindowInteractor, str)
@@ -161,12 +171,24 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         line_smoothing=False,
         point_smoothing=False,
         polygon_smoothing=False,
-        splitting_position=None,
         auto_update=5.0,
         **kwargs
-    ) -> None:
+    ) -> None: # pylint: disable=too-many-arguments
+               # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
-        log.debug("QtInteractor init start")
+        LOG.debug("QtInteractor init start")
+
+        self.url = None
+        self.default_camera_tool_bar = None
+        self.saved_camera_positions = None
+        self.saved_camera_positions = None
+        self.saved_cameras_tool_bar = None
+        self.main_menu = None
+        self._menu_close_action = None
+        self._edl_action = None
+        self._parallel_projection_action = None
+        self._view_action = None
+
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
         # because they use **kwargs in their constructor...
@@ -174,7 +196,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         for key in ("stereo", "iren", "rw", "wflags"):
             if key in kwargs:
                 qvtk_kwargs[key] = kwargs.pop(key)
-        with _no_BasePlotter_init():
+        with _no_base_plotter_init():
             QVTKRenderWindowInteractor.__init__(self, **qvtk_kwargs)
         BasePlotter.__init__(self, **kwargs)
         # backward compat for when we had this as a separate class
@@ -242,7 +264,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         self._first_time = False  # Crucial!
         self.view_isometric()
-        log.debug("QtInteractor init stop")
+        LOG.debug("QtInteractor init stop")
 
     def gesture_event(self, event):
         """Handle gesture events."""
@@ -266,32 +288,31 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
-    def dragEnterEvent(self, event):
+    def dragEnterEvent(self, event):  # pylint: disable=invalid-name,no-self-use
         """Event is called when something is dropped onto the vtk window.
-
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
         to allow files.
         """
+        # pragma: no cover
         try:
             for url in event.mimeData().urls():
                 if os.path.isfile(url.path()):
                     # only call accept on files
                     event.accept()
-        except Exception as e:
-            warnings.warn("Exception when dropping files: %s" % str(e))
+        except IOError as exception:  # pragma: no cover
+            warnings.warn("Exception when dropping files: %s" % str(exception))
 
-    def dropEvent(self, event) -> None:
+    def dropEvent(self, event) -> None:  # pylint: disable=invalid-name
         """Event is called after dragEnterEvent."""
-        for url in event.mimeData().urls():
+        for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
             filename = self.url.path()
             if os.path.isfile(filename):
                 try:
                     self.add_mesh(pyvista.read(filename))
-                except Exception as e:
-                    print(str(e))
-                    pass
+                except IOError as exception:
+                    print(str(exception))
 
     def add_toolbars(self):
         """Add the toolbars."""
@@ -320,6 +341,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         }
         for key, method in cvec_setters.items():
             self._view_action = _add_action(self.default_camera_tool_bar, key, method)
+        # pylint: disable=unnecessary-lambda
         _add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
 
         # Saved camera locations toolbar
@@ -396,6 +418,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if hasattr(self, "saved_cameras_tool_bar"):
 
             def load_camera_position() -> None:
+                # pylint: disable=attribute-defined-outside-init
                 self.camera_position = camera_position
 
             self.saved_cameras_tool_bar.addAction(
@@ -403,7 +426,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             )
             if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)
-        return
 
     def clear_camera_positions(self) -> None:
         """Clear all camera positions."""
@@ -412,7 +434,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                 if action.text() not in [SAVE_CAM_BUTTON_TEXT, CLEAR_CAMS_BUTTON_TEXT]:
                     self.saved_cameras_tool_bar.removeAction(action)
         self.saved_camera_positions = []
-        return
 
     def close(self) -> None:
         """Quit application."""
@@ -491,9 +512,13 @@ class BackgroundPlotter(QtInteractor):
     >>> _ = plotter.add_mesh(pv.Sphere())
     """
 
+    # pylint: disable=too-many-ancestors
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-statements
+
     ICON_TIME_STEP = 5.0
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals
         self,
         show=True,
         app=None,
@@ -502,11 +527,13 @@ class BackgroundPlotter(QtInteractor):
         allow_quit_keypress=True,
         toolbar=True,
         menu_bar=True,
+        editor=True,
         update_app_icon=False,
         **kwargs
-    ) -> None:
+    ) -> None:  # pylint: disable=too-many-arguments
+                # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
-        log.debug("BackgroundPlotter init start")
+        LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
             raise TypeError(
                 "Expected type for ``menu_bar`` is bool"
@@ -530,11 +557,14 @@ class BackgroundPlotter(QtInteractor):
 
         # ipython magic
         if scooby.in_ipython():  # pragma: no cover
+            # pylint: disable=import-outside-toplevel
             from IPython import get_ipython
 
             ipython = get_ipython()
             ipython.magic("gui qt")
 
+            # pylint: disable=redefined-outer-name
+            # pylint: disable=import-outside-toplevel
             from IPython.external.qt_for_kernel import QtGui
 
             QtGui.QApplication.instance()
@@ -543,6 +573,7 @@ class BackgroundPlotter(QtInteractor):
 
         # run within python
         if app is None:
+            # pylint: disable=import-outside-toplevel
             from PyQt5.QtWidgets import QApplication
 
             app = QApplication.instance()
@@ -570,6 +601,10 @@ class BackgroundPlotter(QtInteractor):
         self._menu_close_action = None
         if menu_bar:
             self.add_menu_bar()
+
+        self.editor = None
+        if editor and menu_bar:
+            self.add_editor()
 
         # member variable for testing only
         self._view_action = None
@@ -603,7 +638,7 @@ class BackgroundPlotter(QtInteractor):
 
         # Keypress events
         self.add_key_event("S", self._qt_screenshot)  # shift + s
-        log.debug("BackgroundPlotter init stop")
+        LOG.debug("BackgroundPlotter init stop")
 
     def reset_key_events(self) -> None:
         """Reset all of the key press events to their defaults.
@@ -612,6 +647,7 @@ class BackgroundPlotter(QtInteractor):
         """
         super(BackgroundPlotter, self).reset_key_events()
         if self.allow_quit_keypress:
+            # pylint: disable=unnecessary-lambda
             self.add_key_event("q", lambda: self.close())
 
     def scale_axes_dialog(self, show: Optional[bool] = True) -> ScaleAxesDialog:
@@ -772,6 +808,11 @@ class BackgroundPlotter(QtInteractor):
             counter.signal_finished.connect(self._callback_timer.stop)
             self._callback_timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
+
+    def add_editor(self):
+        """Add the editor."""
+        self.editor = Editor(parent=self.app_window, renderers=self.renderers)
+        self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
 
 
 def _create_menu_bar(parent: QVTKRenderWindowInteractor.QWidget) -> QMenuBar:

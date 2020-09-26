@@ -1,10 +1,13 @@
 import os
+import platform
 
 import numpy as np
 import pytest
 import pyvista
 import vtk
 from PyQt5.Qt import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
 from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 
@@ -12,6 +15,7 @@ import pyvistaqt
 from pyvistaqt import BackgroundPlotter, MainWindow, QtInteractor
 from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
                                 _create_menu_bar)
+from pyvistaqt.editor import Editor
 
 NO_PLOTTING = not system_supports_plotting()
 
@@ -58,6 +62,14 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+@pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
+def test_ipython(qapp):
+    import IPython
+    cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
+          "p = Plotter(show=False, off_screen=False); p.close(); exit()"
+    IPython.start_ipython(argv=["-c", cmd])
 
 
 def test_depth_peeling(qtbot):
@@ -115,6 +127,63 @@ def test_counter(qtbot):
     with qtbot.wait_signals([counter.signal_finished], timeout=timeout):
         counter.decrease()
     assert counter.count == 0
+
+
+@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
+def test_editor(qtbot):
+    timeout = 1000  # adjusted timeout for MacOS
+
+    # editor=True by default
+    plotter = BackgroundPlotter(shape=(2, 1))
+    qtbot.addWidget(plotter.app_window)
+    assert_hasattr(plotter, "editor", Editor)
+
+    # add at least an actor
+    plotter.subplot(0, 0)
+    plotter.add_mesh(pyvista.Sphere())
+    plotter.subplot(1, 0)
+    plotter.show_axes()
+
+    editor = plotter.editor
+    assert not editor.isVisible()
+    with qtbot.wait_exposed(editor, timeout=timeout):
+        editor.toggle()
+    assert editor.isVisible()
+
+    assert_hasattr(editor, "tree_widget", QTreeWidget)
+    tree_widget = editor.tree_widget
+    top_item = tree_widget.topLevelItem(0)  # any renderer will do
+    assert top_item is not None
+
+    # simulate selection
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=timeout):
+        top_item.setSelected(True)
+
+    # toggle all the renderer-associated checkboxes twice
+    # to ensure that slots are called for True and False
+    assert_hasattr(editor, "stacked_widget", QStackedWidget)
+    stacked_widget = editor.stacked_widget
+    page_idx = top_item.data(0, Qt.ItemDataRole.UserRole)
+    page_widget = stacked_widget.widget(page_idx)
+    page_layout = page_widget.layout()
+    number_of_widgets = page_layout.count()
+    for widget_idx in range(number_of_widgets):
+        widget_item = page_layout.itemAt(widget_idx)
+        widget = widget_item.widget()
+        if isinstance(widget, QCheckBox):
+            with qtbot.wait_signals([widget.toggled], timeout=500):
+                widget.toggle()
+            with qtbot.wait_signals([widget.toggled], timeout=500):
+                widget.toggle()
+
+    # hide the editor for coverage
+    editor.toggle()
+    plotter.close()
+
+    plotter = BackgroundPlotter(editor=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.editor is None
+    plotter.close()
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")

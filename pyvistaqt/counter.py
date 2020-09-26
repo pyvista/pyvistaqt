@@ -1,8 +1,15 @@
+"""
+This module contains a basic Qt-compatible counter class.
+"""
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 
 class Counter(QObject):
-    """Counter augmented with a Qt timer."""
+    """
+    Counter class with Qt signal/slot.
+    """
+
+    # pylint: disable=too-few-public-methods
 
     signal_finished = pyqtSignal()
 
