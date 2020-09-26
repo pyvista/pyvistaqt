@@ -92,11 +92,11 @@ class DoubleSlider(QSlider):
         self._max_value = 20.0
 
     @property
-    def _value_range(self):
+    def _value_range(self) -> float:
         """Return the value range of the slider."""
         return self._max_value - self._min_value
 
-    def value(self):
+    def value(self) -> float:
         """Return the value of the slider."""
         return (
             float(super().value()) / self._max_int * self._value_range + self._min_value
@@ -173,7 +173,7 @@ class RangeGroup(QHBoxLayout):
         self.slider.blockSignals(False)
 
     @property
-    def value(self):
+    def value(self) -> float:
         """Return the value of the internal spinbox."""
         return self.spinbox.value()
 

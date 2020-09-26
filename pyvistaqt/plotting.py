@@ -285,7 +285,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         return BasePlotter.render(self, *args, **kwargs)
 
     @conditional_decorator(threaded, platform.system() == "Darwin")
-    def render(self):
+    def render(self) -> None:
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
@@ -316,7 +316,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     print(str(exception))
         return None
 
-    def add_toolbars(self):  # pylint: disable=useless-return
+    def add_toolbars(self) -> None:  # pylint: disable=useless-return
         """Add the toolbars."""
 
         def _add_action(tool_bar, key, method) -> QAction:
@@ -361,7 +361,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.clear_camera_positions,
         )
 
-        return
+        return None
 
     def add_menu_bar(self) -> None:
         """Add the main menu bar."""
