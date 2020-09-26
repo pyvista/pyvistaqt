@@ -192,8 +192,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.url: Optional[QtCore.QUrl] = None
         self.default_camera_tool_bar = None
         self.saved_camera_positions: List[BasePlotter.camera_position] = []
-        self.saved_cameras_tool_bar: Optional[QToolBar] = None
-        self.main_menu: Optional[QMenuBar] = None
+        self.saved_cameras_tool_bar: QToolBar = None
+        self.main_menu: QMenuBar = None
         self._menu_close_action = None
         self._edl_action = None
         self._parallel_projection_action = None
