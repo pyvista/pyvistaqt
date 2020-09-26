@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent, renderers):
+    def __init__(self, parent, renderers) -> None:
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
@@ -32,7 +32,7 @@ class Editor(QDialog):
         self.layout.addWidget(self.tree_widget)
         self.layout.addWidget(self.stacked_widget)
 
-        def _selection_callback():
+        def _selection_callback() -> None:
             for item in self.tree_widget.selectedItems():
                 widget_idx = item.data(0, Qt.ItemDataRole.UserRole)
                 self.stacked_widget.setCurrentIndex(widget_idx)
@@ -71,12 +71,12 @@ class Editor(QDialog):
             self.show()
 
 
-def _get_renderer_widget(renderer):
+def _get_renderer_widget(renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 
     # axes
-    def _axes_callback(state):
+    def _axes_callback(state) -> None:
         if state:
             renderer.show_axes()
         else:
@@ -94,7 +94,7 @@ def _get_renderer_widget(renderer):
     return widget
 
 
-def _get_actor_widget(actor):
+def _get_actor_widget(actor) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 

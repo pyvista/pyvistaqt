@@ -43,7 +43,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, List
 
 import numpy as np  # type: ignore
 import pyvista
@@ -267,7 +267,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.view_isometric()
         LOG.debug("QtInteractor init stop")
 
-    def gesture_event(self, event):
+    def gesture_event(self, event) -> bool:
         """Handle gesture events."""
         pinch = event.gesture(QtCore.Qt.PinchGesture)
         if pinch:
@@ -275,12 +275,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             event.accept()
         return True
 
-    def key_press_event(self, obj, event):
+    def key_press_event(self, obj, event) -> None:
         """Call `key_press_event` using a signal."""
         self.key_press_event_signal.emit(obj, event)
 
     @wraps(BasePlotter.render)
-    def _render(self, *args, **kwargs):
+    def _render(self, *args, **kwargs) -> BasePlotter.render:
         """Wrap ``BasePlotter.render``."""
         return BasePlotter.render(self, *args, **kwargs)
 
@@ -289,7 +289,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
-    def dragEnterEvent(self, event):  # pylint: disable=invalid-name,no-self-use
+    def dragEnterEvent(self, event) -> None:  # pylint: disable=invalid-name,no-self-use
         """Event is called when something is dropped onto the vtk window.
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
@@ -319,7 +319,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     def add_toolbars(self):  # pylint: disable=useless-return
         """Add the toolbars."""
 
-        def _add_action(tool_bar, key, method):
+        def _add_action(tool_bar, key, method) -> QAction:
             action = QAction(key, self.app_window)
             action.triggered.connect(method)
             tool_bar.addAction(action)
@@ -328,7 +328,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
 
-        def _view_vector(*args):
+        def _view_vector(*args) -> None:
             return self.view_vector(*args)
 
         cvec_setters = {
@@ -698,7 +698,7 @@ class BackgroundPlotter(QtInteractor):
         # Update trackers
         self._last_window_size = self.window_size
 
-    def set_icon(self, img):
+    def set_icon(self, img) -> None:
         """Set the icon image.
 
         Parameters
@@ -755,7 +755,7 @@ class BackgroundPlotter(QtInteractor):
             callback=self.export_vtkjs,
         )
 
-    def _toggle_edl(self):
+    def _toggle_edl(self) -> None:
         if hasattr(self.renderer, "edl_pass"):
             return self.renderer.disable_eye_dome_lighting()
         return self.renderer.enable_eye_dome_lighting()
@@ -813,7 +813,7 @@ class BackgroundPlotter(QtInteractor):
             self._callback_timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
 
-    def add_editor(self):
+    def add_editor(self) -> None:
         """Add the editor."""
         self.editor = Editor(parent=self.app_window, renderers=self.renderers)
         self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
