@@ -188,6 +188,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
 
+        self.camera_position: BasePlotter.camera_position
         self.url: Optional[QtCore.QUrl] = None
         self.default_camera_tool_bar = None
         self.saved_camera_positions: List[BasePlotter.camera_position] = None
@@ -425,7 +426,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     def save_camera_position(self) -> None:
         """Save camera position to saved camera menu for recall."""
-        self.camera_position: BasePlotter.camera_position
         self.saved_camera_positions.append(self.camera_position)
         ncam = len(self.saved_camera_positions)
         camera_position = self.camera_position[:]  # py2.7 copy compatibility
