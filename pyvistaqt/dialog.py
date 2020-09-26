@@ -131,9 +131,7 @@ class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
     # pylint: disable=too-many-arguments,useless-return
-    def __init__(
-        self, parent, callback, minimum=0.0, maximum=20.0, value=1.0
-    ) -> None:
+    def __init__(self, parent, callback, minimum=0.0, maximum=20.0, value=1.0) -> None:
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
