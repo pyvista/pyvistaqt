@@ -424,6 +424,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     def save_camera_position(self) -> None:
         """Save camera position to saved camera menu for recall."""
         if self.saved_camera_positions is not None:
+            # pylint: disable=attribute-defined-outside-init
             self.camera_position: Any = self.camera_position
             self.saved_camera_positions.append(self.camera_position)
             ncam = len(self.saved_camera_positions)
