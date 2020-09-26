@@ -58,7 +58,7 @@ from PyQt5.QtWidgets import (
     QMenuBar,
     QToolBar,
     QVBoxLayout,
-)
+) # pylint: disable=unused-import
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
@@ -298,9 +298,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
+    # pylint: disable=invalid-name,no-self-use
     def dragEnterEvent(
         self, event: QtGui.QDragEnterEvent
-    ) -> None:  # pylint: disable=invalid-name,no-self-use
+    ) -> None:
         """Event is called when something is dropped onto the vtk window.
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
@@ -315,9 +316,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         except IOError as exception:  # pragma: no cover
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
+    # pylint: disable=invalid-name,useless-return
     def dropEvent(
         self, event: QtGui.QDropEnterEvent
-    ) -> None:  # pylint: disable=invalid-name,useless-return
+    ) -> None:
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
@@ -590,7 +592,7 @@ class BackgroundPlotter(QtInteractor):
 
         # run within python
         if app is None:
-            # pylint: disable=import-outside-toplevel
+            # pylint: disable=import-outside-toplevel,redefined-outer-name,reimported
             from PyQt5.QtWidgets import QApplication
 
             app = QApplication.instance()
