@@ -51,6 +51,7 @@ import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, QTimer, pyqtSignal
+
 # pylint: disable=unused-import
 from PyQt5.QtWidgets import (
     QAction,
@@ -300,9 +301,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         return self.render_signal.emit()
 
     # pylint: disable=invalid-name,no-self-use
-    def dragEnterEvent(
-        self, event: QtGui.QDragEnterEvent
-    ) -> None:
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
@@ -318,9 +317,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
     # pylint: disable=invalid-name,useless-return
-    def dropEvent(
-        self, event: QtGui.QDropEnterEvent
-    ) -> None:
+    def dropEvent(self, event: QtGui.QDropEnterEvent) -> None:
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
