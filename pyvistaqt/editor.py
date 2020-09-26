@@ -3,6 +3,7 @@ This module contains the Qt scene editor.
 """
 from typing import List
 
+import vtk
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QCheckBox,
@@ -17,7 +18,6 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 from pyvista import Renderer
-import vtk
 
 from .window import MainWindow
 

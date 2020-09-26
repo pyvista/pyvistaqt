@@ -2,7 +2,10 @@
 This module contains Qt dialog widgets.
 """
 import os
+from typing import Any, List
 
+import numpy as np  # type: ignore
+import pyvista as pv
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
@@ -13,10 +16,6 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QSlider,
 )
-from typing import List, Any
-
-import numpy as np  # type: ignore
-import pyvista as pv
 
 from .window import MainWindow
 

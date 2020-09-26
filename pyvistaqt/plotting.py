@@ -43,21 +43,21 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Callable, Optional, Tuple, List, Dict, Any, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
-from PyQt5.QtCore import QTimer, pyqtSignal, QSize
+from PyQt5.QtCore import QSize, QTimer, pyqtSignal
 from PyQt5.QtWidgets import (
     QAction,
+    QApplication,
     QFrame,
     QMenuBar,
-    QVBoxLayout,
     QToolBar,
-    QApplication,
+    QVBoxLayout,
 )
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
