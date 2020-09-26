@@ -50,7 +50,7 @@ import pyvista
 import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
-from PyQt5.QtCore import QTimer, pyqtSignal
+from PyQt5.QtCore import QTimer, pyqtSignal, QSize
 from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
@@ -304,7 +304,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         except IOError as exception:  # pragma: no cover
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
-    def dropEvent(self, event) -> None:  # pylint: disable=invalid-name
+    def dropEvent(self, event) -> None:  # pylint: disable=invalid-name,useless-return
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
@@ -316,7 +316,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     print(str(exception))
         return None
 
-    def add_toolbars(self):
+    def add_toolbars(self):  # pylint: disable=useless-return
         """Add the toolbars."""
 
         def _add_action(tool_bar, key, method):
