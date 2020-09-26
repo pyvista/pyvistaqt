@@ -43,7 +43,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Generator
 
 import numpy as np  # type: ignore
 import pyvista
@@ -122,7 +122,7 @@ def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
 
 
 @contextlib.contextmanager
-def _no_base_plotter_init() -> None:
+def _no_base_plotter_init() -> Generator[None, None, None]:
     init = BasePlotter.__init__
     BasePlotter.__init__ = lambda x: None
     try:
