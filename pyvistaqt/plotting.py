@@ -276,7 +276,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.view_isometric()
         LOG.debug("QtInteractor init stop")
 
-    def gesture_event(self, event: QtGui.QGestureEvent) -> bool:
+    def gesture_event(self, event: Any) -> bool:
         """Handle gesture events."""
         pinch = event.gesture(QtCore.Qt.PinchGesture)
         if pinch:
@@ -284,7 +284,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             event.accept()
         return True
 
-    def key_press_event(self, obj: Any, event: QtGui.keyPressEvent) -> None:
+    def key_press_event(self, obj: Any, event: Any) -> None:
         """Call `key_press_event` using a signal."""
         self.key_press_event_signal.emit(obj, event)
 
@@ -315,7 +315,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
     # pylint: disable=invalid-name,useless-return
-    def dropEvent(self, event: QtGui.QDropEnterEvent) -> None:
+    def dropEvent(self, event: Any) -> None:
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
@@ -831,7 +831,7 @@ class BackgroundPlotter(QtInteractor):
         self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
 
 
-def _create_menu_bar(parent: QVTKRenderWindowInteractor.QWidget) -> QMenuBar:
+def _create_menu_bar(parent: Any) -> QMenuBar:
     """Create a menu bar.
 
     The menu bar is expected to behave consistently
