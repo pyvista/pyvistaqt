@@ -43,7 +43,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Callable, Optional, Tuple, List
+from typing import Callable, Optional, Tuple
 
 import numpy as np  # type: ignore
 import pyvista
