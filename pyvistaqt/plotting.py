@@ -43,7 +43,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Callable, Optional, Tuple, List
+from typing import Callable, Optional, Tuple, List, Dict
 
 import numpy as np  # type: ignore
 import pyvista
@@ -243,7 +243,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
             self.iren.Initialize()
 
-            self._observers: List[None] = {}  # Map of events to observers of self.iren
+            self._observers: Dict[None, None] = {}  # Map of events to observers of self.iren
             self._add_observer("KeyPressEvent", self.key_press_event)
 
         # Make the render timer but only activate if using auto update
