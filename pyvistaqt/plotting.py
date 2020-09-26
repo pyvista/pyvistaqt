@@ -43,7 +43,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Generator
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np  # type: ignore
 import pyvista
@@ -51,7 +51,6 @@ import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, QTimer, pyqtSignal
-
 # pylint: disable=unused-import
 from PyQt5.QtWidgets import (
     QAction,
