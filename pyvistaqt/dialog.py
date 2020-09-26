@@ -26,6 +26,7 @@ class FileDialog(QFileDialog):
 
     dlg_accepted = pyqtSignal(str)
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         parent=None,
@@ -34,7 +35,7 @@ class FileDialog(QFileDialog):
         show=True,
         callback=None,
         directory=False,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
 
@@ -129,7 +130,9 @@ class DoubleSlider(QSlider):
 class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
-    def __init__(self, parent, callback, minimum=0.0, maximum=20.0, value=1.0) -> None:  # pylint: disable=too-many-arguments
+    def __init__(
+        self, parent, callback, minimum=0.0, maximum=20.0, value=1.0
+    ) -> None:  # pylint: disable=too-many-arguments
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)

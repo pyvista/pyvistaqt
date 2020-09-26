@@ -162,6 +162,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     render_signal = pyqtSignal()
     key_press_event_signal = pyqtSignal(vtk.vtkGenericRenderWindowInteractor, str)
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         parent=None,
@@ -173,8 +174,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         polygon_smoothing=False,
         auto_update=5.0,
         **kwargs
-    ) -> None: # pylint: disable=too-many-arguments
-               # pylint: disable=too-many-branches
+    ) -> None:
+        # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
 
@@ -313,6 +314,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     self.add_mesh(pyvista.read(filename))
                 except IOError as exception:
                     print(str(exception))
+        return None
 
     def add_toolbars(self):
         """Add the toolbars."""
@@ -518,7 +520,9 @@ class BackgroundPlotter(QtInteractor):
 
     ICON_TIME_STEP = 5.0
 
-    def __init__(  # pylint: disable=too-many-locals
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-locals
+    def __init__(
         self,
         show=True,
         app=None,
@@ -530,8 +534,8 @@ class BackgroundPlotter(QtInteractor):
         editor=True,
         update_app_icon=False,
         **kwargs
-    ) -> None:  # pylint: disable=too-many-arguments
-                # pylint: disable=too-many-branches
+    ) -> None:
+        # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
         LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
