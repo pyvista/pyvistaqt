@@ -130,9 +130,10 @@ class DoubleSlider(QSlider):
 class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
+    # pylint: disable=too-many-arguments,useless-return
     def __init__(
         self, parent, callback, minimum=0.0, maximum=20.0, value=1.0
-    ) -> None:  # pylint: disable=too-many-arguments,useless-return
+    ) -> None:
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
@@ -155,6 +156,8 @@ class RangeGroup(QHBoxLayout):
         self.slider.valueChanged.connect(self.update_spinbox)
         self.spinbox.valueChanged.connect(self.update_value)
         self.spinbox.valueChanged.connect(callback)
+
+        return None
 
     def update_spinbox(self, value):  # pylint: disable=unused-argument
         """Set the value of the internal spinbox."""
