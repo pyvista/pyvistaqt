@@ -20,6 +20,7 @@ import pyvista as pv
 
 from .window import MainWindow
 
+
 class FileDialog(QFileDialog):
     """Generic file query.
 
@@ -34,12 +35,12 @@ class FileDialog(QFileDialog):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        parent : MainWindow =None,
-        filefilter : List[str] =None,
-        save_mode : bool=True,
-        show : bool=True,
-        callback : np.ndarray=None,
-        directory : bool=False,
+        parent: MainWindow = None,
+        filefilter: List[str] = None,
+        save_mode: bool = True,
+        show: bool = True,
+        callback: np.ndarray = None,
+        directory: bool = False,
     ) -> None:
         """Initialize the file dialog."""
         super(FileDialog, self).__init__(parent)
@@ -136,7 +137,14 @@ class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
     # pylint: disable=too-many-arguments,useless-return
-    def __init__(self, parent: MainWindow, callback: Any, minimum: float =0.0, maximum: float=20.0, value: float=1.0) -> None:
+    def __init__(
+        self,
+        parent: MainWindow,
+        callback: Any,
+        minimum: float = 0.0,
+        maximum: float = 20.0,
+        value: float = 1.0,
+    ) -> None:
         """Initialize the range widget."""
         super(RangeGroup, self).__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
@@ -198,7 +206,9 @@ class ScaleAxesDialog(QDialog):
     accepted = pyqtSignal(float)
     signal_close = pyqtSignal()
 
-    def __init__(self, parent: MainWindow, plotter: pv.Plotter, show: bool=True) -> None:
+    def __init__(
+        self, parent: MainWindow, plotter: pv.Plotter, show: bool = True
+    ) -> None:
         """Initialize the scaling dialog."""
         super(ScaleAxesDialog, self).__init__(parent)
         self.setGeometry(300, 300, 50, 50)

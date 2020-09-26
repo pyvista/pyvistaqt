@@ -51,7 +51,14 @@ import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, pyqtSignal, QSize
-from PyQt5.QtWidgets import QAction, QFrame, QMenuBar, QVBoxLayout, QToolBar, QApplication
+from PyQt5.QtWidgets import (
+    QAction,
+    QFrame,
+    QMenuBar,
+    QVBoxLayout,
+    QToolBar,
+    QApplication,
+)
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
@@ -165,14 +172,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        parent: MainWindow=None,
-        title: str=None,
-        off_screen: bool=None,
-        multi_samples: int=None,
-        line_smoothing: bool=False,
-        point_smoothing: bool=False,
-        polygon_smoothing: bool=False,
-        auto_update: Union[float, bool]=5.0,
+        parent: MainWindow = None,
+        title: str = None,
+        off_screen: bool = None,
+        multi_samples: int = None,
+        line_smoothing: bool = False,
+        point_smoothing: bool = False,
+        polygon_smoothing: bool = False,
+        auto_update: Union[float, bool] = 5.0,
         **kwargs: Any
     ) -> None:
         # pylint: disable=too-many-branches
@@ -291,7 +298,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
-    def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:  # pylint: disable=invalid-name,no-self-use
+    def dragEnterEvent(
+        self, event: QtGui.QDragEnterEvent
+    ) -> None:  # pylint: disable=invalid-name,no-self-use
         """Event is called when something is dropped onto the vtk window.
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
@@ -306,7 +315,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         except IOError as exception:  # pragma: no cover
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
-    def dropEvent(self, event: QtGui.QDropEnterEvent) -> None:  # pylint: disable=invalid-name,useless-return
+    def dropEvent(
+        self, event: QtGui.QDropEnterEvent
+    ) -> None:  # pylint: disable=invalid-name,useless-return
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
@@ -526,15 +537,15 @@ class BackgroundPlotter(QtInteractor):
     # pylint: disable=too-many-locals
     def __init__(
         self,
-        show: bool=True,
-        app: QApplication=None,
-        window_size: List[float]=None,
-        off_screen: bool=None,
-        allow_quit_keypress: bool=True,
-        toolbar: bool=True,
-        menu_bar: bool=True,
-        editor: bool=True,
-        update_app_icon: bool=False,
+        show: bool = True,
+        app: QApplication = None,
+        window_size: List[float] = None,
+        off_screen: bool = None,
+        allow_quit_keypress: bool = True,
+        toolbar: bool = True,
+        menu_bar: bool = True,
+        editor: bool = True,
+        update_app_icon: bool = False,
         **kwargs: Any
     ) -> None:
         # pylint: disable=too-many-branches
