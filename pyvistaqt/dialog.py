@@ -84,7 +84,7 @@ class DoubleSlider(QSlider):
 
     """
 
-    def __init__(self, *args: None, **kwargs: None) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the double slider."""
         super().__init__(*args, **kwargs)
         self.decimals = 5
