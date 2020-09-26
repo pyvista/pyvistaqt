@@ -45,7 +45,7 @@ class Editor(QDialog):
 
         self.update()
 
-    def update(self):
+    def update(self) -> None:
         """Update the internal widget list."""
         self.tree_widget.clear()
         for idx, renderer in enumerate(self.renderers):
@@ -62,7 +62,7 @@ class Editor(QDialog):
                     top_item.addChild(child_item)
         self.tree_widget.expandAll()
 
-    def toggle(self):
+    def toggle(self) -> None:
         """Toggle the editor visibility."""
         self.update()
         if self.isVisible():

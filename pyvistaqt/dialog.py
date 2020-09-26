@@ -222,7 +222,7 @@ class ScaleAxesDialog(QDialog):
         if show:  # pragma: no cover
             self.show()
 
-    def update_scale(self):
+    def update_scale(self) -> None:
         """Update the scale of all actors in the plotter."""
         self.plotter.set_scale(
             self.x_slider_group.value,
