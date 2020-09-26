@@ -186,7 +186,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
 
-        self.camera_position: BasePlotter.camera_position
+        self.camera_position: BasePlotter.camera_position = None
         self.url: Optional[QtCore.QUrl] = None
         self.default_camera_tool_bar = None
         self.saved_camera_positions: List[BasePlotter.camera_position] = []
