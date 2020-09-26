@@ -191,7 +191,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.camera_position: BasePlotter.camera_position
         self.url: Optional[QtCore.QUrl] = None
         self.default_camera_tool_bar = None
-        self.saved_camera_positions: List[BasePlotter.camera_position] = None
+        self.saved_camera_positions: Optional[List[BasePlotter.camera_position]] = None
         self.saved_cameras_tool_bar: Optional[QToolBar] = None
         self.main_menu: Optional[QMenuBar] = None
         self._menu_close_action = None
@@ -667,7 +667,7 @@ class BackgroundPlotter(QtInteractor):
             # pylint: disable=unnecessary-lambda
             self.add_key_event("q", lambda: self.close())
 
-    def scale_axes_dialog(self, show: Optional[bool] = True) -> ScaleAxesDialog:
+    def scale_axes_dialog(self, show: bool = True) -> ScaleAxesDialog:
         """Open scale axes dialog."""
         return ScaleAxesDialog(self.app_window, self, show=show)
 
