@@ -269,7 +269,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.view_isometric()
         LOG.debug("QtInteractor init stop")
 
-    def gesture_event(self, event: Any) -> bool:
+    def gesture_event(self, event: QGestureEvent) -> bool:
         """Handle gesture events."""
         pinch = event.gesture(QtCore.Qt.PinchGesture)
         if pinch:
