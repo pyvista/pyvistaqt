@@ -51,6 +51,7 @@ import scooby  # type: ignore
 import vtk
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, QTimer, pyqtSignal
+
 # pylint: disable=unused-import
 from PyQt5.QtWidgets import (
     QAction,
