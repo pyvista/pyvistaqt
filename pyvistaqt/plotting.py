@@ -55,10 +55,10 @@ from PyQt5.QtWidgets import (  # pylint: disable=unused-import
     QAction,
     QApplication,
     QFrame,
+    QGestureEvent,
     QMenuBar,
     QToolBar,
     QVBoxLayout,
-    QGestureEvent,
 )
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
