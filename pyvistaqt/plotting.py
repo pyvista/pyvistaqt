@@ -800,10 +800,7 @@ class BackgroundPlotter(QtInteractor):
             self.app_window.close()
 
     def add_callback(
-        self,
-        func: Callable,
-        interval: int = 1000,
-        count: Optional[int] = None,
+        self, func: Callable, interval: int = 1000, count: Optional[int] = None
     ) -> None:
         """Add a function that can update the scene in the background.
 
