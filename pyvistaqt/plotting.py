@@ -58,6 +58,7 @@ from PyQt5.QtWidgets import (  # pylint: disable=unused-import
     QMenuBar,
     QToolBar,
     QVBoxLayout,
+    QGestureEvent,
 )
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
@@ -186,7 +187,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
 
-        self.url: Optional[QtCore.QUrl] = None
+        self.url: QtCore.QUrl = None
         self.default_camera_tool_bar = None
         self.saved_camera_positions: Optional[List[BasePlotter.camera_position]] = None
         self.saved_cameras_tool_bar: QToolBar = None
@@ -275,7 +276,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.view_isometric()
         LOG.debug("QtInteractor init stop")
 
-    def gesture_event(self, event: Any) -> bool:
+    def gesture_event(self, event: QGestureEvent) -> bool:
         """Handle gesture events."""
         pinch = event.gesture(QtCore.Qt.PinchGesture)
         if pinch:
@@ -314,7 +315,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             warnings.warn("Exception when dropping files: %s" % str(exception))
 
     # pylint: disable=invalid-name,useless-return
-    def dropEvent(self, event: Any) -> None:
+    def dropEvent(self, event: QtCore.QEvent) -> None:
         """Event is called after dragEnterEvent."""
         for url in event.mimeData().urls():  # pragma: no cover
             self.url = url
