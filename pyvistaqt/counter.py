@@ -13,7 +13,7 @@ class Counter(QObject):
 
     signal_finished = pyqtSignal()
 
-    def __init__(self, count):
+    def __init__(self, count: int) -> None:
         """Initialize the counter."""
         super(Counter, self).__init__()
         if isinstance(count, int) and count > 0:
@@ -26,7 +26,7 @@ class Counter(QObject):
             raise ValueError("count is not strictly positive.")
 
     @pyqtSlot()
-    def decrease(self):
+    def decrease(self) -> None:
         """Decrease the count."""
         self.count -= 1
         if self.count <= 0:

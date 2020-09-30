@@ -4,6 +4,7 @@ BLACK_DIRS ?= ./pyvistaqt/
 ISORT_DIRS ?= ./pyvistaqt/*.py
 PYCODESTYLE_DIRS ?= ./pyvistaqt/
 PYLINT_DIRS ?= ./pyvistaqt/
+MYPY_DIRS ?= ./pyvistaqt/
 FLAKE8_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
 CODESPELL_SKIP ?= "*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
@@ -13,7 +14,7 @@ EXTRA_FLAKE8_OPTIONS ?= --ignore="E501,E203,W503"
 
 all: srcstyle doctest
 
-srcstyle: black isort pylint pycodestyle flake8
+srcstyle: black isort pylint pycodestyle mypy flake8
 
 doctest: codespell pydocstyle
 
@@ -32,6 +33,10 @@ pylint:
 pycodestyle:
 	@echo "Running pycodestyle"
 	@pycodestyle $(PYCODESTYLE_DIRS) $(EXTRA_PYCODESTYLE_OPTIONS)
+
+mypy:
+	@echo "Running mypy"
+	@mypy $(MYPY_DIRS)
 
 flake8:
 	@echo "Running flake8"

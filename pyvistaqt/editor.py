@@ -1,7 +1,9 @@
 """
 This module contains the Qt scene editor.
 """
+from typing import List
 
+import vtk
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QCheckBox,
@@ -15,12 +17,15 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from pyvista import Renderer
+
+from .window import MainWindow
 
 
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent, renderers):
+    def __init__(self, parent: MainWindow, renderers: List[Renderer]) -> None:
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
@@ -32,7 +37,7 @@ class Editor(QDialog):
         self.layout.addWidget(self.tree_widget)
         self.layout.addWidget(self.stacked_widget)
 
-        def _selection_callback():
+        def _selection_callback() -> None:
             for item in self.tree_widget.selectedItems():
                 widget_idx = item.data(0, Qt.ItemDataRole.UserRole)
                 self.stacked_widget.setCurrentIndex(widget_idx)
@@ -45,7 +50,7 @@ class Editor(QDialog):
 
         self.update()
 
-    def update(self):
+    def update(self) -> None:
         """Update the internal widget list."""
         self.tree_widget.clear()
         for idx, renderer in enumerate(self.renderers):
@@ -62,7 +67,7 @@ class Editor(QDialog):
                     top_item.addChild(child_item)
         self.tree_widget.expandAll()
 
-    def toggle(self):
+    def toggle(self) -> None:
         """Toggle the editor visibility."""
         self.update()
         if self.isVisible():
@@ -71,12 +76,12 @@ class Editor(QDialog):
             self.show()
 
 
-def _get_renderer_widget(renderer):
+def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 
     # axes
-    def _axes_callback(state):
+    def _axes_callback(state: bool) -> None:
         if state:
             renderer.show_axes()
         else:
@@ -94,7 +99,7 @@ def _get_renderer_widget(renderer):
     return widget
 
 
-def _get_actor_widget(actor):
+def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 
