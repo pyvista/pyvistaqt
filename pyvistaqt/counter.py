@@ -2,11 +2,15 @@ from qtpy.QtCore import QObject, Signal, Slot
 
 
 class Counter(QObject):
-    """Counter augmented with a Qt timer."""
+    """
+    Counter class with Qt signal/slot.
+    """
+
+    # pylint: disable=too-few-public-methods
 
     signal_finished = Signal()
 
-    def __init__(self, count):
+    def __init__(self, count: int) -> None:
         """Initialize the counter."""
         super(Counter, self).__init__()
         if isinstance(count, int) and count > 0:

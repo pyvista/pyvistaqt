@@ -15,3 +15,4 @@ colorcet
 cmocean
 scooby>=0.5.1
 tqdm
+ipython
