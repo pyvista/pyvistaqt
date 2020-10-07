@@ -53,8 +53,16 @@ from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore, QtGui
-from qtpy.QtCore import QTimer, Signal, QTimer, QSize
-from qtpy.QtWidgets import QAction, QApplication, QFrame, QGestureEvent, QMenuBar, QToolBar, QVBoxLayout
+from qtpy.QtCore import QTimer, Signal, QSize
+from qtpy.QtWidgets import (
+    QAction,
+    QApplication,
+    QFrame,
+    QGestureEvent,
+    QMenuBar,
+    QToolBar,
+    QVBoxLayout
+)
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
@@ -584,8 +592,6 @@ class BackgroundPlotter(QtInteractor):
 
         # run within python
         if app is None:
-            from qtpy.QtWidgets import QApplication
-
             app = QApplication.instance()
             if not app:  # pragma: no cover
                 app = QApplication(["PyVista"])
