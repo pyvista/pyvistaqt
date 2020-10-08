@@ -1,3 +1,7 @@
+"""
+This module contains a basic Qt-compatible counter class.
+"""
+
 from qtpy.QtCore import QObject, Signal, Slot
 
 
@@ -23,7 +27,7 @@ class Counter(QObject):
             raise ValueError("count is not strictly positive.")
 
     @Slot()
-    def decrease(self):
+    def decrease(self) -> None:
         """Decrease the count."""
         self.count -= 1
         if self.count <= 0:
