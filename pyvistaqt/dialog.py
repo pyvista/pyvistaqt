@@ -1,6 +1,4 @@
-"""
-This module contains Qt dialog widgets.
-"""
+"""This module contains Qt dialog widgets."""
 import os
 from typing import Any, List
 
@@ -196,9 +194,7 @@ class RangeGroup(QHBoxLayout):
 
 
 class ScaleAxesDialog(QDialog):
-    """
-    Dialog to control axes scaling.
-    """
+    """Dialog to control axes scaling."""
 
     # pylint: disable=too-few-public-methods
 

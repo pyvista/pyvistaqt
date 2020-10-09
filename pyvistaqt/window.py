@@ -1,6 +1,4 @@
-"""
-This module contains a Qt-compatible MainWindow class.
-"""
+"""This module contains a Qt-compatible MainWindow class."""
 
 from qtpy import QtCore
 from qtpy.QtCore import Signal
@@ -8,9 +6,7 @@ from qtpy.QtWidgets import QMainWindow
 
 
 class MainWindow(QMainWindow):
-    """
-    Convenience MainWindow that manages the application.
-    """
+    """Convenience MainWindow that manages the application."""
 
     signal_close = Signal()
     signal_gesture = Signal(QtCore.QEvent)

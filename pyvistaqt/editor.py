@@ -1,6 +1,5 @@
-"""
-This module contains the Qt scene editor.
-"""
+"""This module contains the Qt scene editor."""
+
 from typing import List
 
 import vtk

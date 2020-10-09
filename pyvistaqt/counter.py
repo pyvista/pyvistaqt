@@ -1,14 +1,10 @@
-"""
-This module contains a basic Qt-compatible counter class.
-"""
+"""This module contains a basic Qt-compatible counter class."""
 
 from qtpy.QtCore import QObject, Signal, Slot
 
 
 class Counter(QObject):
-    """
-    Counter class with Qt signal/slot.
-    """
+    """Counter class with Qt signal/slot."""
 
     # pylint: disable=too-few-public-methods
 
