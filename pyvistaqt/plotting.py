@@ -61,7 +61,7 @@ from qtpy.QtWidgets import (
     QGestureEvent,
     QMenuBar,
     QToolBar,
-    QVBoxLayout
+    QVBoxLayout,
 )
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
