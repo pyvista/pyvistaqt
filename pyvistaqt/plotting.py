@@ -53,7 +53,7 @@ from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
-from qtpy.QtCore import QTimer, Signal, QSize
+from qtpy.QtCore import QSize, QTimer, Signal
 from qtpy.QtWidgets import (
     QAction,
     QApplication,

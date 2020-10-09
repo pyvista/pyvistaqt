@@ -4,6 +4,7 @@ This module contains the Qt scene editor.
 from typing import List
 
 import vtk
+from pyvista import Renderer
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -17,7 +18,6 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from pyvista import Renderer
 
 from .window import MainWindow
 
