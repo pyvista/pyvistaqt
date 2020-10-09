@@ -303,7 +303,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     # pylint: disable=invalid-name,no-self-use
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
-        
+
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
         to allow files.
