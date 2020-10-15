@@ -780,6 +780,12 @@ class BackgroundPlotter(QtInteractor):
             return self.disable_parallel_projection()
         return self.enable_parallel_projection()
 
+    def enable(self):
+        self.renderer.enable()
+
+    def disable(self):
+        self.renderer.enable()
+
     @property
     def window_size(self) -> Tuple[int, int]:
         """Return render window size."""
