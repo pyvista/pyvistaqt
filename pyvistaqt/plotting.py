@@ -298,6 +298,18 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
+    @wraps(BasePlotter.enable)
+    def enable(self):
+        """Wrap ``BasePlotter.enable``."""
+        self.interactor.setEnabled(True)
+        return BasePlotter.enable(self)
+
+    @wraps(BasePlotter.disable)
+    def disable(self):
+        """Wrap ``BasePlotter.disable``."""
+        self.interactor.setDisabled(True)
+        return BasePlotter.disable(self)
+
     # pylint: disable=invalid-name,no-self-use
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
@@ -779,12 +791,6 @@ class BackgroundPlotter(QtInteractor):
         if self.camera.GetParallelProjection():
             return self.disable_parallel_projection()
         return self.enable_parallel_projection()
-
-    def enable(self):
-        self.renderer.enable()
-
-    def disable(self):
-        self.renderer.enable()
 
     @property
     def window_size(self) -> Tuple[int, int]:
