@@ -1,4 +1,6 @@
 """
+This module contains the QtInteractor and BackgroundPlotter.
+
 Diagram
 ^^^^^^^
 
@@ -49,9 +51,12 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
-from PyQt5 import QtCore
-from PyQt5.QtCore import QSize, QTimer, pyqtSignal
-from PyQt5.QtWidgets import (  # pylint: disable=unused-import
+from pyvista.plotting.plotting import BasePlotter
+from pyvista.plotting.theme import rcParams
+from pyvista.utilities import conditional_decorator, threaded
+from qtpy import QtCore
+from qtpy.QtCore import QSize, QTimer, Signal
+from qtpy.QtWidgets import (
     QAction,
     QApplication,
     QFrame,
@@ -60,9 +65,6 @@ from PyQt5.QtWidgets import (  # pylint: disable=unused-import
     QToolBar,
     QVBoxLayout,
 )
-from pyvista.plotting.plotting import BasePlotter
-from pyvista.plotting.theme import rcParams
-from pyvista.utilities import conditional_decorator, threaded
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
@@ -74,7 +76,7 @@ if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
     from IPython.external.qt_for_kernel import QtGui
 else:
-    from PyQt5 import QtGui  # pylint: disable=ungrouped-imports
+    from qtpy import QtGui  # pylint: disable=ungrouped-imports
 
 LOG = logging.getLogger("pyvistaqt")
 LOG.setLevel(logging.CRITICAL)
@@ -167,8 +169,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     # pylint: disable=too-many-statements
 
     # Signals must be class attributes
-    render_signal = pyqtSignal()
-    key_press_event_signal = pyqtSignal(vtk.vtkGenericRenderWindowInteractor, str)
+    render_signal = Signal()
+    key_press_event_signal = Signal(vtk.vtkGenericRenderWindowInteractor, str)
 
     # pylint: disable=too-many-arguments
     def __init__(
@@ -313,6 +315,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     # pylint: disable=invalid-name,no-self-use
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
+
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
         to allow files.
@@ -604,9 +607,6 @@ class BackgroundPlotter(QtInteractor):
 
         # run within python
         if app is None:
-            # pylint: disable=import-outside-toplevel,redefined-outer-name,reimported
-            from PyQt5.QtWidgets import QApplication
-
             app = QApplication.instance()
             if not app:  # pragma: no cover
                 app = QApplication(["PyVista"])

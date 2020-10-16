@@ -5,9 +5,9 @@ import numpy as np
 import pytest
 import pyvista
 import vtk
-from PyQt5.Qt import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
+from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
 from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 

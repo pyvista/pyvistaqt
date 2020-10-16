@@ -1,17 +1,14 @@
-"""
-This module contains a basic Qt-compatible counter class.
-"""
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+"""This module contains a basic Qt-compatible counter class."""
+
+from qtpy.QtCore import QObject, Signal, Slot
 
 
 class Counter(QObject):
-    """
-    Counter class with Qt signal/slot.
-    """
+    """Counter class with Qt signal/slot."""
 
     # pylint: disable=too-few-public-methods
 
-    signal_finished = pyqtSignal()
+    signal_finished = Signal()
 
     def __init__(self, count: int) -> None:
         """Initialize the counter."""
@@ -25,7 +22,7 @@ class Counter(QObject):
         else:
             raise ValueError("count is not strictly positive.")
 
-    @pyqtSlot()
+    @Slot()
     def decrease(self) -> None:
         """Decrease the count."""
         self.count -= 1

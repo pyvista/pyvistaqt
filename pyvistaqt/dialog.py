@@ -1,14 +1,12 @@
-"""
-This module contains Qt dialog widgets.
-"""
+"""This module contains Qt dialog widgets."""
 import os
 from typing import Any, List
 
 import numpy as np  # type: ignore
 import pyvista as pv
-from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (
+from qtpy import QtCore
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import (
     QDialog,
     QDoubleSpinBox,
     QFileDialog,
@@ -29,7 +27,7 @@ class FileDialog(QFileDialog):
 
     # pylint: disable=too-few-public-methods
 
-    dlg_accepted = pyqtSignal(str)
+    dlg_accepted = Signal(str)
 
     # pylint: disable=too-many-arguments
     def __init__(
@@ -196,14 +194,12 @@ class RangeGroup(QHBoxLayout):
 
 
 class ScaleAxesDialog(QDialog):
-    """
-    Dialog to control axes scaling.
-    """
+    """Dialog to control axes scaling."""
 
     # pylint: disable=too-few-public-methods
 
-    accepted = pyqtSignal(float)
-    signal_close = pyqtSignal()
+    accepted = Signal(float)
+    signal_close = Signal()
 
     def __init__(
         self, parent: MainWindow, plotter: pv.Plotter, show: bool = True

@@ -1,11 +1,11 @@
-"""
-This module contains the Qt scene editor.
-"""
+"""This module contains the Qt scene editor."""
+
 from typing import List
 
 import vtk
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
+from pyvista import Renderer
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import (
     QCheckBox,
     QDialog,
     QDoubleSpinBox,
@@ -17,7 +17,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from pyvista import Renderer
 
 from .window import MainWindow
 

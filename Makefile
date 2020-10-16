@@ -48,7 +48,7 @@ codespell:
 
 pydocstyle:
 	@echo "Running pydocstyle"
-	@pydocstyle pyvista
+	@pydocstyle pyvistaqt
 
 coverage:
 	@echo "Running coverage"
