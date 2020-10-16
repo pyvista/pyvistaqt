@@ -298,6 +298,18 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
 
+    @wraps(BasePlotter.enable)
+    def enable(self) -> None:
+        """Wrap ``BasePlotter.enable``."""
+        self.setEnabled(True)
+        return BasePlotter.enable(self)
+
+    @wraps(BasePlotter.disable)
+    def disable(self) -> None:
+        """Wrap ``BasePlotter.disable``."""
+        self.setDisabled(True)
+        return BasePlotter.disable(self)
+
     # pylint: disable=invalid-name,no-self-use
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
