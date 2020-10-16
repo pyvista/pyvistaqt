@@ -299,13 +299,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         return self.render_signal.emit()
 
     @wraps(BasePlotter.enable)
-    def enable(self):
+    def enable(self) -> None:
         """Wrap ``BasePlotter.enable``."""
         self.interactor.setEnabled(True)
         return BasePlotter.enable(self)
 
     @wraps(BasePlotter.disable)
-    def disable(self):
+    def disable(self) -> None:
         """Wrap ``BasePlotter.disable``."""
         self.interactor.setDisabled(True)
         return BasePlotter.disable(self)

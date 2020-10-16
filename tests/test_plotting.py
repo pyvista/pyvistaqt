@@ -205,11 +205,13 @@ def test_qt_interactor(qtbot):
     assert_hasattr(vtk_widget, "render_timer", QTimer)
     # check that BasePlotter.__init__() is called
     assert_hasattr(vtk_widget, "_closed", bool)
+    assert_hasattr(vtk_widget, "renderer", vtk.vtkRenderer)
     # check that QVTKRenderWindowInteractorAdapter.__init__() is called
     assert_hasattr(vtk_widget, "interactor", QVTKRenderWindowInteractor)
 
     interactor = vtk_widget.interactor  # QVTKRenderWindowInteractor
     render_timer = vtk_widget.render_timer  # QTimer
+    renderer = vtk_widget.renderer  # vtkRenderer
 
     # ensure that self.render is called by the timer
     render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
@@ -227,6 +229,12 @@ def test_qt_interactor(qtbot):
     assert interactor.isVisible()
     assert render_timer.isActive()
     assert not vtk_widget._closed
+
+    # test enable/disable
+    vtk_widget.disable()
+    assert not renderer.GetInteractive()
+    vtk_widget.enable()
+    assert renderer.GetInteractive()
 
     window.close()
 
