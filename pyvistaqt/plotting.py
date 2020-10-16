@@ -301,13 +301,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     @wraps(BasePlotter.enable)
     def enable(self) -> None:
         """Wrap ``BasePlotter.enable``."""
-        self.interactor.setEnabled(True)
+        self.setEnabled(True)
         return BasePlotter.enable(self)
 
     @wraps(BasePlotter.disable)
     def disable(self) -> None:
         """Wrap ``BasePlotter.disable``."""
-        self.interactor.setDisabled(True)
+        self.setDisabled(True)
         return BasePlotter.disable(self)
 
     # pylint: disable=invalid-name,no-self-use
