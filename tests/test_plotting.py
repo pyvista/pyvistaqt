@@ -230,7 +230,7 @@ def test_qt_interactor(qtbot):
     assert render_timer.isActive()
     assert not vtk_widget._closed
 
-    # test enable/disable
+    # test enable/disable interactivity
     vtk_widget.disable()
     assert not renderer.GetInteractive()
     vtk_widget.enable()
