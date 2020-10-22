@@ -631,7 +631,6 @@ def test_background_plotting_add_callback(qtbot, monkeypatch):
     assert callback_timer.isActive()
     plotter.close()
     assert not callback_timer.isActive()  # window stops the callback
-    sphere.ReleaseData()
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
