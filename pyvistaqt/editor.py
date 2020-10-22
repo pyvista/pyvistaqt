@@ -1,5 +1,6 @@
 """This module contains the Qt scene editor."""
 
+import weakref
 from typing import List
 
 import vtk
@@ -105,9 +106,10 @@ def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
     prop = actor.GetProperty()
 
     # visibility
+    sv = weakref.ref(actor.SetVisibility)
     visibility = QCheckBox("Visibility")
     visibility.setChecked(actor.GetVisibility())
-    visibility.toggled.connect(actor.SetVisibility)
+    visibility.toggled.connect(lambda v: sv()(v))
     layout.addWidget(visibility)
 
     if prop is not None:
@@ -116,7 +118,8 @@ def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
         opacity = QDoubleSpinBox()
         opacity.setMaximum(1.0)
         opacity.setValue(prop.GetOpacity())
-        opacity.valueChanged.connect(prop.SetOpacity)
+        so = weakref.ref(prop.SetOpacity)
+        opacity.valueChanged.connect(lambda v: so()(v))
         tmp_layout.addWidget(QLabel("Opacity"))
         tmp_layout.addWidget(opacity)
         layout.addLayout(tmp_layout)

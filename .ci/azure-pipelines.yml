@@ -114,6 +114,11 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+        variables:
+          PYVISTA_PRE: true
+          GC_TEST: true
 
   steps:
   - task: UsePythonVersion@0
@@ -123,6 +128,9 @@ jobs:
 
   - script: |
       pip install wheel --upgrade
+      if [ "$PYVISTA_PRE" == "true" ]; then
+        pip install https://github.com/larsoner/pyvista/zipball/mem
+      fi;
       python setup.py bdist_wheel
       pip install dist/pyvistaqt*.whl
     displayName: Build wheel and install pyvistaqt
@@ -369,7 +377,7 @@ jobs:
     displayName: Upload Documentation to pyvistaqt-docs
     env:
       GH_TOKEN: $(gh.token)
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))    
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
   # don't run job on no-ci builds
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))

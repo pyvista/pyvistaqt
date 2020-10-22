@@ -1,5 +1,7 @@
+import gc
 import os
 import platform
+import weakref
 
 import numpy as np
 import pytest
@@ -18,6 +20,38 @@ from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
 from pyvistaqt.editor import Editor
 
 NO_PLOTTING = not system_supports_plotting()
+
+
+# Adapted from PyVista
+def _is_vtk(obj):
+    try:
+        return obj.__class__.__name__.startswith('vtk')
+    except Exception:  # old Python sometimes no __class__.__name__
+        return False
+
+
+@pytest.fixture(autouse=True)
+def check_gc(request):
+    """Ensure that all VTK objects are garbage-collected by Python."""
+    if 'test_ipython' in request.node.name:  # XXX this keeps a ref
+        yield
+        return
+    # We need https://github.com/pyvista/pyvista/pull/958 to actually run
+    # this test. Eventually we should use LooseVersion, but as of 2020/10/22
+    # 0.26.1 is the latest PyPi version and on master the version is weirdly
+    # 0.26.0 (as opposed to 0.26.2.dev0 or 0.27.dev0) so we can't. So for now
+    # let's use an env var (GC_TEST) instead of:
+    # if LooseVersion(pyvista.__version__) < LooseVersion('0.26.2'):
+    if os.getenv('GC_TEST', '').lower() != 'true':
+        yield
+        return
+    before = set(id(o) for o in gc.get_objects() if _is_vtk(o))
+    yield
+    pyvista.close_all()
+    gc.collect()
+    after = [o for o in gc.get_objects() if _is_vtk(o) and id(o) not in before]
+    after = sorted(o.__class__.__name__ for o in after)
+    assert len(after) == 0, 'Not all objects GCed:\n' + '\n'.join(after)
 
 
 class TstWindow(MainWindow):
@@ -140,7 +174,8 @@ def test_editor(qtbot):
 
     # add at least an actor
     plotter.subplot(0, 0)
-    plotter.add_mesh(pyvista.Sphere())
+    pd = pyvista.Sphere()
+    actor = plotter.add_mesh(pd)
     plotter.subplot(1, 0)
     plotter.show_axes()
 
@@ -178,12 +213,17 @@ def test_editor(qtbot):
 
     # hide the editor for coverage
     editor.toggle()
+    plotter.remove_actor(actor)
+    pd.ReleaseData()
+    del pd, actor
+    plotter.mesh = None
     plotter.close()
+    plotter.deep_clean()
 
-    plotter = BackgroundPlotter(editor=False)
-    qtbot.addWidget(plotter.app_window)
-    assert plotter.editor is None
-    plotter.close()
+    #plotter = BackgroundPlotter(editor=False)
+    #qtbot.addWidget(plotter.app_window)
+    #assert plotter.editor is None
+    #plotter.close()
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
@@ -524,10 +564,10 @@ def test_background_plotting_menu_bar(qtbot):
 def test_background_plotting_add_callback(qtbot, monkeypatch):
     class CallBack(object):
         def __init__(self, sphere):
-            self.sphere = sphere
+            self.sphere = weakref.ref(sphere)
 
         def __call__(self):
-            self.sphere.points *= 0.5
+            self.sphere().points[:] = self.sphere().points * 0.5
 
     update_count = [0]
     orig_update_app_icon = BackgroundPlotter.update_app_icon
@@ -595,6 +635,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch):
     assert callback_timer.isActive()
     plotter.close()
     assert not callback_timer.isActive()  # window stops the callback
+    sphere.ReleaseData()
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
@@ -679,6 +720,13 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
 
     # check that BasePlotter.__init__() is called only once
     assert len(_ALL_PLOTTERS) == 1
+
+    # clean up
+    del qtbot, window, main_menu, interactor, render_timer
+    _ALL_PLOTTERS.clear()
+
+    #if not empty_scene:  # XXX unclear why this is needed...
+    #    plotter.__del__()
 
 
 def _create_testing_scene(empty_scene, show=False, off_screen=False):

@@ -474,6 +474,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if hasattr(self, "render_timer"):
             self.render_timer.stop()
         BasePlotter.close(self)
+        BasePlotter.deep_clean(self)
         QVTKRenderWindowInteractor.close(self)
 
 
@@ -810,6 +811,14 @@ class BackgroundPlotter(QtInteractor):
         """Delete the qt plotter."""
         if not self._closed:
             self.app_window.close()
+        # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
+        # to resolve the ref to vtkGenericRenderWindowInteractor
+        self._Iren = _FakeEventHandler()
+        for key in ('_RenderWindow', 'renderer'):
+            try:
+                setattr(self, key, None)
+            except AttributeError:
+                pass
 
     def add_callback(
         self, func: Callable, interval: int = 1000, count: Optional[int] = None
@@ -856,3 +865,26 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
     if parent is not None:
         parent.setMenuBar(menu_bar)
     return menu_bar
+
+
+class _FakeEventHandler():
+    def SetDPI(self, dpi):
+        pass
+
+    def EnterEvent(self):
+        pass
+
+    def MouseMoveEvent(self):
+        pass
+
+    def LeaveEvent(self):
+        pass
+
+    def SetEventInformation(self, *args, **kwargs):
+        pass
+
+    def SetSize(self, *args, **kwargs):
+        pass
+
+    def ConfigureEvent(self, *args, **kwargs):
+        pass
