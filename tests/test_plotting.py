@@ -220,10 +220,10 @@ def test_editor(qtbot):
     plotter.close()
     plotter.deep_clean()
 
-    #plotter = BackgroundPlotter(editor=False)
-    #qtbot.addWidget(plotter.app_window)
-    #assert plotter.editor is None
-    #plotter.close()
+    plotter = BackgroundPlotter(editor=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.editor is None
+    plotter.close()
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
