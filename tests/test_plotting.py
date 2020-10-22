@@ -214,11 +214,7 @@ def test_editor(qtbot):
     # hide the editor for coverage
     editor.toggle()
     plotter.remove_actor(actor)
-    pd.ReleaseData()
-    del pd, actor
-    plotter.mesh = None
     plotter.close()
-    plotter.deep_clean()
 
     plotter = BackgroundPlotter(editor=False)
     qtbot.addWidget(plotter.app_window)
@@ -720,13 +716,6 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
 
     # check that BasePlotter.__init__() is called only once
     assert len(_ALL_PLOTTERS) == 1
-
-    # clean up
-    del qtbot, window, main_menu, interactor, render_timer
-    _ALL_PLOTTERS.clear()
-
-    #if not empty_scene:  # XXX unclear why this is needed...
-    #    plotter.__del__()
 
 
 def _create_testing_scene(empty_scene, show=False, off_screen=False):
