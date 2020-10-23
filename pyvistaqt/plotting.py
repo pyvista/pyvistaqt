@@ -474,7 +474,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if hasattr(self, "render_timer"):
             self.render_timer.stop()
         BasePlotter.close(self)
-        BasePlotter.deep_clean(self)
         QVTKRenderWindowInteractor.close(self)
 
 
