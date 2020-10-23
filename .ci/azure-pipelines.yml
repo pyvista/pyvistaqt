@@ -114,6 +114,8 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+        GC_TEST: 'true'
+        PV_PRE: 'true'
 
   steps:
   - task: UsePythonVersion@0
@@ -124,6 +126,9 @@ jobs:
   - script: |
       pip install wheel --upgrade
       python setup.py bdist_wheel
+      if [ $(PV_PRE) == "true" ]; then
+        pip install https://github.com/larsoner/pyvista/zipball/mem
+      fi
       pip install dist/pyvistaqt*.whl
     displayName: Build wheel and install pyvistaqt
 

@@ -14,10 +14,10 @@ def pytest_collection_finish(session):
     writer = TerminalWriter()
     writer.line(
         f'{"Excluding" if NO_PLOTTING else "Including"} plotting tests '
-        f'(NO_PLOTTING={NO_PLOTTING})')
+        f'(ALLOW_PLOTTING={os.getenv("ALLOW_PLOTTING", "")})')
     writer.line(
         f'{"Including" if GC_TEST else "Excluding"} garbage collection tests '
-        f'(GC_TEST={GC_TEST})')
+        f'(GC_TEST={os.getenv("GC_TEST", "")})')
 
 
 # Adapted from PyVista
