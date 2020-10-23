@@ -887,3 +887,6 @@ class _FakeEventHandler():
 
     def ConfigureEvent(self, *args, **kwargs):
         pass
+
+    def SetEventInformationFlipY(self, *args, **kwargs):
+        pass
