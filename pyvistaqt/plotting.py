@@ -810,8 +810,10 @@ class BackgroundPlotter(QtInteractor):
             self.app_window.close()
         # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
         # to resolve the ref to vtkGenericRenderWindowInteractor
-        self._Iren = _FakeEventHandler()  # pylint: disable=invalid-name,attribute-defined-outside-init
-        for key in ('_RenderWindow', 'renderer'):
+        self._Iren = (
+            _FakeEventHandler()
+        )  # pylint: disable=invalid-name,attribute-defined-outside-init
+        for key in ("_RenderWindow", "renderer"):
             try:
                 setattr(self, key, None)
             except AttributeError:
@@ -864,7 +866,7 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
     return menu_bar
 
 
-class _FakeEventHandler():
+class _FakeEventHandler:
     # pylint: disable=too-few-public-methods
 
     def _noop(self, *args, **kwargs):
