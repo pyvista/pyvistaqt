@@ -127,7 +127,7 @@ jobs:
       pip install wheel --upgrade
       python setup.py bdist_wheel
       if [ $(PV_PRE) == "true" ]; then
-        pip install https://github.com/larsoner/pyvista/zipball/mem
+        pip install https://github.com/pyvista/pyvista/zipball/master
       fi
       pip install dist/pyvistaqt*.whl
     displayName: Build wheel and install pyvistaqt
