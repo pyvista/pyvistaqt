@@ -231,7 +231,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.ren_win.AddRenderer(renderer)
 
         self.render_signal.connect(self._render)
-        self.key_press_event_signal.connect(super(QtInteractor, self).key_press_event)
+        self.key_press_event_signal.connect(super().key_press_event)
 
         self.background_color = rcParams["background"]
         if self.title:
@@ -620,9 +620,7 @@ class BackgroundPlotter(QtInteractor):
         self.app_window.setCentralWidget(self.frame)
         vlayout = QVBoxLayout()
         self.frame.setLayout(vlayout)
-        super(BackgroundPlotter, self).__init__(
-            parent=self.frame, off_screen=off_screen, **kwargs
-        )
+        super().__init__(parent=self.frame, off_screen=off_screen, **kwargs)
         vlayout.addWidget(self)
         self.app_window.grabGesture(QtCore.Qt.PinchGesture)
         self.app_window.signal_gesture.connect(self.gesture_event)
@@ -676,7 +674,7 @@ class BackgroundPlotter(QtInteractor):
 
         Handles closing configuration for q-key.
         """
-        super(BackgroundPlotter, self).reset_key_events()
+        super().reset_key_events()
         if self.allow_quit_keypress:
             # pylint: disable=unnecessary-lambda
             self.add_key_event("q", lambda: self.close())
@@ -812,7 +810,7 @@ class BackgroundPlotter(QtInteractor):
             self.app_window.close()
         # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
         # to resolve the ref to vtkGenericRenderWindowInteractor
-        self._Iren = _FakeEventHandler()
+        self._Iren = _FakeEventHandler()  # pylint: disable=invalid-name,attribute-defined-outside-init
         for key in ('_RenderWindow', 'renderer'):
             try:
                 setattr(self, key, None)
@@ -867,6 +865,7 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
 
 
 class _FakeEventHandler():
+    # pylint: disable=too-few-public-methods
 
     def _noop(self, *args, **kwargs):
         pass
