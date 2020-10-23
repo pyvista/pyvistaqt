@@ -867,26 +867,9 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
 
 
 class _FakeEventHandler():
-    def SetDPI(self, dpi):
+
+    def _noop(self, *args, **kwargs):
         pass
 
-    def EnterEvent(self):
-        pass
-
-    def MouseMoveEvent(self):
-        pass
-
-    def LeaveEvent(self):
-        pass
-
-    def SetEventInformation(self, *args, **kwargs):
-        pass
-
-    def SetSize(self, *args, **kwargs):
-        pass
-
-    def ConfigureEvent(self, *args, **kwargs):
-        pass
-
-    def SetEventInformationFlipY(self, *args, **kwargs):
-        pass
+    SetDPI = EnterEvent = MouseMoveEvent = LeaveEvent = SetSize = _noop
+    SetEventInformation = ConfigureEvent = SetEventInformationFlipY = _noop
