@@ -723,12 +723,12 @@ class BackgroundPlotter(QtInteractor):
         # Update trackers
         self._last_window_size = self.window_size
 
-    def set_icon(self, img: np.ndarray) -> None:
+    def set_icon(self, img: Union[np.ndarray, str]) -> None:
         """Set the icon image.
 
         Parameters
         ----------
-        img : shape (w, h, c) | str
+        img : ndarray, shape (w, h, c) | str
             The image. Should be uint8 and square (w == h).
             Can have 3 or 4 color/alpha channels (``c``).
             Can also be a string path that QIcon can load.
@@ -869,7 +869,7 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
 class _FakeEventHandler:
     # pylint: disable=too-few-public-methods
 
-    def _noop(self, *args, **kwargs):
+    def _noop(self, *args: tuple, **kwargs: dict) -> None:
         pass
 
     SetDPI = EnterEvent = MouseMoveEvent = LeaveEvent = SetSize = _noop

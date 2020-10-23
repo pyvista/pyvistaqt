@@ -100,17 +100,22 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
 
 
 def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
-    # pylint: disable=unnecessary-lambda
     widget = QWidget()
     layout = QVBoxLayout()
 
     prop = actor.GetProperty()
 
     # visibility
-    set_vis = weakref.ref(actor.SetVisibility)
+    set_vis_ref = weakref.ref(actor.SetVisibility)
+
+    def _set_vis(visibility: bool) -> None:
+        set_vis = set_vis_ref()
+        if set_vis is not None:
+            set_vis(visibility)
+
     visibility = QCheckBox("Visibility")
     visibility.setChecked(actor.GetVisibility())
-    visibility.toggled.connect(lambda v: set_vis()(v))
+    visibility.toggled.connect(_set_vis)
     layout.addWidget(visibility)
 
     if prop is not None:
@@ -119,8 +124,14 @@ def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
         opacity = QDoubleSpinBox()
         opacity.setMaximum(1.0)
         opacity.setValue(prop.GetOpacity())
-        set_opacity = weakref.ref(prop.SetOpacity)
-        opacity.valueChanged.connect(lambda v: set_opacity()(v))
+        set_opacity_ref = weakref.ref(prop.SetOpacity)
+
+        def _set_opacity(opacity: float) -> None:
+            set_opacity = set_opacity_ref()
+            if set_opacity is not None:
+                set_opacity(opacity)
+
+        opacity.valueChanged.connect(_set_opacity)
         tmp_layout.addWidget(QLabel("Opacity"))
         tmp_layout.addWidget(opacity)
         layout.addLayout(tmp_layout)
