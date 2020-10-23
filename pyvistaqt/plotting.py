@@ -810,9 +810,9 @@ class BackgroundPlotter(QtInteractor):
             self.app_window.close()
         # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
         # to resolve the ref to vtkGenericRenderWindowInteractor
-        self._Iren = (
+        self._Iren = (  # pylint: disable=invalid-name,attribute-defined-outside-init
             _FakeEventHandler()
-        )  # pylint: disable=invalid-name,attribute-defined-outside-init
+        )
         for key in ("_RenderWindow", "renderer"):
             try:
                 setattr(self, key, None)
