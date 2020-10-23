@@ -1,4 +1,3 @@
-import gc
 import os
 import platform
 import weakref
@@ -11,47 +10,13 @@ from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
 from pyvista import rcParams
-from pyvista.plotting import Renderer, system_supports_plotting
+from pyvista.plotting import Renderer
 
 import pyvistaqt
 from pyvistaqt import BackgroundPlotter, MainWindow, QtInteractor
 from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
                                 _create_menu_bar)
 from pyvistaqt.editor import Editor
-
-NO_PLOTTING = not system_supports_plotting()
-
-
-# Adapted from PyVista
-def _is_vtk(obj):
-    try:
-        return obj.__class__.__name__.startswith('vtk')
-    except Exception:  # old Python sometimes no __class__.__name__
-        return False
-
-
-@pytest.fixture(autouse=True)
-def check_gc(request):
-    """Ensure that all VTK objects are garbage-collected by Python."""
-    if 'test_ipython' in request.node.name:  # XXX this keeps a ref
-        yield
-        return
-    # We need https://github.com/pyvista/pyvista/pull/958 to actually run
-    # this test. Eventually we should use LooseVersion, but as of 2020/10/22
-    # 0.26.1 is the latest PyPi version and on master the version is weirdly
-    # 0.26.0 (as opposed to 0.26.2.dev0 or 0.27.dev0) so we can't. So for now
-    # let's use an env var (GC_TEST) instead of:
-    # if LooseVersion(pyvista.__version__) < LooseVersion('0.26.2'):
-    if os.getenv('GC_TEST', '').lower() != 'true':
-        yield
-        return
-    before = set(id(o) for o in gc.get_objects() if _is_vtk(o))
-    yield
-    pyvista.close_all()
-    gc.collect()
-    after = [o for o in gc.get_objects() if _is_vtk(o) and id(o) not in before]
-    after = sorted(o.__class__.__name__ for o in after)
-    assert len(after) == 0, 'Not all objects GCed:\n' + '\n'.join(after)
 
 
 class TstWindow(MainWindow):
@@ -163,8 +128,7 @@ def test_counter(qtbot):
     assert counter.count == 0
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_editor(qtbot):
+def test_editor(qtbot, plotting):
     timeout = 1000  # adjusted timeout for MacOS
 
     # editor=True by default
@@ -222,8 +186,7 @@ def test_editor(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_qt_interactor(qtbot):
+def test_qt_interactor(qtbot, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
@@ -286,12 +249,11 @@ def test_qt_interactor(qtbot):
     assert len(_ALL_PLOTTERS) == 1
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
     ])
-def test_background_plotting_axes_scale(qtbot, show_plotter):
+def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     plotter = BackgroundPlotter(
         show=show_plotter,
         off_screen=False,
@@ -339,8 +301,7 @@ def test_background_plotting_axes_scale(qtbot, show_plotter):
     assert not dlg.isVisible()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_camera(qtbot):
+def test_background_plotting_camera(qtbot, plotting):
     plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
 
@@ -360,12 +321,11 @@ def test_background_plotting_camera(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
     ])
-def test_background_plotter_export_files(qtbot, tmpdir, show_plotter):
+def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
@@ -414,12 +374,11 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter):
     assert os.path.isfile(filename)
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
     ])
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter):
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
@@ -468,8 +427,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter):
     assert os.path.isfile(filename + '.vtkjs')
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_orbit(qtbot):
+def test_background_plotting_orbit(qtbot, plotting):
     plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
     # perform the orbit:
@@ -477,8 +435,7 @@ def test_background_plotting_orbit(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_toolbar(qtbot):
+def test_background_plotting_toolbar(qtbot, plotting):
     with pytest.raises(TypeError, match='toolbar'):
         BackgroundPlotter(off_screen=False, toolbar="foo")
 
@@ -511,8 +468,7 @@ def test_background_plotting_toolbar(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_menu_bar(qtbot):
+def test_background_plotting_menu_bar(qtbot, plotting):
     with pytest.raises(TypeError, match='menu_bar'):
         BackgroundPlotter(off_screen=False, menu_bar="foo")
 
@@ -556,8 +512,7 @@ def test_background_plotting_menu_bar(qtbot):
     assert plotter._last_update_time == -np.inf
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_add_callback(qtbot, monkeypatch):
+def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     class CallBack(object):
         def __init__(self, sphere):
             self.sphere = weakref.ref(sphere)
@@ -633,7 +588,6 @@ def test_background_plotting_add_callback(qtbot, monkeypatch):
     assert not callback_timer.isActive()  # window stops the callback
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('close_event', [
     "plotter_close",
     "window_close",
@@ -645,7 +599,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch):
     True,
     False,
     ])
-def test_background_plotting_close(qtbot, close_event, empty_scene):
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
