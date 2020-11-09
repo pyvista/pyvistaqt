@@ -242,6 +242,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         if off_screen:
             self.ren_win.SetOffScreenRendering(1)
+            self.iren = None
         else:
             self.iren = self.ren_win.GetInteractor()
             self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
