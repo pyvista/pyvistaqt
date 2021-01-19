@@ -42,7 +42,6 @@ import contextlib
 import logging
 import os
 import platform
-from distutils.version import LooseVersion
 import time
 import warnings
 from functools import wraps

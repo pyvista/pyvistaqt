@@ -1,5 +1,6 @@
 import os
 import platform
+from distutils.version import LooseVersion
 
 import numpy as np
 import pytest
