@@ -570,11 +570,13 @@ class BackgroundPlotter(QtInteractor):
         """Initialize the qt plotter."""
         LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
+            self._closed = True  # avoid closing recursion
             raise TypeError(
                 "Expected type for ``menu_bar`` is bool"
                 " but {} was given.".format(type(menu_bar))
             )
         if not isinstance(toolbar, bool):
+            self._closed = True  # avoid closing recursion
             raise TypeError(
                 "Expected type for ``toolbar`` is bool"
                 " but {} was given.".format(type(toolbar))
