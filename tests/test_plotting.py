@@ -447,7 +447,8 @@ def test_background_plotting_orbit(qtbot):
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_background_plotting_toolbar(qtbot):
     with pytest.raises(TypeError, match='toolbar'):
-        BackgroundPlotter(off_screen=False, toolbar="foo")
+        p = BackgroundPlotter(off_screen=False, toolbar="foo")
+        p.close()
 
     plotter = BackgroundPlotter(off_screen=False, toolbar=False)
     assert plotter.default_camera_tool_bar is None
@@ -481,7 +482,8 @@ def test_background_plotting_toolbar(qtbot):
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_background_plotting_menu_bar(qtbot):
     with pytest.raises(TypeError, match='menu_bar'):
-        BackgroundPlotter(off_screen=False, menu_bar="foo")
+        p = BackgroundPlotter(off_screen=False, menu_bar="foo")
+        p.close()
 
     plotter = BackgroundPlotter(off_screen=False, menu_bar=False)
     assert plotter.main_menu is None
