@@ -42,6 +42,7 @@ import contextlib
 import logging
 import os
 import platform
+from distutils.version import LooseVersion
 import time
 import warnings
 from functools import wraps
@@ -568,7 +569,7 @@ class BackgroundPlotter(QtInteractor):
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
-        # avoid recusion of the close() function by setting
+        # avoid recursion of the close() function by setting
         # self._closed=True until the BasePlotter.__init__
         # is called
         self._closed = True
