@@ -134,8 +134,6 @@ def test_counter(qtbot):
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_editor(qtbot):
-    # XXX: Not working anymore?
-    pytest.skip()
     timeout = 1000  # adjusted timeout for MacOS
 
     # editor=True by default
