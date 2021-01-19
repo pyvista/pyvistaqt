@@ -568,15 +568,17 @@ class BackgroundPlotter(QtInteractor):
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
+        # avoid recusion of the close() function by setting
+        # self._closed=True until the BasePlotter.__init__
+        # is called
+        self._closed = True
         LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
-            self._closed = True  # avoid closing recursion
             raise TypeError(
                 "Expected type for ``menu_bar`` is bool"
                 " but {} was given.".format(type(menu_bar))
             )
         if not isinstance(toolbar, bool):
-            self._closed = True  # avoid closing recursion
             raise TypeError(
                 "Expected type for ``toolbar`` is bool"
                 " but {} was given.".format(type(toolbar))
@@ -626,6 +628,7 @@ class BackgroundPlotter(QtInteractor):
         super(BackgroundPlotter, self).__init__(
             parent=self.frame, off_screen=off_screen, **kwargs
         )
+        assert not self._closed
         vlayout.addWidget(self)
         self.app_window.grabGesture(QtCore.Qt.PinchGesture)
         self.app_window.signal_gesture.connect(self.gesture_event)
