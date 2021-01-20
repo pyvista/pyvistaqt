@@ -140,7 +140,6 @@ def test_editor(qtbot):
     qtbot.addWidget(plotter.app_window)
     assert plotter.editor is None
     plotter.close()
-    return
 
     # editor=True by default
     plotter = BackgroundPlotter(shape=(2, 1))
@@ -152,6 +151,10 @@ def test_editor(qtbot):
     plotter.add_mesh(pyvista.Sphere())
     plotter.subplot(1, 0)
     plotter.show_axes()
+
+    # XXX DEBUG: interrupt test here
+    plotter.close()
+    return
 
     editor = plotter.editor
     assert not editor.isVisible()
