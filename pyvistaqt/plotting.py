@@ -504,11 +504,14 @@ class BackgroundPlotter(QtInteractor):
     allow_quit_keypress :
         Allow user to exit by pressing ``"q"``.
 
-    toolbar :
-       Display the default camera toolbar. Defaults to True.
+    toolbar : bool
+        If True, display the default camera toolbar. Defaults to True.
 
-    menu_bar:
-        Display the default main menu. Defaults to True.
+    menu_bar : bool
+        If True, display the default main menu. Defaults to True.
+
+    editor: bool
+        If True, display the VTK object editor. Defaults to True.
 
     update_app_icon :
         If True, update_app_icon will be called automatically to update the
