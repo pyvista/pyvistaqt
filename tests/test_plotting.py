@@ -151,6 +151,9 @@ def test_editor(qtbot):
         editor.toggle()
     assert editor.isVisible()
 
+    # XXX: DEBUG interrupt plotter her
+    plotter.close()
+
     assert_hasattr(editor, "tree_widget", QTreeWidget)
     tree_widget = editor.tree_widget
     top_item = tree_widget.topLevelItem(0)  # any renderer will do
