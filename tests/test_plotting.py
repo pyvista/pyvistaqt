@@ -136,6 +136,12 @@ def test_counter(qtbot):
 def test_editor(qtbot):
     timeout = 1000  # adjusted timeout for MacOS
 
+    plotter = BackgroundPlotter(editor=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.editor is None
+    plotter.close()
+    return
+
     # editor=True by default
     plotter = BackgroundPlotter(shape=(2, 1))
     qtbot.addWidget(plotter.app_window)
@@ -174,18 +180,13 @@ def test_editor(qtbot):
         widget_item = page_layout.itemAt(widget_idx)
         widget = widget_item.widget()
         if isinstance(widget, QCheckBox):
-            with qtbot.wait_signals([widget.toggled], timeout=500):
+            with qtbot.wait_signals([widget.toggled], timeout=timeout):
                 widget.toggle()
-            with qtbot.wait_signals([widget.toggled], timeout=500):
+            with qtbot.wait_signals([widget.toggled], timeout=timeout):
                 widget.toggle()
 
     # hide the editor for coverage
     editor.toggle()
-    plotter.close()
-
-    plotter = BackgroundPlotter(editor=False)
-    qtbot.addWidget(plotter.app_window)
-    assert plotter.editor is None
     plotter.close()
 
 
