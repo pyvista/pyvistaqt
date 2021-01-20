@@ -147,8 +147,8 @@ def test_editor(qtbot):
     # add at least an actor
     plotter.subplot(0, 0)
     plotter.add_mesh(pyvista.Sphere())
-    plotter.subplot(1, 0)
     plotter.show_axes()
+    plotter.subplot(1, 0)
 
     # XXX DEBUG: interrupt test here
     plotter.close()
