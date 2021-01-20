@@ -134,25 +134,16 @@ def test_counter(qtbot):
 def test_editor(qtbot):
     timeout = 1000  # adjusted timeout for MacOS
 
-    plotter = BackgroundPlotter(editor=False)
-    qtbot.addWidget(plotter.app_window)
-    assert plotter.editor is None
-    plotter.close()
-
     # editor=True by default
-    plotter = BackgroundPlotter(shape=(2, 1), editor=False)
+    plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
     qtbot.addWidget(plotter.app_window)
-    # assert_hasattr(plotter, "editor", Editor)
+    assert_hasattr(plotter, "editor", Editor)
 
     # add at least an actor
     plotter.subplot(0, 0)
     plotter.add_mesh(pyvista.Sphere())
-    plotter.show_axes()
     plotter.subplot(1, 0)
-
-    # XXX DEBUG: interrupt test here
-    plotter.close()
-    return
+    plotter.show_axes()
 
     editor = plotter.editor
     assert not editor.isVisible()
@@ -188,6 +179,11 @@ def test_editor(qtbot):
 
     # hide the editor for coverage
     editor.toggle()
+    plotter.close()
+
+    plotter = BackgroundPlotter(editor=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.editor is None
     plotter.close()
 
 
