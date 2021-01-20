@@ -87,8 +87,6 @@ def test_depth_peeling(qtbot):
 
 
 def test_off_screen(qtbot):
-    # XXX: Not working anymore?
-    pytest.skip()
     plotter = BackgroundPlotter(off_screen=False)
     qtbot.addWidget(plotter.app_window)
     assert not plotter.ren_win.GetOffScreenRendering()
@@ -146,15 +144,15 @@ def test_editor(qtbot):
     qtbot.addWidget(plotter.app_window)
     assert_hasattr(plotter, "editor", Editor)
 
+    # XXX DEBUG: interrupt test here
+    plotter.close()
+    return
+
     # add at least an actor
     plotter.subplot(0, 0)
     plotter.add_mesh(pyvista.Sphere())
     plotter.subplot(1, 0)
     plotter.show_axes()
-
-    # XXX DEBUG: interrupt test here
-    plotter.close()
-    return
 
     editor = plotter.editor
     assert not editor.isVisible()
