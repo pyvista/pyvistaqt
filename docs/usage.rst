@@ -10,6 +10,15 @@ of the ``Plotter`` class within a Qt application.
 This simplifies adding meshes, updating, and controlling them when using
 Qt.
 
+.. warning::
+   Please do keep in mind that the ``BackgroundPlotter`` **does not** create its
+   own event loop by default. By design, the plotter will look for an
+   active instance of ``QApplication`` instead. So in the end, it is up to the
+   user to manage this event loop and there are several ways to achieve this.
+   For example, it's possible to start Python interactively with ``python -i``,
+    use ``ipython`` or execute the Qt event loop by adding ``plotter.app.exec_()``
+   to the end of the following code.
+
 
 Background Plotting
 ~~~~~~~~~~~~~~~~~~~
@@ -17,7 +26,7 @@ Background Plotting
 Normal PyVista plotting windows exhibit blocking behavior, but it is possible
 to plot in the background and update the plotter in real-time using the
 ``BackgroundPlotter`` object.  This requires ``pyvistaqt``, but otherwise appears
-and functions like a normal PyVista ``Plotter`` instance.  For example:
+and functions like a normal PyVista ``Plotter`` instance. For example:
 
 .. code:: python
 
