@@ -66,7 +66,6 @@ class TstWindow(MainWindow):
 
 
 @pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
-@pytest.mark.skipif(platform.system()=="Linux" and vtk.vtkVersion().GetVTKMajorVersion()<9, reason="flaky")
 def test_ipython(qapp):
     import IPython
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
