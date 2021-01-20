@@ -134,22 +134,36 @@ def test_counter(qtbot):
 def test_editor(qtbot):
     timeout = 1000  # adjusted timeout for MacOS
 
+    # test editor=False
+    plotter = BackgroundPlotter(editor=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.editor is None
+    plotter.close()
+
+    # test editor closing
+    plotter = BackgroundPlotter(editor=True, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    assert_hasattr(plotter, "editor", Editor)
+    editor = plotter.editor
+    assert not editor.isVisible()
+    with qtbot.wait_exposed(editor, timeout=timeout):
+        editor.toggle()
+    assert editor.isVisible()
+    plotter.close()
+    assert not editor.isVisible()
+
     # editor=True by default
     plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
     qtbot.addWidget(plotter.app_window)
-    assert_hasattr(plotter, "editor", Editor)
+    editor = plotter.editor
+    with qtbot.wait_exposed(editor, timeout=timeout):
+        editor.toggle()
 
     # add at least an actor
     plotter.subplot(0, 0)
     plotter.add_mesh(pyvista.Sphere())
     plotter.subplot(1, 0)
     plotter.show_axes()
-
-    editor = plotter.editor
-    assert not editor.isVisible()
-    with qtbot.wait_exposed(editor, timeout=timeout):
-        editor.toggle()
-    assert editor.isVisible()
 
     assert_hasattr(editor, "tree_widget", QTreeWidget)
     tree_widget = editor.tree_widget
@@ -179,11 +193,6 @@ def test_editor(qtbot):
 
     # hide the editor for coverage
     editor.toggle()
-    plotter.close()
-
-    plotter = BackgroundPlotter(editor=False, off_screen=False)
-    qtbot.addWidget(plotter.app_window)
-    assert plotter.editor is None
     plotter.close()
 
 
