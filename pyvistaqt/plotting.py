@@ -850,6 +850,7 @@ class BackgroundPlotter(QtInteractor):
         """Add the editor."""
         self.editor = Editor(parent=self.app_window, renderers=self.renderers)
         self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
+        self.app_window.signal_close.connect(self.editor.close)
 
 
 def _create_menu_bar(parent: Any) -> QMenuBar:
