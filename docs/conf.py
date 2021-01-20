@@ -28,7 +28,7 @@ pyvista.FIGURE_PATH = os.path.join(os.path.abspath('./images/'), 'auto-generated
 if not os.path.exists(pyvista.FIGURE_PATH):
     os.makedirs(pyvista.FIGURE_PATH)
 
-# SG warnins
+# SG warnings
 import warnings
 
 warnings.filterwarnings(
