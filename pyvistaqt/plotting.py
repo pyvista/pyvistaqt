@@ -242,6 +242,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         if off_screen:
             self.ren_win.SetOffScreenRendering(1)
+            self.iren = None
         else:
             self.iren = self.ren_win.GetInteractor()
             self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
@@ -503,11 +504,14 @@ class BackgroundPlotter(QtInteractor):
     allow_quit_keypress :
         Allow user to exit by pressing ``"q"``.
 
-    toolbar :
-       Display the default camera toolbar. Defaults to True.
+    toolbar : bool
+        If True, display the default camera toolbar. Defaults to True.
 
-    menu_bar:
-        Display the default main menu. Defaults to True.
+    menu_bar : bool
+        If True, display the default main menu. Defaults to True.
+
+    editor: bool
+        If True, display the VTK object editor. Defaults to True.
 
     update_app_icon :
         If True, update_app_icon will be called automatically to update the
@@ -567,6 +571,10 @@ class BackgroundPlotter(QtInteractor):
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
+        # avoid recursion of the close() function by setting
+        # self._closed=True until the BasePlotter.__init__
+        # is called
+        self._closed = True
         LOG.debug("BackgroundPlotter init start")
         if not isinstance(menu_bar, bool):
             raise TypeError(
@@ -623,6 +631,7 @@ class BackgroundPlotter(QtInteractor):
         super(BackgroundPlotter, self).__init__(
             parent=self.frame, off_screen=off_screen, **kwargs
         )
+        assert not self._closed
         vlayout.addWidget(self)
         self.app_window.grabGesture(QtCore.Qt.PinchGesture)
         self.app_window.signal_gesture.connect(self.gesture_event)
@@ -841,6 +850,7 @@ class BackgroundPlotter(QtInteractor):
         """Add the editor."""
         self.editor = Editor(parent=self.app_window, renderers=self.renderers)
         self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
+        self.app_window.signal_close.connect(self.editor.close)
 
 
 def _create_menu_bar(parent: Any) -> QMenuBar:
