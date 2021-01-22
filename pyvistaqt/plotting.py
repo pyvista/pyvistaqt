@@ -60,6 +60,7 @@ from qtpy.QtWidgets import (
     QAction,
     QApplication,
     QFrame,
+    QGridLayout,
     QGestureEvent,
     QMenuBar,
     QToolBar,
@@ -70,7 +71,7 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
-from .window import MainWindow
+from .window import MainWindow, MainWidget
 
 if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
@@ -597,29 +598,9 @@ class BackgroundPlotter(QtInteractor):
         # Remove notebook argument in case user passed it
         kwargs.pop("notebook", None)
 
-        # ipython magic
-        if scooby.in_ipython():  # pragma: no cover
-            # pylint: disable=import-outside-toplevel
-            from IPython import get_ipython
+        self.ipython = _setup_ipython()
+        self.app = _setup_application(app)
 
-            ipython = get_ipython()
-            ipython.magic("gui qt")
-
-            # pylint: disable=redefined-outer-name
-            # pylint: disable=import-outside-toplevel
-            from IPython.external.qt_for_kernel import QtGui
-
-            QtGui.QApplication.instance()
-        else:
-            ipython = None
-
-        # run within python
-        if app is None:
-            app = QApplication.instance()
-            if not app:  # pragma: no cover
-                app = QApplication(["PyVista"])
-
-        self.app = app
         self.app_window = MainWindow()
         self.app_window.setWindowTitle(kwargs.get("title", rcParams["title"]))
 
@@ -853,6 +834,27 @@ class BackgroundPlotter(QtInteractor):
         self.app_window.signal_close.connect(self.editor.close)
 
 
+class Plotter(object):
+    def __init__(self, shape=(1, 1)):
+        self.ipython = _setup_ipython()
+        self.app = _setup_application()
+        self.main_widget = MainWidget()
+        self.layout = QGridLayout()
+        self.interactors = [None] * (shape[0] * shape[1])
+        idx = 0
+        for row in range(shape[0]):
+            for col in range(shape[1]):
+                interactor = QtInteractor(parent=self.main_widget)
+                self.main_widget.signal_close.connect(interactor.close)
+                self.interactors[idx] = interactor
+                self.layout.addWidget(interactor, row, col)
+                idx += 1
+        self.main_widget.setLayout(self.layout)
+
+    def show(self):
+        self.main_widget.show()
+
+
 def _create_menu_bar(parent: Any) -> QMenuBar:
     """Create a menu bar.
 
@@ -866,3 +868,31 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
     if parent is not None:
         parent.setMenuBar(menu_bar)
     return menu_bar
+
+
+def _setup_ipython():
+    # ipython magic
+    if scooby.in_ipython():  # pragma: no cover
+        # pylint: disable=import-outside-toplevel
+        from IPython import get_ipython
+
+        ipython = get_ipython()
+        ipython.magic("gui qt")
+
+        # pylint: disable=redefined-outer-name
+        # pylint: disable=import-outside-toplevel
+        from IPython.external.qt_for_kernel import QtGui
+
+        QtGui.QApplication.instance()
+    else:
+        ipython = None
+    return ipython
+
+
+def _setup_application(app=None):
+    # run within python
+    if app is None:
+        app = QApplication.instance()
+        if not app:  # pragma: no cover
+            app = QApplication(["PyVista"])
+    return app
