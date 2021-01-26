@@ -65,13 +65,14 @@ from qtpy.QtWidgets import (
     QMenuBar,
     QToolBar,
     QVBoxLayout,
+    QWidget,
 )
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
-from .window import MainWidget, MainWindow
+from .window import MainWindow
 
 if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
@@ -857,19 +858,21 @@ class MultiPlotter:
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
         self._shape = shape
-        self._window = MainWidget(title=title, size=size)
+        self._window = MainWindow(title=title, size=size)
+        self._central_widget = QWidget(parent=self._window)
         self._layout = QGridLayout()
         self._plotter = None
         self._plotters = [None] * (self._shape[0] * self._shape[1])
         for row in range(self._shape[0]):
             for col in range(self._shape[1]):
                 self._plotter = QtInteractor(
-                    parent=self._window, off_screen=self.off_screen, **kwargs
+                    parent=self._central_widget, off_screen=self.off_screen, **kwargs
                 )
                 self._window.signal_close.connect(self._plotter.close)
                 self._plotters[row * self._shape[1] + col] = self._plotter
                 self._layout.addWidget(self._plotter, row, col)
-        self._window.setLayout(self._layout)
+        self._central_widget.setLayout(self._layout)
+        self._window.setCentralWidget(self._central_widget)
 
     def show(self) -> None:
         """Show the multi plotter."""
