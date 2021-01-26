@@ -834,25 +834,49 @@ class BackgroundPlotter(QtInteractor):
         self.app_window.signal_close.connect(self.editor.close)
 
 
-class Plotter(object):
-    def __init__(self, shape=(1, 1)):
+class MultiPlotter(object):
+    def __init__(
+            self,
+            app=None,
+            shape=(1, 1),
+            size=None,
+            title=None,
+            off_screen=None,
+            **kwargs,
+        ):
         self.ipython = _setup_ipython()
-        self.app = _setup_application()
-        self.main_widget = MainWidget()
-        self.layout = QGridLayout()
-        self.interactors = [None] * (shape[0] * shape[1])
+        self.app = _setup_application(app)
+        self._shape = shape
+        self._window = MainWidget(title=title, size=size)
+        self._off_screen = _setup_off_screen(off_screen)
+        self._layout = QGridLayout()
+        self._plotter = None
+        self._plotters = [None] * (shape[0] * shape[1])
         idx = 0
         for row in range(shape[0]):
             for col in range(shape[1]):
-                interactor = QtInteractor(parent=self.main_widget)
-                self.main_widget.signal_close.connect(interactor.close)
-                self.interactors[idx] = interactor
-                self.layout.addWidget(interactor, row, col)
+                self._plotter = QtInteractor(
+                    parent=self._window,
+                    off_screen=self._off_screen,
+                    **kwargs
+                )
+                self._window.signal_close.connect(self._plotter.close)
+                self._plotters[idx] = self._plotter
+                self._layout.addWidget(self._plotter, row, col)
                 idx += 1
-        self.main_widget.setLayout(self.layout)
+        self._window.setLayout(self._layout)
 
     def show(self):
-        self.main_widget.show()
+        if not self._off_screen:
+            self._window.show()
+
+    def select(self, idx):
+        if isinstance(idx, int):
+            self._plotter = self.plotter[idx]
+        else:
+            row, col = idx
+            self._plotter = self._plotters[row * self._shape[1] + col]
+        return self._plotter
 
 
 def _create_menu_bar(parent: Any) -> QMenuBar:
@@ -896,3 +920,9 @@ def _setup_application(app=None):
         if not app:  # pragma: no cover
             app = QApplication(["PyVista"])
     return app
+
+
+def _setup_off_screen(off_screen=None):
+    if off_screen is None:
+        off_screen = pyvista.OFF_SCREEN
+    return off_screen

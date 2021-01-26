@@ -30,6 +30,13 @@ class MainWidget(QWidget):
     signal_close = Signal()
     signal_gesture = Signal(QtCore.QEvent)
 
+    def __init__(self, parent=None, title=None, size=None):
+        QWidget.__init__(self, parent=parent)
+        if title is not None:
+            self.setWindowTitle(title)
+        if size is not None:
+            self.resize(*size)
+
     def event(self, event: QtCore.QEvent) -> bool:
         """Manage window events and filter the gesture event."""
         if event.type() == QtCore.QEvent.Gesture:  # pragma: no cover
