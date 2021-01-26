@@ -856,27 +856,27 @@ class MultiPlotter:
         """Initialize the multi plotter."""
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
+        self.off_screen = _setup_off_screen(off_screen)
         self._shape = shape
         self._window = MainWindow(title=title, size=size)
-        self._main_widget = QWidget()
-        self._off_screen = _setup_off_screen(off_screen)
+        self._central_widget = QWidget()
         self._layout = QGridLayout()
         self._plotter = None
         self._plotters = [None] * (self._shape[0] * self._shape[1])
         for row in range(self._shape[0]):
             for col in range(self._shape[1]):
                 self._plotter = QtInteractor(
-                    parent=self._main_widget, off_screen=self._off_screen, **kwargs
+                    parent=self._central_widget, off_screen=self.off_screen, **kwargs
                 )
                 self._window.signal_close.connect(self._plotter.close)
                 self._plotters[row * self._shape[1] + col] = self._plotter
                 self._layout.addWidget(self._plotter, row, col)
-        self._main_widget.setLayout(self._layout)
-        self._window.setCentralWidget(self._main_widget)
+        self._central_widget.setLayout(self._layout)
+        self._window.setCentralWidget(self._central_widget)
 
     def show(self) -> None:
         """Show the multi plotter."""
-        if not self._off_screen:
+        if not self.off_screen:
             self._window.show()
 
     def close(self) -> None:

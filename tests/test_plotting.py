@@ -697,7 +697,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_multiplotter(qtbot):
-    timeout = 1000
+    timeout = 5000
     mp = MultiPlotter(
         shape=(1, 2),
         title='Test',
