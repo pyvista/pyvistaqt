@@ -32,12 +32,12 @@ class MainWidget(QWidget):
     signal_gesture = Signal(QtCore.QEvent)
 
     def __init__(
-            self,
-            parent: Optional[QWidget] = None,
-            title: Optional[str] = None,
-            size: Optional[Tuple[int, int]] = None,
+        self,
+        parent: Optional[QWidget] = None,
+        title: Optional[str] = None,
+        size: Optional[Tuple[int, int]] = None,
     ) -> None:
-    """Initialize the main widget."""
+        """Initialize the main widget."""
         QWidget.__init__(self, parent=parent)
         if title is not None:
             self.setWindowTitle(title)

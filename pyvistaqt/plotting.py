@@ -184,7 +184,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         point_smoothing: bool = False,
         polygon_smoothing: bool = False,
         auto_update: Union[float, bool] = 5.0,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
@@ -568,7 +568,7 @@ class BackgroundPlotter(QtInteractor):
         menu_bar: bool = True,
         editor: bool = True,
         update_app_icon: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
@@ -832,7 +832,7 @@ class BackgroundPlotter(QtInteractor):
         self.app_window.signal_close.connect(self.editor.close)
 
 
-class MultiPlotter():
+class MultiPlotter:
     """Qt interactive plotter.
 
     Multi plotter for pyvista that allows to maintain an
@@ -844,13 +844,13 @@ class MultiPlotter():
     # pylint: disable=too-many-arguments
 
     def __init__(
-            self,
-            app: QApplication = None,
-            shape: tuple = (1, 1),
-            size: Optional[Tuple[int, int]] = None,
-            title: Optional[str] = None,
-            off_screen: Optional[bool] = None,
-            **kwargs: Any,
+        self,
+        app: QApplication = None,
+        shape: tuple = (1, 1),
+        size: Optional[Tuple[int, int]] = None,
+        title: Optional[str] = None,
+        off_screen: Optional[bool] = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize the multi plotter."""
         self.ipython = _setup_ipython()
@@ -864,9 +864,7 @@ class MultiPlotter():
         for row in range(self._shape[0]):
             for col in range(self._shape[1]):
                 self._plotter = QtInteractor(
-                    parent=self._window,
-                    off_screen=self._off_screen,
-                    **kwargs
+                    parent=self._window, off_screen=self._off_screen, **kwargs
                 )
                 self._window.signal_close.connect(self._plotter.close)
                 self._plotters[row * self._shape[1] + col] = self._plotter
