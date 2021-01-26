@@ -600,6 +600,7 @@ class BackgroundPlotter(QtInteractor):
 
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
+        self.off_screen = _setup_off_screen(off_screen)
 
         self.app_window = MainWindow()
         self.app_window.setWindowTitle(kwargs.get("title", rcParams["title"]))
@@ -610,7 +611,7 @@ class BackgroundPlotter(QtInteractor):
         vlayout = QVBoxLayout()
         self.frame.setLayout(vlayout)
         super(BackgroundPlotter, self).__init__(
-            parent=self.frame, off_screen=off_screen, **kwargs
+            parent=self.frame, off_screen=self.off_screen, **kwargs
         )
         assert not self._closed
         vlayout.addWidget(self)
@@ -636,10 +637,7 @@ class BackgroundPlotter(QtInteractor):
         if toolbar:
             self.add_toolbars()
 
-        if off_screen is None:
-            off_screen = pyvista.OFF_SCREEN
-
-        if show and not off_screen:  # pragma: no cover
+        if show and not self.off_screen:  # pragma: no cover
             self.app_window.show()
             self.show()
 
@@ -851,19 +849,17 @@ class MultiPlotter(object):
         self._off_screen = _setup_off_screen(off_screen)
         self._layout = QGridLayout()
         self._plotter = None
-        self._plotters = [None] * (shape[0] * shape[1])
-        idx = 0
-        for row in range(shape[0]):
-            for col in range(shape[1]):
+        self._plotters = [None] * (self._shape[0] * self._shape[1])
+        for row in range(self._shape[0]):
+            for col in range(self._shape[1]):
                 self._plotter = QtInteractor(
                     parent=self._window,
                     off_screen=self._off_screen,
                     **kwargs
                 )
                 self._window.signal_close.connect(self._plotter.close)
-                self._plotters[idx] = self._plotter
+                self._plotters[row * self._shape[1] + col] = self._plotter
                 self._layout.addWidget(self._plotter, row, col)
-                idx += 1
         self._window.setLayout(self._layout)
 
     def show(self):
