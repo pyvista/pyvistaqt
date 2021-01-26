@@ -1,6 +1,7 @@
 """This module contains a Qt-compatible MainWindow class."""
 
 from typing import Optional, Tuple
+
 from qtpy import QtCore
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QMainWindow, QWidget

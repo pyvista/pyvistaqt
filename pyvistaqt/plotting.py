@@ -71,7 +71,7 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
-from .window import MainWindow, MainWidget
+from .window import MainWidget, MainWindow
 
 if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
