@@ -923,7 +923,7 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
     return menu_bar
 
 
-def _setup_ipython() -> Any:
+def _setup_ipython(ipython: Any = None) -> Any:
     # ipython magic
     if scooby.in_ipython():  # pragma: no cover
         # pylint: disable=import-outside-toplevel
@@ -937,8 +937,6 @@ def _setup_ipython() -> Any:
         from IPython.external.qt_for_kernel import QtGui
 
         QtGui.QApplication.instance()
-    else:
-        ipython = None
     return ipython
 
 
