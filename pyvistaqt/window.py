@@ -26,7 +26,7 @@ class MainWindow(QMainWindow):
 
 
 class MainWidget(QWidget):
-    """Convenience MainWindow that manages the application."""
+    """Convenience MainWidget that manages the application."""
 
     signal_close = Signal()
     signal_gesture = Signal(QtCore.QEvent)
@@ -37,6 +37,7 @@ class MainWidget(QWidget):
             title: Optional[str] = None,
             size: Optional[Tuple[int, int]] = None,
     ) -> None:
+    """Initialize the main widget."""
         QWidget.__init__(self, parent=parent)
         if title is not None:
             self.setWindowTitle(title)
