@@ -700,9 +700,10 @@ def test_multiplotter(qtbot):
     timeout = 1000
     mp = MultiPlotter(
         shape=(1, 2),
+        window_size=(300, 300),
+        show=False,
         title='Test',
-        size=(300, 300),
-        off_screen=False
+        off_screen=False,
     )
     qtbot.addWidget(mp._window)
     p = mp.select(0)

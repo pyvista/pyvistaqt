@@ -848,7 +848,8 @@ class MultiPlotter:
         self,
         app: QApplication = None,
         shape: tuple = (1, 1),
-        size: Optional[Tuple[int, int]] = None,
+        show: bool = True,
+        window_size: Optional[Tuple[int, int]] = None,
         title: Optional[str] = None,
         off_screen: Optional[bool] = None,
         **kwargs: Any,
@@ -858,7 +859,7 @@ class MultiPlotter:
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
         self._shape = shape
-        self._window = MainWindow(title=title, size=size)
+        self._window = MainWindow(title=title, size=window_size)
         self._central_widget = QWidget(parent=self._window)
         self._layout = QGridLayout()
         self._plotter = None
@@ -873,6 +874,8 @@ class MultiPlotter:
                 self._layout.addWidget(self._plotter, row, col)
         self._central_widget.setLayout(self._layout)
         self._window.setCentralWidget(self._central_widget)
+        if show:
+            self.show()
 
     def show(self) -> None:
         """Show the multi plotter."""
