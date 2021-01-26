@@ -33,10 +33,10 @@ class MainWidget(QWidget):
 
     def __init__(
             self,
-            parent: Optional[QWidget]=None,
-            title: Optional[str]=None,
+            parent: Optional[QWidget] = None,
+            title: Optional[str] = None,
             size: Optional[Tuple[int, int]] = None,
-        ) -> None:
+    ) -> None:
         QWidget.__init__(self, parent=parent)
         if title is not None:
             self.setWindowTitle(title)

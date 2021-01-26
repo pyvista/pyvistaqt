@@ -841,7 +841,7 @@ class MultiPlotter(object):
             title: Optional[str] = None,
             off_screen: Optional[bool] = None,
             **kwargs: Any,
-        ) -> None:
+    ) -> None:
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self._shape = shape
@@ -912,7 +912,7 @@ def _setup_ipython() -> Any:
     return ipython
 
 
-def _setup_application(app: Optional[QApplication]=None) -> QApplication:
+def _setup_application(app: Optional[QApplication] = None) -> QApplication:
     # run within python
     if app is None:
         app = QApplication.instance()
@@ -921,7 +921,7 @@ def _setup_application(app: Optional[QApplication]=None) -> QApplication:
     return app
 
 
-def _setup_off_screen(off_screen: Optional[bool]=None) -> bool:
+def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen
