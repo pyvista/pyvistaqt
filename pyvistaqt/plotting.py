@@ -832,7 +832,17 @@ class BackgroundPlotter(QtInteractor):
         self.app_window.signal_close.connect(self.editor.close)
 
 
-class MultiPlotter(object):
+class MultiPlotter():
+    """Qt interactive plotter.
+
+    Multi plotter for pyvista that allows to maintain an
+    interactive window with multiple plotters without
+    blocking the main python thread.
+    """
+
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
+
     def __init__(
             self,
             app: QApplication = None,
@@ -842,6 +852,7 @@ class MultiPlotter(object):
             off_screen: Optional[bool] = None,
             **kwargs: Any,
     ) -> None:
+        """Initialize the multi plotter."""
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self._shape = shape
@@ -863,13 +874,28 @@ class MultiPlotter(object):
         self._window.setLayout(self._layout)
 
     def show(self) -> None:
+        """Show the multi plotter."""
         if not self._off_screen:
             self._window.show()
 
     def close(self) -> None:
+        """Close the multi plotter."""
         self._window.close()
 
     def select(self, idx: int) -> Optional[QtInteractor]:
+        """Select a valid plotter.
+
+        Parameters
+        ----------
+        idx : int | tuple
+            The index of the plotter to select. It can either
+            be an integer or a tuple ``(row, col)``.
+
+        Returns
+        -------
+        plotter :
+            The selected plotter.
+        """
         if isinstance(idx, int):
             self._plotter = self._plotters[idx]
         else:
