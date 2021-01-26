@@ -866,9 +866,12 @@ class MultiPlotter(object):
         if not self._off_screen:
             self._window.show()
 
+    def close(self):
+        self._window.close()
+
     def select(self, idx):
         if isinstance(idx, int):
-            self._plotter = self.plotter[idx]
+            self._plotter = self._plotters[idx]
         else:
             row, col = idx
             self._plotter = self._plotters[row * self._shape[1] + col]

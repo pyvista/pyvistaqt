@@ -13,7 +13,7 @@ from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 
 import pyvistaqt
-from pyvistaqt import BackgroundPlotter, MainWindow, QtInteractor
+from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
 from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
                                 _create_menu_bar)
 from pyvistaqt.editor import Editor
@@ -693,6 +693,32 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
 
     # check that BasePlotter.__init__() is called only once
     assert len(_ALL_PLOTTERS) == 1
+
+
+@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
+def test_multiplotter(qtbot):
+    timeout = 1000
+    mp = MultiPlotter(
+        shape=(1, 2),
+        title='Test',
+        size=(300, 300),
+        off_screen=False
+    )
+    qtbot.addWidget(mp._window)
+    p = mp.select(0)
+    p.add_mesh(pyvista.Cone())
+    p = mp.select((0, 1))
+    p.add_mesh(pyvista.Box())
+    assert not mp._window.isVisible()
+    with qtbot.wait_exposed(mp._window, timeout=timeout):
+        mp.show()
+    assert mp._window.isVisible()
+    for p in mp._plotters:
+        assert not p._closed
+    with qtbot.wait_signals([mp._window.signal_close], timeout=timeout):
+        mp.close()
+    for p in mp._plotters:
+        assert p._closed
 
 
 def _create_testing_scene(empty_scene, show=False, off_screen=False):
