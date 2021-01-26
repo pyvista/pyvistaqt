@@ -835,13 +835,13 @@ class BackgroundPlotter(QtInteractor):
 class MultiPlotter(object):
     def __init__(
             self,
-            app=None,
-            shape=(1, 1),
-            size=None,
-            title=None,
-            off_screen=None,
-            **kwargs,
-        ):
+            app: QApplication = None,
+            shape: tuple = (1, 1),
+            size: Optional[Tuple[int, int]] = None,
+            title: Optional[str] = None,
+            off_screen: Optional[bool] = None,
+            **kwargs: Any,
+        ) -> None:
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self._shape = shape
@@ -862,14 +862,14 @@ class MultiPlotter(object):
                 self._layout.addWidget(self._plotter, row, col)
         self._window.setLayout(self._layout)
 
-    def show(self):
+    def show(self) -> None:
         if not self._off_screen:
             self._window.show()
 
-    def close(self):
+    def close(self) -> None:
         self._window.close()
 
-    def select(self, idx):
+    def select(self, idx: int) -> Optional[QtInteractor]:
         if isinstance(idx, int):
             self._plotter = self._plotters[idx]
         else:
@@ -893,7 +893,7 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
     return menu_bar
 
 
-def _setup_ipython():
+def _setup_ipython() -> Any:
     # ipython magic
     if scooby.in_ipython():  # pragma: no cover
         # pylint: disable=import-outside-toplevel
@@ -912,7 +912,7 @@ def _setup_ipython():
     return ipython
 
 
-def _setup_application(app=None):
+def _setup_application(app: Optional[QApplication]=None) -> QApplication:
     # run within python
     if app is None:
         app = QApplication.instance()
@@ -921,7 +921,7 @@ def _setup_application(app=None):
     return app
 
 
-def _setup_off_screen(off_screen=None):
+def _setup_off_screen(off_screen: Optional[bool]=None) -> bool:
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen
