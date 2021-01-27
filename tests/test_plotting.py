@@ -1,13 +1,14 @@
 import os
 import platform
+from distutils.version import LooseVersion
 
 import numpy as np
 import pytest
 import pyvista
 import vtk
-from PyQt5.Qt import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
+from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
 from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 
@@ -133,22 +134,36 @@ def test_counter(qtbot):
 def test_editor(qtbot):
     timeout = 1000  # adjusted timeout for MacOS
 
-    # editor=True by default
-    plotter = BackgroundPlotter(shape=(2, 1))
+    # test editor=False
+    plotter = BackgroundPlotter(editor=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.editor is None
+    plotter.close()
+
+    # test editor closing
+    plotter = BackgroundPlotter(editor=True, off_screen=False)
     qtbot.addWidget(plotter.app_window)
     assert_hasattr(plotter, "editor", Editor)
+    editor = plotter.editor
+    assert not editor.isVisible()
+    with qtbot.wait_exposed(editor, timeout=timeout):
+        editor.toggle()
+    assert editor.isVisible()
+    plotter.close()
+    assert not editor.isVisible()
+
+    # editor=True by default
+    plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    editor = plotter.editor
+    with qtbot.wait_exposed(editor, timeout=timeout):
+        editor.toggle()
 
     # add at least an actor
     plotter.subplot(0, 0)
     plotter.add_mesh(pyvista.Sphere())
     plotter.subplot(1, 0)
     plotter.show_axes()
-
-    editor = plotter.editor
-    assert not editor.isVisible()
-    with qtbot.wait_exposed(editor, timeout=timeout):
-        editor.toggle()
-    assert editor.isVisible()
 
     assert_hasattr(editor, "tree_widget", QTreeWidget)
     tree_widget = editor.tree_widget
@@ -171,18 +186,13 @@ def test_editor(qtbot):
         widget_item = page_layout.itemAt(widget_idx)
         widget = widget_item.widget()
         if isinstance(widget, QCheckBox):
-            with qtbot.wait_signals([widget.toggled], timeout=500):
+            with qtbot.wait_signals([widget.toggled], timeout=timeout):
                 widget.toggle()
-            with qtbot.wait_signals([widget.toggled], timeout=500):
+            with qtbot.wait_signals([widget.toggled], timeout=timeout):
                 widget.toggle()
 
     # hide the editor for coverage
     editor.toggle()
-    plotter.close()
-
-    plotter = BackgroundPlotter(editor=False)
-    qtbot.addWidget(plotter.app_window)
-    assert plotter.editor is None
     plotter.close()
 
 
@@ -205,11 +215,13 @@ def test_qt_interactor(qtbot):
     assert_hasattr(vtk_widget, "render_timer", QTimer)
     # check that BasePlotter.__init__() is called
     assert_hasattr(vtk_widget, "_closed", bool)
+    assert_hasattr(vtk_widget, "renderer", vtk.vtkRenderer)
     # check that QVTKRenderWindowInteractorAdapter.__init__() is called
     assert_hasattr(vtk_widget, "interactor", QVTKRenderWindowInteractor)
 
     interactor = vtk_widget.interactor  # QVTKRenderWindowInteractor
     render_timer = vtk_widget.render_timer  # QTimer
+    renderer = vtk_widget.renderer  # vtkRenderer
 
     # ensure that self.render is called by the timer
     render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
@@ -228,6 +240,12 @@ def test_qt_interactor(qtbot):
     assert render_timer.isActive()
     assert not vtk_widget._closed
 
+    # test enable/disable interactivity
+    vtk_widget.disable()
+    assert not renderer.GetInteractive()
+    vtk_widget.enable()
+    assert renderer.GetInteractive()
+
     window.close()
 
     assert not window.isVisible()
@@ -235,7 +253,8 @@ def test_qt_interactor(qtbot):
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    assert not hasattr(vtk_widget, "iren")
+    if LooseVersion(pyvista.__version__) < '0.27.0':
+        assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
 
     # check that BasePlotter.__init__() is called only once
@@ -436,7 +455,8 @@ def test_background_plotting_orbit(qtbot):
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_background_plotting_toolbar(qtbot):
     with pytest.raises(TypeError, match='toolbar'):
-        BackgroundPlotter(off_screen=False, toolbar="foo")
+        p = BackgroundPlotter(off_screen=False, toolbar="foo")
+        p.close()
 
     plotter = BackgroundPlotter(off_screen=False, toolbar=False)
     assert plotter.default_camera_tool_bar is None
@@ -470,7 +490,8 @@ def test_background_plotting_toolbar(qtbot):
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_background_plotting_menu_bar(qtbot):
     with pytest.raises(TypeError, match='menu_bar'):
-        BackgroundPlotter(off_screen=False, menu_bar="foo")
+        p = BackgroundPlotter(off_screen=False, menu_bar="foo")
+        p.close()
 
     plotter = BackgroundPlotter(off_screen=False, menu_bar=False)
     assert plotter.main_menu is None
@@ -666,7 +687,8 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    assert not hasattr(plotter, "iren")
+    if LooseVersion(pyvista.__version__) < '0.27.0':
+        assert not hasattr(vtk_widget, "iren")
     assert plotter._closed
 
     # check that BasePlotter.__init__() is called only once

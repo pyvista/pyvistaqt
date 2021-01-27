@@ -6,6 +6,7 @@ pytest
 pytest-cov
 pytest-memprof
 codecov
+qtpy
 PyQt5==5.15.1
 pytest-qt
 imageio>=2.5.0

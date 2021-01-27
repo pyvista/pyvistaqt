@@ -21,7 +21,9 @@ Overview
    :alt: MIT License
 
 The python package ``pyvistaqt`` extends the
-functionality of ``pyvista`` through the usage of ``PyQt5``.  Since ``PyQt5`` operates in a separate thread than VTK, you can similtaniously have an active VTK plot and a non-blocking Python session.
+functionality of ``pyvista`` through the usage of *Qt*. 
+Since *Qt* applications operates in a separate thread than VTK,
+you can simultaneously have an active VTK plot and a non-blocking Python session.
 
 .. figure:: ./images/user-generated/qt_multiplot.png
     :width: 450pt
@@ -84,6 +86,16 @@ sphere.
 License
 *******
 
-While ``pyvistaqt`` is under the MIT license, ``pyqt5`` is subject to
-the GPL license.  Please see deails at
+``pyvistaqt`` is under the MIT license.
+However, Qt bindings have licenses of their own.
+
+Historically, ``pyvistaqt`` has used ``pyqt5``, which is subject
+to the GPL license. See details at
 `Riverbank License FAQ <https://www.riverbankcomputing.com/commercial/license-faq>`_.
+
+``pyvistaqt`` is transitioning to using ``qtpy``
+
+> QtPy is a small abstraction layer that lets you write applications using a single API call to either PyQt or PySide.
+
+Please refer to the `QtPy documentation <https://github.com/spyder-ide/qtpy>`_
+to learn more.
