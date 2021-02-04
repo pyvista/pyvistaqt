@@ -568,7 +568,7 @@ class BackgroundPlotter(QtInteractor):
         toolbar: bool = True,
         menu_bar: bool = True,
         editor: bool = True,
-        update_app_icon: bool = False,
+        update_app_icon: Optional[bool] = None,
         **kwargs: Any
     ) -> None:
         # pylint: disable=too-many-branches
