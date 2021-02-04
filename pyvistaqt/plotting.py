@@ -517,7 +517,7 @@ class BackgroundPlotter(QtInteractor):
         If True, update_app_icon will be called automatically to update the
         Qt app icon based on the current rendering output. If None, the
         logo of PyVista will be used. If False, no icon will be set.
-        Defaults to False.
+        Defaults to None.
 
     title : str, optional
         Title of plotting window.
