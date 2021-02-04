@@ -16,7 +16,7 @@ Qt.
    active instance of ``QApplication`` instead. So in the end, it is up to the
    user to manage this event loop and there are several ways to achieve this.
    For example, it's possible to start Python interactively with ``python -i``,
-    use ``ipython`` or execute the Qt event loop by adding ``plotter.app.exec_()``
+   use ``ipython`` or execute the Qt event loop by adding ``plotter.app.exec_()``
    to the end of the following code.
 
 

@@ -699,7 +699,8 @@ def _create_testing_scene(empty_scene, show=False, off_screen=False):
     if empty_scene:
         plotter = BackgroundPlotter(
             show=show,
-            off_screen=off_screen
+            off_screen=off_screen,
+            update_app_icon=False,
         )
     else:
         plotter = BackgroundPlotter(
