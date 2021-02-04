@@ -677,6 +677,8 @@ class BackgroundPlotter(QtInteractor):
                     os.path.dirname(__file__), "data", "pyvista_logo_square.png"
                 )
             )
+        else:
+            assert update_app_icon is False
 
         # Keypress events
         self.add_key_event("S", self._qt_screenshot)  # shift + s
