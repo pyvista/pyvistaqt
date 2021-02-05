@@ -451,18 +451,18 @@ class BackgroundPlotter(QtInteractor):
         _check_type(editor, "editor", bool)
 
         # toolbar
-        self._view_action = None
-        self.default_camera_tool_bar = None
-        self.saved_camera_positions = None
-        self.saved_cameras_tool_bar = None
+        self._view_action: QAction = None
+        self.default_camera_tool_bar: QToolBar = None
+        self.saved_camera_positions: Optional[list] = None
+        self.saved_cameras_tool_bar: QToolBar = None
         # menu bar
-        self.main_menu = None
-        self._edl_action = None
-        self._menu_close_action = None
-        self._parallel_projection_action = None
+        self.main_menu: QMenuBar = None
+        self._edl_action: QAction = None
+        self._menu_close_action: QAction = None
+        self._parallel_projection_action: QAction = None
         # editor
-        self.editor = None
-        self._editor_action = None
+        self.editor: Optional[Editor] = None
+        self._editor_action: QAction = None
 
         self.active = True
         self.counters: List[Counter] = []
@@ -944,7 +944,7 @@ def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
     return off_screen
 
 
-def _check_type(var: Any, var_name: str, var_type: Type):
+def _check_type(var: Any, var_name: str, var_type: Type) -> None:
     if not isinstance(var, var_type):
         raise TypeError(
             "Expected type for ``{}`` is {}"
