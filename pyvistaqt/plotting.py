@@ -754,9 +754,13 @@ class BackgroundPlotter(QtInteractor):
             "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
         }
         for key, method in cvec_setters.items():
-            self._view_action = self._add_action(self.default_camera_tool_bar, key, method)
+            self._view_action = self._add_action(
+                self.default_camera_tool_bar, key, method
+            )
         # pylint: disable=unnecessary-lambda
-        self._add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
+        self._add_action(
+            self.default_camera_tool_bar, "Reset", lambda: self.reset_camera()
+        )
 
         # Saved camera locations toolbar
         self.saved_camera_positions = []
