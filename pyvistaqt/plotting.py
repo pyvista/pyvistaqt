@@ -45,7 +45,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
 import numpy as np  # type: ignore
 import pyvista
@@ -441,6 +441,15 @@ class BackgroundPlotter(QtInteractor):
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
+        # avoid recursion of the close() function by setting
+        # self._closed=True until the BasePlotter.__init__
+        # is called
+        self._closed = True
+        LOG.debug("BackgroundPlotter init start")
+        _check_type(toolbar, "toolbar", bool)
+        _check_type(menu_bar, "menu_bar", bool)
+        _check_type(editor, "editor", bool)
+
         # toolbar
         self._view_action = None
         self.default_camera_tool_bar = None
@@ -454,22 +463,6 @@ class BackgroundPlotter(QtInteractor):
         # editor
         self.editor = None
         self._editor_action = None
-
-        # avoid recursion of the close() function by setting
-        # self._closed=True until the BasePlotter.__init__
-        # is called
-        self._closed = True
-        LOG.debug("BackgroundPlotter init start")
-        if not isinstance(menu_bar, bool):
-            raise TypeError(
-                "Expected type for ``menu_bar`` is bool"
-                " but {} was given.".format(type(menu_bar))
-            )
-        if not isinstance(toolbar, bool):
-            raise TypeError(
-                "Expected type for ``toolbar`` is bool"
-                " but {} was given.".format(type(toolbar))
-            )
 
         self.active = True
         self.counters: List[Counter] = []
@@ -952,3 +945,11 @@ def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen
+
+
+def _check_type(var: Any, var_name: str, var_type: Type):
+    if not isinstance(var, var_type):
+        raise TypeError(
+            "Expected type for ``{}`` is {}"
+            " but {} was given.".format(var_name, str(var_type), type(var))
+        )
