@@ -478,19 +478,17 @@ class BackgroundPlotter(QtInteractor):
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
 
-        self.app_window = MainWindow()
-        self.app_window.setWindowTitle(kwargs.get("title", rcParams["title"]))
-
+        self.app_window = MainWindow(title=kwargs.get("title", rcParams["title"]))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
-        self.app_window.setCentralWidget(self.frame)
         vlayout = QVBoxLayout()
-        self.frame.setLayout(vlayout)
         super(BackgroundPlotter, self).__init__(
             parent=self.frame, off_screen=self.off_screen, **kwargs
         )
         assert not self._closed
         vlayout.addWidget(self)
+        self.frame.setLayout(vlayout)
+        self.app_window.setCentralWidget(self.frame)
         self.app_window.grabGesture(QtCore.Qt.PinchGesture)
         self.app_window.signal_gesture.connect(self.gesture_event)
         self.app_window.signal_close.connect(self._close)
@@ -504,7 +502,6 @@ class BackgroundPlotter(QtInteractor):
 
         if show and not self.off_screen:  # pragma: no cover
             self.app_window.show()
-            self.show()
 
         self.window_size = window_size
         self._last_update_time = -np.inf
