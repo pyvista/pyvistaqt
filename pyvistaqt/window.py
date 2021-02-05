@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         size: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Initialize the main window."""
-        QWidget.__init__(self, parent=parent)
+        QMainWindow.__init__(self, parent=parent)
         if title is not None:
             self.setWindowTitle(title)
         if size is not None:
