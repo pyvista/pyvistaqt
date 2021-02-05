@@ -441,6 +441,20 @@ class BackgroundPlotter(QtInteractor):
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
+        # toolbar
+        self._view_action = None
+        self.default_camera_tool_bar = None
+        self.saved_camera_positions = None
+        self.saved_cameras_tool_bar = None
+        # menu bar
+        self.main_menu = None
+        self._edl_action = None
+        self._menu_close_action = None
+        self._parallel_projection_action = None
+        # editor
+        self.editor = None
+        self._editor_action = None
+
         # avoid recursion of the close() function by setting
         # self._closed=True until the BasePlotter.__init__
         # is called
@@ -488,12 +502,12 @@ class BackgroundPlotter(QtInteractor):
         self.app_window.signal_gesture.connect(self.gesture_event)
         self.app_window.signal_close.connect(self._close)
 
-        self._show_menu_bar = menu_bar
-        self._show_editor = editor
-        self._show_toolbar = toolbar
-        self.add_menu_bar()
-        self.add_toolbars()
-        del menu_bar, editor, toolbar
+        if menu_bar:
+            self.add_menu_bar()
+            if editor:
+                self.add_editor()
+        if toolbar:
+            self.add_toolbars()
 
         if show and not self.off_screen:  # pragma: no cover
             self.app_window.show()
@@ -723,113 +737,95 @@ class BackgroundPlotter(QtInteractor):
 
     def add_toolbars(self) -> None:
         """Add the toolbars."""
-        if self._show_toolbar:
-            # Camera toolbar
-            self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
+        # Camera toolbar
+        self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
 
-            def _view_vector(*args: Any) -> None:
-                return self.view_vector(*args)
+        def _view_vector(*args: Any) -> None:
+            return self.view_vector(*args)
 
-            cvec_setters = {
-                # Viewing vector then view up vector
-                "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
-                "Bottom (+Z)": lambda: _view_vector((0, 0, -1), (0, 1, 0)),
-                "Front (-Y)": lambda: _view_vector((0, 1, 0), (0, 0, 1)),
-                "Back (+Y)": lambda: _view_vector((0, -1, 0), (0, 0, 1)),
-                "Left (-X)": lambda: _view_vector((1, 0, 0), (0, 0, 1)),
-                "Right (+X)": lambda: _view_vector((-1, 0, 0), (0, 0, 1)),
-                "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
-            }
-            for key, method in cvec_setters.items():
-                self._view_action = self._add_action(self.default_camera_tool_bar, key, method)
-            # pylint: disable=unnecessary-lambda
-            self._add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
+        cvec_setters = {
+            # Viewing vector then view up vector
+            "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
+            "Bottom (+Z)": lambda: _view_vector((0, 0, -1), (0, 1, 0)),
+            "Front (-Y)": lambda: _view_vector((0, 1, 0), (0, 0, 1)),
+            "Back (+Y)": lambda: _view_vector((0, -1, 0), (0, 0, 1)),
+            "Left (-X)": lambda: _view_vector((1, 0, 0), (0, 0, 1)),
+            "Right (+X)": lambda: _view_vector((-1, 0, 0), (0, 0, 1)),
+            "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
+        }
+        for key, method in cvec_setters.items():
+            self._view_action = self._add_action(self.default_camera_tool_bar, key, method)
+        # pylint: disable=unnecessary-lambda
+        self._add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
 
-            # Saved camera locations toolbar
-            self.saved_camera_positions = []
-            self.saved_cameras_tool_bar = self.app_window.addToolBar(
-                "Saved Camera Positions"
-            )
+        # Saved camera locations toolbar
+        self.saved_camera_positions = []
+        self.saved_cameras_tool_bar = self.app_window.addToolBar(
+            "Saved Camera Positions"
+        )
 
-            self._add_action(
-                self.saved_cameras_tool_bar, SAVE_CAM_BUTTON_TEXT, self.save_camera_position
-            )
-            self._add_action(
-                self.saved_cameras_tool_bar,
-                CLEAR_CAMS_BUTTON_TEXT,
-                self.clear_camera_positions,
-            )
-        else:
-            self._view_action = None
-            self.default_camera_tool_bar = None
-            self.saved_camera_positions = None
-            self.saved_cameras_tool_bar = None
+        self._add_action(
+            self.saved_cameras_tool_bar, SAVE_CAM_BUTTON_TEXT, self.save_camera_position
+        )
+        self._add_action(
+            self.saved_cameras_tool_bar,
+            CLEAR_CAMS_BUTTON_TEXT,
+            self.clear_camera_positions,
+        )
 
     def add_menu_bar(self) -> None:
         """Add the main menu bar."""
-        if self._show_menu_bar:
-            self.main_menu = _create_menu_bar(parent=self.app_window)
-            self.app_window.signal_close.connect(self.main_menu.clear)
+        self.main_menu = _create_menu_bar(parent=self.app_window)
+        self.app_window.signal_close.connect(self.main_menu.clear)
 
-            file_menu = self.main_menu.addMenu("File")
-            file_menu.addAction("Take Screenshot", self._qt_screenshot)
-            file_menu.addAction("Export as VTKjs", self._qt_export_vtkjs)
-            file_menu.addSeparator()
-            # member variable for testing only
-            self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)
+        file_menu = self.main_menu.addMenu("File")
+        file_menu.addAction("Take Screenshot", self._qt_screenshot)
+        file_menu.addAction("Export as VTKjs", self._qt_export_vtkjs)
+        file_menu.addSeparator()
+        # member variable for testing only
+        self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)
 
-            view_menu = self.main_menu.addMenu("View")
-            self._edl_action = view_menu.addAction(
-                "Toggle Eye Dome Lighting", self._toggle_edl
-            )
-            view_menu.addAction("Scale Axes", self.scale_axes_dialog)
-            view_menu.addAction("Clear All", self.clear)
+        view_menu = self.main_menu.addMenu("View")
+        self._edl_action = view_menu.addAction(
+            "Toggle Eye Dome Lighting", self._toggle_edl
+        )
+        view_menu.addAction("Scale Axes", self.scale_axes_dialog)
+        view_menu.addAction("Clear All", self.clear)
 
-            tool_menu = self.main_menu.addMenu("Tools")
-            tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
-            tool_menu.addAction(
-                "Enable Cell Picking (visible)",
-                lambda: self.enable_cell_picking(through=False),
-            )
+        tool_menu = self.main_menu.addMenu("Tools")
+        tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
+        tool_menu.addAction(
+            "Enable Cell Picking (visible)",
+            lambda: self.enable_cell_picking(through=False),
+        )
 
-            cam_menu = view_menu.addMenu("Camera")
-            self._parallel_projection_action = cam_menu.addAction(
-                "Toggle Parallel Projection", self._toggle_parallel_projection
-            )
+        cam_menu = view_menu.addMenu("Camera")
+        self._parallel_projection_action = cam_menu.addAction(
+            "Toggle Parallel Projection", self._toggle_parallel_projection
+        )
 
-            view_menu.addSeparator()
-            # Orientation marker
-            orien_menu = view_menu.addMenu("Orientation Marker")
-            orien_menu.addAction("Show All", self.show_axes_all)
-            orien_menu.addAction("Hide All", self.hide_axes_all)
-            # Bounds axes
-            axes_menu = view_menu.addMenu("Bounds Axes")
-            axes_menu.addAction("Add Bounds Axes (front)", self.show_bounds)
-            axes_menu.addAction("Add Bounds Grid (back)", self.show_grid)
-            axes_menu.addAction("Add Bounding Box", self.add_bounding_box)
-            axes_menu.addSeparator()
-            axes_menu.addAction("Remove Bounding Box", self.remove_bounding_box)
-            axes_menu.addAction("Remove Bounds", self.remove_bounds_axes)
+        view_menu.addSeparator()
+        # Orientation marker
+        orien_menu = view_menu.addMenu("Orientation Marker")
+        orien_menu.addAction("Show All", self.show_axes_all)
+        orien_menu.addAction("Hide All", self.hide_axes_all)
+        # Bounds axes
+        axes_menu = view_menu.addMenu("Bounds Axes")
+        axes_menu.addAction("Add Bounds Axes (front)", self.show_bounds)
+        axes_menu.addAction("Add Bounds Grid (back)", self.show_grid)
+        axes_menu.addAction("Add Bounding Box", self.add_bounding_box)
+        axes_menu.addSeparator()
+        axes_menu.addAction("Remove Bounding Box", self.remove_bounding_box)
+        axes_menu.addAction("Remove Bounds", self.remove_bounds_axes)
 
-            # A final separator to separate OS options
-            view_menu.addSeparator()
-
-            self.add_editor()
-        else:
-            self.main_menu = None
-            self._edl_action = None
-            self._menu_close_action = None
-            self._parallel_projection_action = None
+        # A final separator to separate OS options
+        view_menu.addSeparator()
 
     def add_editor(self) -> None:
         """Add the editor."""
-        if self._show_editor:
-            self.editor = Editor(parent=self.app_window, renderers=self.renderers)
-            self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
-            self.app_window.signal_close.connect(self.editor.close)
-        else:
-            self.editor = None
-            self._editor_action = None
+        self.editor = Editor(parent=self.app_window, renderers=self.renderers)
+        self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
+        self.app_window.signal_close.connect(self.editor.close)
 
 
 class MultiPlotter:
