@@ -721,6 +721,15 @@ def test_multiplotter(qtbot):
     for p in mp._plotters:
         assert p._closed
 
+    # cover default show=True
+    mp = MultiPlotter(off_screen=False)
+    qtbot.addWidget(mp._window)
+    # force show anyway to ensure sync
+    with qtbot.wait_exposed(mp._window, timeout=timeout):
+        mp.show()
+    assert mp._window.isVisible()
+    mp.close()
+
 
 def _create_testing_scene(empty_scene, show=False, off_screen=False):
     if empty_scene:

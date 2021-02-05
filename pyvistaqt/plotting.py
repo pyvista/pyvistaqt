@@ -334,7 +334,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     self.add_mesh(pyvista.read(filename))
                 except IOError as exception:
                     print(str(exception))
-        return None
 
     def close(self) -> None:
         """Quit application."""
