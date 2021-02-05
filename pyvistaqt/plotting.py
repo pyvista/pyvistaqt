@@ -517,7 +517,9 @@ class BackgroundPlotter(QtInteractor):
 
     update_app_icon :
         If True, update_app_icon will be called automatically to update the
-        Qt app icon based on the current rendering output.
+        Qt app icon based on the current rendering output. If None, the
+        logo of PyVista will be used. If False, no icon will be set.
+        Defaults to None.
 
     title : str, optional
         Title of plotting window.
@@ -568,7 +570,7 @@ class BackgroundPlotter(QtInteractor):
         toolbar: bool = True,
         menu_bar: bool = True,
         editor: bool = True,
-        update_app_icon: bool = False,
+        update_app_icon: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-branches
@@ -649,12 +651,14 @@ class BackgroundPlotter(QtInteractor):
 
         if update_app_icon:
             self.add_callback(self.update_app_icon)
-        else:
+        elif update_app_icon is None:
             self.set_icon(
                 os.path.join(
                     os.path.dirname(__file__), "data", "pyvista_logo_square.png"
                 )
             )
+        else:
+            assert update_app_icon is False
 
         # Keypress events
         self.add_key_event("S", self._qt_screenshot)  # shift + s
