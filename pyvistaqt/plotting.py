@@ -428,9 +428,9 @@ class BackgroundPlotter(QtInteractor):
     def __init__(
         self,
         show: bool = True,
-        app: QApplication = None,
+        app: Optional[QApplication] = None,
         window_size: Optional[Tuple[int, int]] = None,
-        off_screen: bool = None,
+        off_screen: Optional[bool] = None,
         allow_quit_keypress: bool = True,
         toolbar: bool = True,
         menu_bar: bool = True,
@@ -445,9 +445,15 @@ class BackgroundPlotter(QtInteractor):
         # is called
         self._closed = True
         LOG.debug("BackgroundPlotter init start")
-        _check_type(toolbar, "toolbar", bool)
-        _check_type(menu_bar, "menu_bar", bool)
-        _check_type(editor, "editor", bool)
+        _check_type(show, "show", [bool])
+        _check_type(app, "app", [QApplication, type(None)])
+        _check_type(window_size, "window_size", [tuple, type(None)])
+        _check_type(off_screen, "off_screen", [bool, type(None)])
+        _check_type(allow_quit_keypress, "allow_quit_keypress", [bool])
+        _check_type(toolbar, "toolbar", [bool])
+        _check_type(menu_bar, "menu_bar", [bool])
+        _check_type(editor, "editor", [bool])
+        _check_type(update_app_icon, "update_app_icon", [bool, type(None)])
 
         # toolbar
         self._view_action: QAction = None
@@ -943,9 +949,10 @@ def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
     return off_screen
 
 
-def _check_type(var: Any, var_name: str, var_type: Type) -> None:
-    if not isinstance(var, var_type):
+def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:
+    types = tuple(var_types)
+    if not isinstance(var, types):
         raise TypeError(
             "Expected type for ``{}`` is {}"
-            " but {} was given.".format(var_name, str(var_type), type(var))
+            " but {} was given.".format(var_name, str(types), type(var))
         )

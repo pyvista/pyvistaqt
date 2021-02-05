@@ -15,7 +15,7 @@ from pyvista.plotting import Renderer, system_supports_plotting
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
 from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
-                                _create_menu_bar)
+                                _create_menu_bar, _check_type)
 from pyvistaqt.editor import Editor
 
 NO_PLOTTING = not system_supports_plotting()
@@ -63,6 +63,13 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+def test_check_type():
+    with pytest.raises(TypeError, match="Expected type"):
+        _check_type(0, "foo", [str])
+    _check_type(0, "foo", [int, float])
+    _check_type("foo", "foo", [str])
 
 
 @pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
