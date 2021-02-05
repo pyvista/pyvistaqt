@@ -840,7 +840,7 @@ class MultiPlotter:
 
     def __init__(
         self,
-        app: QApplication = None,
+        app: Optional[QApplication] = None,
         shape: tuple = (1, 1),
         show: bool = True,
         window_size: Optional[Tuple[int, int]] = None,
@@ -849,6 +849,12 @@ class MultiPlotter:
         **kwargs: Any,
     ) -> None:
         """Initialize the multi plotter."""
+        _check_type(app, "app", [QApplication, type(None)])
+        _check_type(shape, "shape", [tuple])
+        _check_type(show, "show", [bool])
+        _check_type(window_size, "window_size", [tuple, type(None)])
+        _check_type(title, "title", [str, type(None)])
+        _check_type(off_screen, "off_screen", [bool, type(None)])
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
