@@ -866,12 +866,12 @@ class MultiPlotter:
         self._plotters = [None] * (self._shape[0] * self._shape[1])
         for row in range(self._shape[0]):
             for col in range(self._shape[1]):
-                self._plotter = QtInteractor(
-                    parent=self._central_widget, off_screen=self.off_screen, **kwargs
+                self._plotter = BackgroundPlotter(
+                    off_screen=self.off_screen, show=False, **kwargs
                 )
                 self._window.signal_close.connect(self._plotter.close)
                 self._plotters[row * self._shape[1] + col] = self._plotter
-                self._layout.addWidget(self._plotter, row, col)
+                self._layout.addWidget(self._plotter.app_window, row, col)
         self._central_widget.setLayout(self._layout)
         self._window.setCentralWidget(self._central_widget)
         if show:
