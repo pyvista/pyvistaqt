@@ -53,7 +53,7 @@ plotter can be selected and functions like a normal PyVista ``Plotter`` instance
     import pyvista as pv
     from pyvistaqt import MultiPlotter
 
-    mp = MultiPlotter(shape=(2, 2), window_size=(800, 600))
+    mp = MultiPlotter(shape=(2, 2))
 
     plotter = mp.select((0, 0))
     plotter.add_mesh(pv.Sphere())
