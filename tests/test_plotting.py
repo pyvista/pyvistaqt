@@ -706,17 +706,16 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
 def test_multiplotter(qtbot):
     timeout = 1000
     mp = MultiPlotter(
-        shape=(1, 2),
+        nrows=1,
+        ncols=2,
         window_size=(300, 300),
         show=False,
         title='Test',
         off_screen=False,
     )
     qtbot.addWidget(mp._window)
-    p = mp.select(0)
-    p.add_mesh(pyvista.Cone())
-    p = mp.select((0, 1))
-    p.add_mesh(pyvista.Box())
+    mp[0].add_mesh(pyvista.Cone())
+    mp[0, 1].add_mesh(pyvista.Box())
     assert not mp._window.isVisible()
     with qtbot.wait_exposed(mp._window, timeout=timeout):
         mp.show()

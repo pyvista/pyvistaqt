@@ -838,10 +838,10 @@ class MultiPlotter:
     ----------
     app : optional
         Creates a `QApplication` if left as `None`.
-    shape : tuple, optional
-        Number of sub-render windows inside of the main window.
-        Specify two across with ``shape=(2, 1)`` and a two by two grid
-        with ``shape=(2, 2)``.
+    nrows : int
+        Number of rows. Defaults to 1.
+    ncols : int
+        Number of columns. Defaults to 1.
     show : bool
         Show the plotting window.  If ``False``, show this window by
         running ``show()``
@@ -855,9 +855,8 @@ class MultiPlotter:
     --------
     >>> import pyvista as pv
     >>> from pyvistaqt import MultiPlotter
-    >>> multi_plotter = MultiPlotter()
-    >>> plotter = multi_plotter.select(0)
-    >>> _ = plotter.add_mesh(pv.Sphere())
+    >>> plotter = MultiPlotter()
+    >>> _ = plotter[0].add_mesh(pv.Sphere())
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -866,7 +865,8 @@ class MultiPlotter:
     def __init__(
         self,
         app: Optional[QApplication] = None,
-        shape: tuple = (1, 1),
+        nrows: int = 1,
+        ncols: int = 1,
         show: bool = True,
         window_size: Optional[Tuple[int, int]] = None,
         title: Optional[str] = None,
@@ -875,7 +875,8 @@ class MultiPlotter:
     ) -> None:
         """Initialize the multi plotter."""
         _check_type(app, "app", [QApplication, type(None)])
-        _check_type(shape, "shape", [tuple])
+        _check_type(nrows, "nrows", [int])
+        _check_type(ncols, "ncols", [int])
         _check_type(show, "show", [bool])
         _check_type(window_size, "window_size", [tuple, type(None)])
         _check_type(title, "title", [str, type(None)])
@@ -883,19 +884,20 @@ class MultiPlotter:
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
-        self._shape = shape
+        self._nrows = nrows
+        self._ncols = ncols
         self._window = MainWindow(title=title, size=window_size)
         self._central_widget = QWidget(parent=self._window)
         self._layout = QGridLayout()
         self._plotter = None
-        self._plotters = [None] * (self._shape[0] * self._shape[1])
+        self._plotters = [None] * (self._nrows * self._ncols)
         kwargs.update(show=False)  # only show main window
         kwargs.update(allow_quit_keypress=False)  # dynamic removal is not supported
-        for row in range(self._shape[0]):
-            for col in range(self._shape[1]):
+        for row in range(self._nrows):
+            for col in range(self._ncols):
                 self._plotter = BackgroundPlotter(off_screen=self.off_screen, **kwargs)
                 self._window.signal_close.connect(self._plotter.close)
-                self._plotters[row * self._shape[1] + col] = self._plotter
+                self.__setitem__(idx=(row, col), plotter=self._plotter)
                 self._layout.addWidget(self._plotter.app_window, row, col)
         self._central_widget.setLayout(self._layout)
         self._window.setCentralWidget(self._central_widget)
@@ -911,8 +913,25 @@ class MultiPlotter:
         """Close the multi plotter."""
         self._window.close()
 
-    def select(self, idx: int) -> Optional[QtInteractor]:
-        """Select a valid plotter.
+    def __setitem__(self, idx: Any, plotter: Any) -> None:
+        """Set a valid plotter in the grid.
+
+        Parameters
+        ----------
+        idx : int | tuple
+            The index of the plotter to select. It can either
+            be an integer or a tuple ``(row, col)``.
+        plotter : BackgroundPlotter
+            The plotter to set.
+        """
+        if isinstance(idx, int):
+            self._plotters[idx] = plotter
+        else:
+            row, col = idx
+            self._plotters[row * self._ncols + col] = plotter
+
+    def __getitem__(self, idx: Any) -> Optional[BackgroundPlotter]:
+        """Get a valid plotter in the grid.
 
         Parameters
         ----------
@@ -922,14 +941,14 @@ class MultiPlotter:
 
         Returns
         -------
-        plotter :
+        plotter : BackgroundPlotter
             The selected plotter.
         """
         if isinstance(idx, int):
             self._plotter = self._plotters[idx]
         else:
             row, col = idx
-            self._plotter = self._plotters[row * self._shape[1] + col]
+            self._plotter = self._plotters[row * self._ncols + col]
         return self._plotter
 
 

@@ -53,19 +53,11 @@ plotter can be selected and functions like a normal PyVista ``Plotter`` instance
     import pyvista as pv
     from pyvistaqt import MultiPlotter
 
-    mp = MultiPlotter(shape=(2, 2))
-
-    plotter = mp.select((0, 0))
-    plotter.add_mesh(pv.Sphere())
-
-    plotter = mp.select((0, 1))
-    plotter.add_mesh(pv.Cylinder())
-
-    plotter = mp.select((1, 0))
-    plotter.add_mesh(pv.Cube())
-
-    plotter = mp.select((1, 1))
-    plotter.add_mesh(pv.Cone())
+    mp = MultiPlotter(nrows=2, ncols=2)
+    mp[0, 0].add_mesh(pv.Sphere())
+    mp[0, 1].add_mesh(pv.Cylinder())
+    mp[1, 0].add_mesh(pv.Cube())
+    mp[1, 1].add_mesh(pv.Cone())
 
 
 Example PyQt5 PyVista QtInteractor
