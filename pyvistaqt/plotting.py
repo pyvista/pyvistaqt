@@ -833,6 +833,31 @@ class MultiPlotter:
     Multi plotter for pyvista that allows to maintain an
     interactive window with multiple plotters without
     blocking the main python thread.
+
+    Parameters
+    ----------
+    app : optional
+        Creates a `QApplication` if left as `None`.
+    shape : tuple, optional
+        Number of sub-render windows inside of the main window.
+        Specify two across with ``shape=(2, 1)`` and a two by two grid
+        with ``shape=(2, 2)``.
+    show : bool
+        Show the plotting window.  If ``False``, show this window by
+        running ``show()``
+    window_size : tuple, optional
+        Window size in pixels.  Defaults to ``[1024, 768]``
+    off_screen : bool, optional
+        Renders off screen when True.  Useful for automated
+        screenshots or debug testing.
+
+    Examples
+    --------
+    >>> import pyvista as pv
+    >>> from pyvistaqt import MultiPlotter
+    >>> multi_plotter = MultiPlotter()
+    >>> plotter = multi_plotter.select(0)
+    >>> _ = plotter.add_mesh(pv.Sphere())
     """
 
     # pylint: disable=too-many-instance-attributes
