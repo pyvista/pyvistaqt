@@ -1,6 +1,4 @@
-"""
-This module contains utilities routines.
-"""
+"""This module contains utilities routines."""
 from typing import Any, List, Type
 
 
