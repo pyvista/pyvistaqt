@@ -714,7 +714,7 @@ def test_multiplotter(qtbot):
         off_screen=False,
     )
     qtbot.addWidget(mp._window)
-    mp[0].add_mesh(pyvista.Cone())
+    mp[0, 0].add_mesh(pyvista.Cone())
     mp[0, 1].add_mesh(pyvista.Box())
     assert not mp._window.isVisible()
     with qtbot.wait_exposed(mp._window, timeout=timeout):

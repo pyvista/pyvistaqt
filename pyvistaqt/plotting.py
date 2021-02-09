@@ -913,29 +913,26 @@ class MultiPlotter:
         """Close the multi plotter."""
         self._window.close()
 
-    def __setitem__(self, idx: Any, plotter: Any) -> None:
+    def __setitem__(self, idx: Tuple[int, int], plotter: Any) -> None:
         """Set a valid plotter in the grid.
 
         Parameters
         ----------
-        idx : int | tuple
+        idx : tuple
             The index of the plotter to select. It can either
             be an integer or a tuple ``(row, col)``.
         plotter : BackgroundPlotter
             The plotter to set.
         """
-        if isinstance(idx, int):
-            self._plotters[idx] = plotter
-        else:
-            row, col = idx
-            self._plotters[row * self._ncols + col] = plotter
+        row, col = idx
+        self._plotters[row * self._ncols + col] = plotter
 
-    def __getitem__(self, idx: Any) -> Optional[BackgroundPlotter]:
+    def __getitem__(self, idx: Tuple[int, int]) -> Optional[BackgroundPlotter]:
         """Get a valid plotter in the grid.
 
         Parameters
         ----------
-        idx : int | tuple
+        idx : tuple
             The index of the plotter to select. It can either
             be an integer or a tuple ``(row, col)``.
 
@@ -944,11 +941,8 @@ class MultiPlotter:
         plotter : BackgroundPlotter
             The selected plotter.
         """
-        if isinstance(idx, int):
-            self._plotter = self._plotters[idx]
-        else:
-            row, col = idx
-            self._plotter = self._plotters[row * self._ncols + col]
+        row, col = idx
+        self._plotter = self._plotters[row * self._ncols + col]
         return self._plotter
 
 
