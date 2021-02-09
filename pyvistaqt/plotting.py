@@ -45,7 +45,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np  # type: ignore
 import pyvista
@@ -72,6 +72,7 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
+from .utils import _check_type
 from .window import MainWindow
 
 if scooby.in_ipython():  # pragma: no cover
@@ -897,7 +898,7 @@ class MultiPlotter:
             for col in range(self._ncols):
                 self._plotter = BackgroundPlotter(off_screen=self.off_screen, **kwargs)
                 self._window.signal_close.connect(self._plotter.close)
-                self.__setitem__(idx=(row, col), plotter=self._plotter)
+                self.__setitem__((row, col), self._plotter)
                 self._layout.addWidget(self._plotter.app_window, row, col)
         self._central_widget.setLayout(self._layout)
         self._window.setCentralWidget(self._central_widget)
@@ -991,12 +992,3 @@ def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen
-
-
-def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:
-    types = tuple(var_types)
-    if not isinstance(var, types):
-        raise TypeError(
-            "Expected type for ``{}`` is {}"
-            " but {} was given.".format(var_name, str(types), type(var))
-        )
