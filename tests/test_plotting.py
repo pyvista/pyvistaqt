@@ -728,7 +728,7 @@ def test_multiplotter(qtbot):
         assert p._closed
 
     # cover default show=True
-    mp = MultiPlotter(off_screen=False)
+    mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
     qtbot.addWidget(mp._window)
     # force show anyway to ensure sync
     with qtbot.wait_exposed(mp._window, timeout=timeout):
