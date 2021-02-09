@@ -864,10 +864,12 @@ class MultiPlotter:
         self._layout = QGridLayout()
         self._plotter = None
         self._plotters = [None] * (self._shape[0] * self._shape[1])
+        kwargs.update(show=False)  # only show main window
+        kwargs.update(allow_quit_keypress=False)  # dynamic removal is not supported
         for row in range(self._shape[0]):
             for col in range(self._shape[1]):
                 self._plotter = BackgroundPlotter(
-                    off_screen=self.off_screen, show=False, **kwargs
+                    off_screen=self.off_screen, **kwargs,
                 )
                 self._window.signal_close.connect(self._plotter.close)
                 self._plotters[row * self._shape[1] + col] = self._plotter
