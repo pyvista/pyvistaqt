@@ -4,23 +4,6 @@ API Reference
 .. contents::
    :local:
 
-MultiPlotter
-~~~~~~~~~~~~
-
-.. rubric:: Attributes
-
-.. autoautosummary:: pyvistaqt.MultiPlotter
-   :attributes:
-
-.. rubric:: Methods
-
-.. autoautosummary:: pyvistaqt.MultiPlotter
-   :methods:
-
-.. autoclass:: pyvistaqt.MultiPlotter
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 Background Plotter
 ~~~~~~~~~~~~~~~~~~
@@ -40,6 +23,24 @@ Background Plotter
    :undoc-members:
    :show-inheritance:
 
+
+MultiPlotter
+~~~~~~~~~~~~
+
+.. rubric:: Attributes
+
+.. autoautosummary:: pyvistaqt.MultiPlotter
+   :attributes:
+
+.. rubric:: Methods
+
+.. autoautosummary:: pyvistaqt.MultiPlotter
+   :methods:
+
+.. autoclass:: pyvistaqt.MultiPlotter
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 
 QtInteractor
