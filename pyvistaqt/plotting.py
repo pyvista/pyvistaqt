@@ -868,9 +868,7 @@ class MultiPlotter:
         kwargs.update(allow_quit_keypress=False)  # dynamic removal is not supported
         for row in range(self._shape[0]):
             for col in range(self._shape[1]):
-                self._plotter = BackgroundPlotter(
-                    off_screen=self.off_screen, **kwargs,
-                )
+                self._plotter = BackgroundPlotter(off_screen=self.off_screen, **kwargs)
                 self._window.signal_close.connect(self._plotter.close)
                 self._plotters[row * self._shape[1] + col] = self._plotter
                 self._layout.addWidget(self._plotter.app_window, row, col)
