@@ -857,7 +857,7 @@ class MultiPlotter:
     >>> import pyvista as pv
     >>> from pyvistaqt import MultiPlotter
     >>> plotter = MultiPlotter()
-    >>> _ = plotter[0].add_mesh(pv.Sphere())
+    >>> _ = plotter[0, 0].add_mesh(pv.Sphere())
     """
 
     # pylint: disable=too-many-instance-attributes
