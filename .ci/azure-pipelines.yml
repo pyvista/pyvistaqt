@@ -130,7 +130,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip wheel
       pip install -r requirements_test.txt
-      pip install "PyQt5>=5.11,!=5.15.2"
+      pip install PyQt5==5.11.3
     displayName: 'Install dependencies'
 
   - script: |
@@ -199,7 +199,7 @@ jobs:
         sed -i -e 's/- vtk$/- vtk=$(VTK.VERSION)/' environment.yml
         conda env create --quiet -n pyvista-vtk$(VTK.VERSION) --file environment.yml
         conda activate pyvista-vtk$(VTK.VERSION)
-        pip install "PyQt5>=5.11,!=5.15.2"
+        conda install pyqt>=5.11
         pip install -e .
         conda list
         which python
