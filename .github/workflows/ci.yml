@@ -35,7 +35,8 @@ jobs:
           architecture: 'x64'
         name: 'Setup python'
       - run: |
-          ./install_opengl.ps1
+          git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+          ./gl-ci-helpers/appveyor/install_opengl.ps1
         shell: pwsh
         name: 'Install opengl'
         if: matrix.os == 'windows-latest'
