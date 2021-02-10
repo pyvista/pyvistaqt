@@ -130,7 +130,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip wheel
       pip install -r requirements_test.txt
-      pip install PyQt5>=5.11
+      pip install PyQt5==5.11
     displayName: 'Install dependencies'
 
   - script: |
