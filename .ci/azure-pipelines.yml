@@ -183,8 +183,8 @@ jobs:
         VTK.VERSION: 8.1
       VTKv82:
         VTK.VERSION: 8.2
-      # VTKv90:
-        # VTK.VERSION: 9.0
+      VTKv90:
+        VTK.VERSION: 9.0
 
   steps:
     - script: |
@@ -198,7 +198,7 @@ jobs:
         sed -i -e 's/- vtk$/- vtk=$(VTK.VERSION)/' environment.yml
         conda env create --quiet -n pyvista-vtk$(VTK.VERSION) --file environment.yml
         conda activate pyvista-vtk$(VTK.VERSION)
-        pip install pyqt5==5.15.0
+        pip install pyqt5>=5.11
         pip install -e .
         conda list
         which python
@@ -250,7 +250,7 @@ jobs:
       python -m pip install -r requirements_test.txt
     displayName: 'Install test dependencies'
   - script: |
-      pip install pyqt5==5.15.0
+      pip install pyqt5>=5.11
       python -m pip install -e .
       python -c "import pyvista; print(pyvista.Report())"
     displayName: 'Install PyVista'
@@ -283,7 +283,7 @@ jobs:
       displayName: Install Python
 
     - script: |
-        pip install pyqt5==5.15.0
+        pip install pyqt5>=5.11
         python -m pip install -e .
         python -c "import pyvista; print(pyvista.Report())"
       displayName: 'Install pyvistaqt'
@@ -333,6 +333,7 @@ jobs:
     displayName: 'Install dependencies'
 
   - script: |
+      pip install pyqt5>=5.11
       pip install -e .
     displayName: Install pyvistaqt
 
