@@ -134,6 +134,7 @@ jobs:
   - script: |
       sudo apt-get install python3-tk
       pip install -r requirements_test.txt
+      pip install pyqt5==5.15.0
       python -c "import pyvista; print(pyvista.Report())"
       which python
       pip list
@@ -197,6 +198,7 @@ jobs:
         sed -i -e 's/- vtk$/- vtk=$(VTK.VERSION)/' environment.yml
         conda env create --quiet -n pyvista-vtk$(VTK.VERSION) --file environment.yml
         conda activate pyvista-vtk$(VTK.VERSION)
+        pip install pyqt5==5.15.0
         pip install -e .
         conda list
         which python
@@ -281,6 +283,7 @@ jobs:
       displayName: Install Python
 
     - script: |
+        pip install pyqt5==5.15.0
         python -m pip install -e .
         python -c "import pyvista; print(pyvista.Report())"
       displayName: 'Install pyvistaqt'
