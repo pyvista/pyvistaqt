@@ -1,0 +1,50 @@
+name: 'CI'
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  ci:
+    name: ${{ matrix.os }} / PySide2
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    defaults:
+      run:
+        shell: bash
+    env:
+      DISPLAY: ':99'
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
+        name: 'Setup xvfb'
+        if: ${{ matrix.os }} == 'ubuntu-latest'
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python.name }}
+          architecture: 'x64'
+        name: 'Setup python'
+      - run: |
+          git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+          ./gl-ci-helpers/appveyor/install_opengl.ps1
+        shell: pwsh
+        name: 'Install opengl'
+        if: ${{ matrix.os }} == 'windows-latest'
+      - run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install PySide2
+          pip install -r requirements_test.txt
+          python -c "import pyvista; print(pyvista.Report())"
+        name: 'Install dependencies'
+      - run: pip install -e .
+        name: 'Install pyvistaqt'
+      - run: |
+          pytest -v --cov pyvistaqt --cov-report html
+        name: 'Run Tests'
