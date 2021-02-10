@@ -122,18 +122,15 @@ def test_counter(qtbot):
     with pytest.raises(ValueError, match='strictly positive'):
         Counter(count=-1)
 
-    timeout = 300
     counter = Counter(count=1)
     assert counter.count == 1
-    with qtbot.wait_signals([counter.signal_finished], timeout=timeout):
+    with qtbot.wait_signals([counter.signal_finished], timeout=300):
         counter.decrease()
     assert counter.count == 0
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_editor(qtbot):
-    timeout = 1000  # adjusted timeout for MacOS
-
     # test editor=False
     plotter = BackgroundPlotter(editor=False, off_screen=False)
     qtbot.addWidget(plotter.app_window)
@@ -171,7 +168,7 @@ def test_editor(qtbot):
     assert top_item is not None
 
     # simulate selection
-    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=timeout):
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=1000):
         top_item.setSelected(True)
 
     # toggle all the renderer-associated checkboxes twice
@@ -186,9 +183,9 @@ def test_editor(qtbot):
         widget_item = page_layout.itemAt(widget_idx)
         widget = widget_item.widget()
         if isinstance(widget, QCheckBox):
-            with qtbot.wait_signals([widget.toggled], timeout=timeout):
+            with qtbot.wait_signals([widget.toggled], timeout=1000):
                 widget.toggle()
-            with qtbot.wait_signals([widget.toggled], timeout=timeout):
+            with qtbot.wait_signals([widget.toggled], timeout=1000):
                 widget.toggle()
 
     # hide the editor for coverage
@@ -651,9 +648,6 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
     # ensure that self.render is called by the timer
     render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
     render_blocker.wait()
-
-    # a full scene may take a while to setup, especially on macOS
-    show_timeout = 500 if empty_scene else 10000
 
     # ensure that the widgets are showed
     window.show()
