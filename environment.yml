@@ -9,7 +9,6 @@ dependencies:
   - meshio>=4.0.3, <5.0
   - matplotlib
   - appdirs
-  - pyqt>=5.11
   - qtpy
   - imageio>=2.5.0
   - imageio-ffmpeg

@@ -43,7 +43,6 @@ setup(
     python_requires='>=3.6.*',
     install_requires=['pyvista>=0.25.0',
                       'QtPy>=1.9.0',
-                      'PyQt5>=5.11.3'
                       'imageio>=2.5.0',
     ],
     package_data={'pyvistaqt': [
