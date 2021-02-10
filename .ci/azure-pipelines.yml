@@ -124,22 +124,22 @@ jobs:
     displayName: 'Use Python $(python.version)'
 
   - script: |
-      python -m pip install --upgrade pip wheel
-      python setup.py bdist_wheel
-      pip install dist/pyvistaqt*.whl
-    displayName: Build wheel and install pyvistaqt
-
-  - script: |
       .ci/setup_headless_display.sh
     displayName: Install headless display
 
   - script: |
+      python -m pip install --upgrade pip wheel
       pip install -r requirements_test.txt
       pip install PyQt5>=5.11
+    displayName: 'Install dependencies'
+
+  - script: |
+      python setup.py bdist_wheel
+      pip install dist/pyvistaqt*.whl
       python -c "import pyvista; print(pyvista.Report())"
       which python
       pip list
-    displayName: 'Install dependencies'
+    displayName: Build wheel and install pyvistaqt
 
   - script: |
       pip install pytest-azurepipelines
