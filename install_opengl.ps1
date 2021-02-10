@@ -12,7 +12,7 @@ $MESA_GL_URL = "https://github.com/vispy/demo-data/raw/master/mesa/"
 #     http://sourceforge.net/projects/msys2/files/REPOS/MINGW/x86_64/mingw-w64-x86_64-mesa-10.2.4-1-any.pkg.tar.xz/download
 
 function DownloadMesaOpenGL ($architecture) {
-    [Net.ServicePointManager]::SecurityProtocol = 'Ssl3, Tls'
+    [Net.ServicePointManager]::SecurityProtocol = 'Ssl3'
     $webclient = New-Object System.Net.WebClient
     # Download and retry up to 3 times in case of network transient errors.
     $url = $MESA_GL_URL + "opengl32_mingw_" + $architecture + ".dll"
