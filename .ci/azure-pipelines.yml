@@ -283,7 +283,7 @@ jobs:
       displayName: Install Python
 
     - script: |
-        pip install PyQt5>=5.11
+        python -m pip install PyQt5>=5.11
         python -m pip install -e .
         python -c "import pyvista; print(pyvista.Report())"
       displayName: 'Install pyvistaqt'
