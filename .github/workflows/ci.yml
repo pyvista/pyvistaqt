@@ -29,10 +29,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python.name }}
+          python-version: 3.8
           architecture: 'x64'
         name: 'Setup python'
       - run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = "Stop"
+          $PSDefaultParameterValues['*:ErrorAction']='Stop'
           git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
           ./gl-ci-helpers/appveyor/install_opengl.ps1
         shell: pwsh
