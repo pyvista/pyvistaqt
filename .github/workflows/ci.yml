@@ -12,6 +12,7 @@ jobs:
     name: ${{ matrix.os }} / PySide2
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
     defaults:
@@ -25,7 +26,7 @@ jobs:
           sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
           /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
         name: 'Setup xvfb'
-        if: ${{ matrix.os }} == 'ubuntu-latest'
+        if: contains(${{ matrix.os }}, 'ubuntu')
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python.name }}
@@ -36,7 +37,7 @@ jobs:
           ./gl-ci-helpers/appveyor/install_opengl.ps1
         shell: pwsh
         name: 'Install opengl'
-        if: ${{ matrix.os }} == 'windows-latest'
+        if: contains(${{ matrix.os }}, 'windows')
       - run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install PySide2
