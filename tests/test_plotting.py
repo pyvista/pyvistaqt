@@ -698,7 +698,6 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_multiplotter(qtbot):
-    timeout = 1000
     mp = MultiPlotter(
         nrows=1,
         ncols=2,
@@ -711,12 +710,12 @@ def test_multiplotter(qtbot):
     mp[0, 0].add_mesh(pyvista.Cone())
     mp[0, 1].add_mesh(pyvista.Box())
     assert not mp._window.isVisible()
-    with qtbot.wait_exposed(mp._window, timeout=timeout):
-        mp.show()
+    mp.show()
+    qtbot.waitForWindowShown(mp._window)
     assert mp._window.isVisible()
     for p in mp._plotters:
         assert not p._closed
-    with qtbot.wait_signals([mp._window.signal_close], timeout=timeout):
+    with qtbot.wait_signals([mp._window.signal_close], timeout=1000):
         mp.close()
     for p in mp._plotters:
         assert p._closed
@@ -724,9 +723,7 @@ def test_multiplotter(qtbot):
     # cover default show=True
     mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
     qtbot.addWidget(mp._window)
-    # force show anyway to ensure sync
-    with qtbot.wait_exposed(mp._window, timeout=timeout):
-        mp.show()
+    qtbot.waitForWindowShown(mp._window)
     assert mp._window.isVisible()
     mp.close()
 
