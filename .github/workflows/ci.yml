@@ -9,7 +9,7 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.os }} / ${{ matrix.qt }}
+    name: ${{ matrix.os }} / ${{ matrix.install }} / ${{ matrix.qt }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
