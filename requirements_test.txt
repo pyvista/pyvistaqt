@@ -1,13 +1,11 @@
 numpy
 vtk
-matplotlib
 appdirs
 pytest
 pytest-cov
 pytest-memprof
 codecov
 qtpy
-PyQt5==5.11.3
 pytest-qt
 imageio>=2.5.0
 imageio-ffmpeg
