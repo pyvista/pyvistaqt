@@ -46,8 +46,6 @@ jobs:
         if: matrix.install == 'pip'
       - shell: bash -el {0}
         run: |
-          python -m pip install --upgrade pip wheel
-          pip install ${{ matrix.qt }}
           pip install -r requirements_test.txt
         name: 'Install dependencies with pip'
         if: matrix.install == 'pip'
@@ -58,6 +56,9 @@ jobs:
           environment-file: ${{ env.CONDA_ENV }}
         name: 'Setup conda'
         if: matrix.install == 'conda'
+      - shell: bash -el {0}
+        run: pip install ${{ matrix.qt }}
+        name: 'Install Qt binding'
       - shell: bash -el {0}
         run: |
           pip install -e .

@@ -39,11 +39,12 @@ setup(
     ],
 
     url='https://github.com/pyvista/pyvistaqt',
-    keywords='vtk numpy plotting mesh qt pyqt',
+    keywords='vtk numpy plotting mesh qt',
     python_requires='>=3.6.*',
-    install_requires=['pyvista>=0.25.0',
-                      'QtPy>=1.9.0',
-                      'imageio>=2.5.0',
+    install_requires=[
+        'pyvista>=0.25.0',
+        'QtPy>=1.9.0',
+        'imageio>=2.5.0',
     ],
     package_data={'pyvistaqt': [
         os.path.join('data', '*.png'),
