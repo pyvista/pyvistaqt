@@ -129,18 +129,15 @@ def test_counter(qtbot):
     with pytest.raises(ValueError, match='strictly positive'):
         Counter(count=-1)
 
-    timeout = 300
     counter = Counter(count=1)
     assert counter.count == 1
-    with qtbot.wait_signals([counter.signal_finished], timeout=timeout):
+    with qtbot.wait_signals([counter.signal_finished], timeout=300):
         counter.decrease()
     assert counter.count == 0
 
 
 @pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 def test_editor(qtbot):
-    timeout = 1000  # adjusted timeout for MacOS
-
     # test editor=False
     plotter = BackgroundPlotter(editor=False, off_screen=False)
     qtbot.addWidget(plotter.app_window)
@@ -153,8 +150,8 @@ def test_editor(qtbot):
     assert_hasattr(plotter, "editor", Editor)
     editor = plotter.editor
     assert not editor.isVisible()
-    with qtbot.wait_exposed(editor, timeout=timeout):
-        editor.toggle()
+    editor.toggle()
+    qtbot.waitForWindowShown(editor)
     assert editor.isVisible()
     plotter.close()
     assert not editor.isVisible()
@@ -163,8 +160,8 @@ def test_editor(qtbot):
     plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
     qtbot.addWidget(plotter.app_window)
     editor = plotter.editor
-    with qtbot.wait_exposed(editor, timeout=timeout):
-        editor.toggle()
+    editor.toggle()
+    qtbot.waitForWindowShown(editor)
 
     # add at least an actor
     plotter.subplot(0, 0)
@@ -178,7 +175,7 @@ def test_editor(qtbot):
     assert top_item is not None
 
     # simulate selection
-    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=timeout):
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=1000):
         top_item.setSelected(True)
 
     # toggle all the renderer-associated checkboxes twice
@@ -193,9 +190,9 @@ def test_editor(qtbot):
         widget_item = page_layout.itemAt(widget_idx)
         widget = widget_item.widget()
         if isinstance(widget, QCheckBox):
-            with qtbot.wait_signals([widget.toggled], timeout=timeout):
+            with qtbot.wait_signals([widget.toggled], timeout=1000):
                 widget.toggle()
-            with qtbot.wait_signals([widget.toggled], timeout=timeout):
+            with qtbot.wait_signals([widget.toggled], timeout=1000):
                 widget.toggle()
 
     # hide the editor for coverage
@@ -237,10 +234,10 @@ def test_qt_interactor(qtbot):
     window.add_sphere()
     assert np.any(window.vtk_widget.mesh.points)
 
-    with qtbot.wait_exposed(window, timeout=5000):
-        window.show()
-    with qtbot.wait_exposed(interactor, timeout=5000):
-        interactor.show()
+    window.show()
+    qtbot.waitForWindowShown(window)
+    interactor.show()
+    qtbot.waitForWindowShown(interactor)
 
     assert window.isVisible()
     assert interactor.isVisible()
@@ -286,8 +283,8 @@ def test_background_plotting_axes_scale(qtbot, show_plotter):
     # show the window
     if not show_plotter:
         assert not window.isVisible()
-        with qtbot.wait_exposed(window, timeout=1000):
-            window.show()
+        window.show()
+        qtbot.waitForWindowShown(window)
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -301,8 +298,8 @@ def test_background_plotting_axes_scale(qtbot, show_plotter):
 
     # show the dialog
     assert not dlg.isVisible()
-    with qtbot.wait_exposed(dlg, timeout=500):
-        dlg.show()
+    dlg.show()
+    qtbot.waitForWindowShown(dlg)
     assert dlg.isVisible()
 
     value = 2.0
@@ -364,8 +361,8 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter):
     # show the window
     if not show_plotter:
         assert not window.isVisible()
-        with qtbot.wait_exposed(window, timeout=1000):
-            window.show()
+        window.show()
+        qtbot.waitForWindowShown(window)
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -382,8 +379,8 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter):
 
     # show the dialog
     assert not dlg.isVisible()
-    with qtbot.wait_exposed(dlg, timeout=500):
-        dlg.show()
+    dlg.show()
+    qtbot.waitForWindowShown(dlg)
     assert dlg.isVisible()
 
     # synchronise signal and callback
@@ -418,8 +415,8 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter):
     # show the window
     if not show_plotter:
         assert not window.isVisible()
-        with qtbot.wait_exposed(window, timeout=1000):
-            window.show()
+        window.show()
+        qtbot.waitForWindowShown(window)
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -436,8 +433,8 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter):
 
     # show the dialog
     assert not dlg.isVisible()
-    with qtbot.wait_exposed(dlg, timeout=500):
-        dlg.show()
+    dlg.show()
+    qtbot.waitForWindowShown(dlg)
     assert dlg.isVisible()
 
     # synchronise signal and callback
@@ -482,8 +479,8 @@ def test_background_plotting_toolbar(qtbot):
     default_camera_tool_bar = plotter.default_camera_tool_bar
     saved_cameras_tool_bar = plotter.saved_cameras_tool_bar
 
-    with qtbot.wait_exposed(window, timeout=500):
-        window.show()
+    window.show()
+    qtbot.waitForWindowShown(window)
 
     assert default_camera_tool_bar.isVisible()
     assert saved_cameras_tool_bar.isVisible()
@@ -517,8 +514,8 @@ def test_background_plotting_menu_bar(qtbot):
     main_menu = plotter.main_menu
     assert not main_menu.isNativeMenuBar()
 
-    with qtbot.wait_exposed(window, timeout=500):
-        window.show()
+    window.show()
+    qtbot.waitForWindowShown(window)
 
     # EDL action
     assert not hasattr(plotter.renderer, 'edl_pass')
@@ -580,8 +577,8 @@ def test_background_plotting_add_callback(qtbot, monkeypatch):
 
     # ensure that the window is showed
     assert not window.isVisible()
-    with qtbot.wait_exposed(window, timeout=500):
-        window.show()
+    window.show()
+    qtbot.waitForWindowShown(window)
     assert window.isVisible()
     assert update_count[0] in [0, 1]  # macOS sometimes updates (1)
     # don't check _last_update_time for non-inf-ness, won't be updated on Win
@@ -659,14 +656,11 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
     render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
     render_blocker.wait()
 
-    # a full scene may take a while to setup, especially on macOS
-    show_timeout = 500 if empty_scene else 10000
-
     # ensure that the widgets are showed
-    with qtbot.wait_exposed(window, timeout=show_timeout):
-        window.show()
-    with qtbot.wait_exposed(interactor, timeout=show_timeout):
-        interactor.show()
+    window.show()
+    qtbot.waitForWindowShown(window)
+    interactor.show()
+    qtbot.waitForWindowShown(interactor)
 
     # check that the widgets are showed properly
     assert window.isVisible()
