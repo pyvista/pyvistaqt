@@ -43,9 +43,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
         name: 'Setup python'
         if: matrix.install == 'pip'
-      - shell: bash -el {0}
-        run: |
-          pip install -r requirements_test.txt
+      - run: python -m pip install -r requirements_test.txt
         name: 'Install dependencies with pip'
         if: matrix.install == 'pip'
       - uses: conda-incubator/setup-miniconda@v2
@@ -56,14 +54,13 @@ jobs:
         name: 'Setup conda'
         if: matrix.install == 'conda'
       - shell: bash -el {0}
-        run: pip install ${{ matrix.qt }}
+        run: python -m pip install ${{ matrix.qt }}
         name: 'Install Qt binding'
       - shell: bash -el {0}
         run: |
-          pip install -e .
+          python -m pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: 'Install pyvistaqt'
       - shell: bash -el {0}
-        run: |
-          pytest -v --cov pyvistaqt --cov-report html
+        run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
