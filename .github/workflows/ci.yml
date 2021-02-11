@@ -23,7 +23,7 @@ jobs:
     env:
       ALLOW_PLOTTING: 'true'
       DISPLAY: ':99'
-      CONDA_ENV: 'environmnet.yml'
+      CONDA_ENV: 'environment.yml'
       PYTHON_VERSION: '3.8'
     steps:
       - uses: actions/checkout@v2
