@@ -13,9 +13,9 @@ from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
 
 import pyvistaqt
-from pyvistaqt import BackgroundPlotter, MainWindow, QtInteractor
+from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
 from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
-                                _create_menu_bar)
+                                _create_menu_bar, _check_type)
 from pyvistaqt.editor import Editor
 
 NO_PLOTTING = not system_supports_plotting()
@@ -63,6 +63,13 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+def test_check_type():
+    with pytest.raises(TypeError, match="Expected type"):
+        _check_type(0, "foo", [str])
+    _check_type(0, "foo", [int, float])
+    _check_type("foo", "foo", [str])
 
 
 @pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
@@ -687,6 +694,38 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
 
     # check that BasePlotter.__init__() is called only once
     assert len(_ALL_PLOTTERS) == 1
+
+
+@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
+def test_multiplotter(qtbot):
+    mp = MultiPlotter(
+        nrows=1,
+        ncols=2,
+        window_size=(300, 300),
+        show=False,
+        title='Test',
+        off_screen=False,
+    )
+    qtbot.addWidget(mp._window)
+    mp[0, 0].add_mesh(pyvista.Cone())
+    mp[0, 1].add_mesh(pyvista.Box())
+    assert not mp._window.isVisible()
+    mp.show()
+    qtbot.waitForWindowShown(mp._window)
+    assert mp._window.isVisible()
+    for p in mp._plotters:
+        assert not p._closed
+    with qtbot.wait_signals([mp._window.signal_close], timeout=1000):
+        mp.close()
+    for p in mp._plotters:
+        assert p._closed
+
+    # cover default show=True
+    mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
+    qtbot.addWidget(mp._window)
+    qtbot.waitForWindowShown(mp._window)
+    assert mp._window.isVisible()
+    mp.close()
 
 
 def _create_testing_scene(empty_scene, show=False, off_screen=False):

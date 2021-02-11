@@ -42,6 +42,24 @@ and functions like a normal PyVista ``Plotter`` instance. For example:
     sphere.points *= 0.5
 
 
+Multiple Plotters
+~~~~~~~~~~~~~~~~~
+
+The following example shows how to use an interface with multiple plotters. Each
+plotter can be selected and functions like a normal PyVista ``Plotter`` instance:
+
+.. code:: python
+
+    import pyvista as pv
+    from pyvistaqt import MultiPlotter
+
+    mp = MultiPlotter(nrows=2, ncols=2)
+    mp[0, 0].add_mesh(pv.Sphere())
+    mp[0, 1].add_mesh(pv.Cylinder())
+    mp[1, 0].add_mesh(pv.Cube())
+    mp[1, 1].add_mesh(pv.Cone())
+
+
 Example PyQt5 PyVista QtInteractor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

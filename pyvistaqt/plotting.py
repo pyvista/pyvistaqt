@@ -61,15 +61,18 @@ from qtpy.QtWidgets import (
     QApplication,
     QFrame,
     QGestureEvent,
+    QGridLayout,
     QMenuBar,
     QToolBar,
     QVBoxLayout,
+    QWidget,
 )
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
+from .utils import _check_type
 from .window import MainWindow
 
 if scooby.in_ipython():  # pragma: no cover
@@ -183,21 +186,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         point_smoothing: bool = False,
         polygon_smoothing: bool = False,
         auto_update: Union[float, bool] = 5.0,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
-
         self.url: QtCore.QUrl = None
-        self.default_camera_tool_bar = None
-        self.saved_camera_positions: Optional[List[BasePlotter.camera_position]] = None
-        self.saved_cameras_tool_bar: QToolBar = None
-        self.main_menu: QMenuBar = None
-        self._menu_close_action = None
-        self._edl_action = None
-        self._parallel_projection_action = None
-        self._view_action = None
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
@@ -341,132 +335,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     self.add_mesh(pyvista.read(filename))
                 except IOError as exception:
                     print(str(exception))
-        return None
-
-    def add_toolbars(self) -> None:  # pylint: disable=useless-return
-        """Add the toolbars."""
-
-        def _add_action(tool_bar: QToolBar, key: str, method: Any) -> QAction:
-            action = QAction(key, self.app_window)
-            action.triggered.connect(method)
-            tool_bar.addAction(action)
-            return action
-
-        # Camera toolbar
-        self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
-
-        def _view_vector(*args: Any) -> None:
-            return self.view_vector(*args)
-
-        cvec_setters = {
-            # Viewing vector then view up vector
-            "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
-            "Bottom (+Z)": lambda: _view_vector((0, 0, -1), (0, 1, 0)),
-            "Front (-Y)": lambda: _view_vector((0, 1, 0), (0, 0, 1)),
-            "Back (+Y)": lambda: _view_vector((0, -1, 0), (0, 0, 1)),
-            "Left (-X)": lambda: _view_vector((1, 0, 0), (0, 0, 1)),
-            "Right (+X)": lambda: _view_vector((-1, 0, 0), (0, 0, 1)),
-            "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
-        }
-        for key, method in cvec_setters.items():
-            self._view_action = _add_action(self.default_camera_tool_bar, key, method)
-        # pylint: disable=unnecessary-lambda
-        _add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
-
-        # Saved camera locations toolbar
-        self.saved_camera_positions = []
-        self.saved_cameras_tool_bar = self.app_window.addToolBar(
-            "Saved Camera Positions"
-        )
-
-        _add_action(
-            self.saved_cameras_tool_bar, SAVE_CAM_BUTTON_TEXT, self.save_camera_position
-        )
-        _add_action(
-            self.saved_cameras_tool_bar,
-            CLEAR_CAMS_BUTTON_TEXT,
-            self.clear_camera_positions,
-        )
-
-        return None
-
-    def add_menu_bar(self) -> None:
-        """Add the main menu bar."""
-        self.main_menu = _create_menu_bar(parent=self.app_window)
-        self.app_window.signal_close.connect(self.main_menu.clear)
-
-        file_menu = self.main_menu.addMenu("File")
-        file_menu.addAction("Take Screenshot", self._qt_screenshot)
-        file_menu.addAction("Export as VTKjs", self._qt_export_vtkjs)
-        file_menu.addSeparator()
-        # member variable for testing only
-        self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)
-
-        view_menu = self.main_menu.addMenu("View")
-        self._edl_action = view_menu.addAction(
-            "Toggle Eye Dome Lighting", self._toggle_edl
-        )
-        view_menu.addAction("Scale Axes", self.scale_axes_dialog)
-        view_menu.addAction("Clear All", self.clear)
-
-        tool_menu = self.main_menu.addMenu("Tools")
-        tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
-        tool_menu.addAction(
-            "Enable Cell Picking (visible)",
-            lambda: self.enable_cell_picking(through=False),
-        )
-
-        cam_menu = view_menu.addMenu("Camera")
-        self._parallel_projection_action = cam_menu.addAction(
-            "Toggle Parallel Projection", self._toggle_parallel_projection
-        )
-
-        view_menu.addSeparator()
-        # Orientation marker
-        orien_menu = view_menu.addMenu("Orientation Marker")
-        orien_menu.addAction("Show All", self.show_axes_all)
-        orien_menu.addAction("Hide All", self.hide_axes_all)
-        # Bounds axes
-        axes_menu = view_menu.addMenu("Bounds Axes")
-        axes_menu.addAction("Add Bounds Axes (front)", self.show_bounds)
-        axes_menu.addAction("Add Bounds Grid (back)", self.show_grid)
-        axes_menu.addAction("Add Bounding Box", self.add_bounding_box)
-        axes_menu.addSeparator()
-        axes_menu.addAction("Remove Bounding Box", self.remove_bounding_box)
-        axes_menu.addAction("Remove Bounds", self.remove_bounds_axes)
-
-        # A final separator to separate OS options
-        view_menu.addSeparator()
-
-    def save_camera_position(self) -> None:
-        """Save camera position to saved camera menu for recall."""
-        if self.saved_camera_positions is not None:
-            # pylint: disable=attribute-defined-outside-init
-            self.camera_position: Any
-            self.saved_camera_positions.append(self.camera_position)
-            ncam = len(self.saved_camera_positions)
-        if self.camera_position is not None:
-            camera_position: Any = self.camera_position[:]  # py2.7 copy compatibility
-
-        if hasattr(self, "saved_cameras_tool_bar"):
-
-            def load_camera_position() -> None:
-                # pylint: disable=attribute-defined-outside-init
-                self.camera_position = camera_position
-
-            self.saved_cameras_tool_bar.addAction(
-                "Cam %2d" % ncam, load_camera_position
-            )
-            if ncam < 10:
-                self.add_key_event(str(ncam), load_camera_position)
-
-    def clear_camera_positions(self) -> None:
-        """Clear all camera positions."""
-        if hasattr(self, "saved_cameras_tool_bar"):
-            for action in self.saved_cameras_tool_bar.actions():
-                if action.text() not in [SAVE_CAM_BUTTON_TEXT, CLEAR_CAMS_BUTTON_TEXT]:
-                    self.saved_cameras_tool_bar.removeAction(action)
-        self.saved_camera_positions = []
 
     def close(self) -> None:
         """Quit application."""
@@ -561,15 +429,15 @@ class BackgroundPlotter(QtInteractor):
     def __init__(
         self,
         show: bool = True,
-        app: QApplication = None,
+        app: Optional[QApplication] = None,
         window_size: Optional[Tuple[int, int]] = None,
-        off_screen: bool = None,
+        off_screen: Optional[bool] = None,
         allow_quit_keypress: bool = True,
         toolbar: bool = True,
         menu_bar: bool = True,
         editor: bool = True,
         update_app_icon: Optional[bool] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
@@ -578,16 +446,29 @@ class BackgroundPlotter(QtInteractor):
         # is called
         self._closed = True
         LOG.debug("BackgroundPlotter init start")
-        if not isinstance(menu_bar, bool):
-            raise TypeError(
-                "Expected type for ``menu_bar`` is bool"
-                " but {} was given.".format(type(menu_bar))
-            )
-        if not isinstance(toolbar, bool):
-            raise TypeError(
-                "Expected type for ``toolbar`` is bool"
-                " but {} was given.".format(type(toolbar))
-            )
+        _check_type(show, "show", [bool])
+        _check_type(app, "app", [QApplication, type(None)])
+        _check_type(window_size, "window_size", [tuple, type(None)])
+        _check_type(off_screen, "off_screen", [bool, type(None)])
+        _check_type(allow_quit_keypress, "allow_quit_keypress", [bool])
+        _check_type(toolbar, "toolbar", [bool])
+        _check_type(menu_bar, "menu_bar", [bool])
+        _check_type(editor, "editor", [bool])
+        _check_type(update_app_icon, "update_app_icon", [bool, type(None)])
+
+        # toolbar
+        self._view_action: QAction = None
+        self.default_camera_tool_bar: QToolBar = None
+        self.saved_camera_positions: Optional[list] = None
+        self.saved_cameras_tool_bar: QToolBar = None
+        # menu bar
+        self.main_menu: QMenuBar = None
+        self._edl_action: QAction = None
+        self._menu_close_action: QAction = None
+        self._parallel_projection_action: QAction = None
+        # editor
+        self.editor: Optional[Editor] = None
+        self._editor_action: QAction = None
 
         self.active = True
         self.counters: List[Counter] = []
@@ -599,70 +480,34 @@ class BackgroundPlotter(QtInteractor):
         # Remove notebook argument in case user passed it
         kwargs.pop("notebook", None)
 
-        # ipython magic
-        if scooby.in_ipython():  # pragma: no cover
-            # pylint: disable=import-outside-toplevel
-            from IPython import get_ipython
+        self.ipython = _setup_ipython()
+        self.app = _setup_application(app)
+        self.off_screen = _setup_off_screen(off_screen)
 
-            ipython = get_ipython()
-            ipython.magic("gui qt")
-
-            # pylint: disable=redefined-outer-name
-            # pylint: disable=import-outside-toplevel
-            from IPython.external.qt_for_kernel import QtGui
-
-            QtGui.QApplication.instance()
-        else:
-            ipython = None
-
-        # run within python
-        if app is None:
-            app = QApplication.instance()
-            if not app:  # pragma: no cover
-                app = QApplication(["PyVista"])
-
-        self.app = app
-        self.app_window = MainWindow()
-        self.app_window.setWindowTitle(kwargs.get("title", rcParams["title"]))
-
+        self.app_window = MainWindow(title=kwargs.get("title", rcParams["title"]))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
-        self.app_window.setCentralWidget(self.frame)
         vlayout = QVBoxLayout()
-        self.frame.setLayout(vlayout)
         super(BackgroundPlotter, self).__init__(
-            parent=self.frame, off_screen=off_screen, **kwargs
+            parent=self.frame, off_screen=self.off_screen, **kwargs
         )
         assert not self._closed
         vlayout.addWidget(self)
+        self.frame.setLayout(vlayout)
+        self.app_window.setCentralWidget(self.frame)
         self.app_window.grabGesture(QtCore.Qt.PinchGesture)
         self.app_window.signal_gesture.connect(self.gesture_event)
         self.app_window.signal_close.connect(self._close)
 
-        self.main_menu = None
-        self._menu_close_action = None
         if menu_bar:
             self.add_menu_bar()
-
-        self.editor = None
-        if editor and menu_bar:
-            self.add_editor()
-
-        # member variable for testing only
-        self._view_action = None
-
-        self.default_camera_tool_bar = None
-        self.saved_camera_positions = None
-        self.saved_cameras_tool_bar = None
+            if editor:
+                self.add_editor()
         if toolbar:
             self.add_toolbars()
 
-        if off_screen is None:
-            off_screen = pyvista.OFF_SCREEN
-
-        if show and not off_screen:  # pragma: no cover
+        if show and not self.off_screen:  # pragma: no cover
             self.app_window.show()
-            self.show()
 
         self.window_size = window_size
         self._last_update_time = -np.inf
@@ -850,11 +695,256 @@ class BackgroundPlotter(QtInteractor):
             self._callback_timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
 
+    def save_camera_position(self) -> None:
+        """Save camera position to saved camera menu for recall."""
+        if self.saved_camera_positions is not None:
+            # pylint: disable=attribute-defined-outside-init
+            self.camera_position: Any
+            self.saved_camera_positions.append(self.camera_position)
+            ncam = len(self.saved_camera_positions)
+        if self.camera_position is not None:
+            camera_position: Any = self.camera_position[:]  # py2.7 copy compatibility
+
+        if hasattr(self, "saved_cameras_tool_bar"):
+
+            def load_camera_position() -> None:
+                # pylint: disable=attribute-defined-outside-init
+                self.camera_position = camera_position
+
+            self.saved_cameras_tool_bar.addAction(
+                "Cam %2d" % ncam, load_camera_position
+            )
+            if ncam < 10:
+                self.add_key_event(str(ncam), load_camera_position)
+
+    def clear_camera_positions(self) -> None:
+        """Clear all camera positions."""
+        if hasattr(self, "saved_cameras_tool_bar"):
+            for action in self.saved_cameras_tool_bar.actions():
+                if action.text() not in [SAVE_CAM_BUTTON_TEXT, CLEAR_CAMS_BUTTON_TEXT]:
+                    self.saved_cameras_tool_bar.removeAction(action)
+        self.saved_camera_positions = []
+
+    def _add_action(self, tool_bar: QToolBar, key: str, method: Any) -> QAction:
+        action = QAction(key, self.app_window)
+        action.triggered.connect(method)
+        tool_bar.addAction(action)
+        return action
+
+    def add_toolbars(self) -> None:
+        """Add the toolbars."""
+        # Camera toolbar
+        self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
+
+        def _view_vector(*args: Any) -> None:
+            return self.view_vector(*args)
+
+        cvec_setters = {
+            # Viewing vector then view up vector
+            "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
+            "Bottom (+Z)": lambda: _view_vector((0, 0, -1), (0, 1, 0)),
+            "Front (-Y)": lambda: _view_vector((0, 1, 0), (0, 0, 1)),
+            "Back (+Y)": lambda: _view_vector((0, -1, 0), (0, 0, 1)),
+            "Left (-X)": lambda: _view_vector((1, 0, 0), (0, 0, 1)),
+            "Right (+X)": lambda: _view_vector((-1, 0, 0), (0, 0, 1)),
+            "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
+        }
+        for key, method in cvec_setters.items():
+            self._view_action = self._add_action(
+                self.default_camera_tool_bar, key, method
+            )
+        # pylint: disable=unnecessary-lambda
+        self._add_action(
+            self.default_camera_tool_bar, "Reset", lambda: self.reset_camera()
+        )
+
+        # Saved camera locations toolbar
+        self.saved_camera_positions = []
+        self.saved_cameras_tool_bar = self.app_window.addToolBar(
+            "Saved Camera Positions"
+        )
+
+        self._add_action(
+            self.saved_cameras_tool_bar, SAVE_CAM_BUTTON_TEXT, self.save_camera_position
+        )
+        self._add_action(
+            self.saved_cameras_tool_bar,
+            CLEAR_CAMS_BUTTON_TEXT,
+            self.clear_camera_positions,
+        )
+
+    def add_menu_bar(self) -> None:
+        """Add the main menu bar."""
+        self.main_menu = _create_menu_bar(parent=self.app_window)
+        self.app_window.signal_close.connect(self.main_menu.clear)
+
+        file_menu = self.main_menu.addMenu("File")
+        file_menu.addAction("Take Screenshot", self._qt_screenshot)
+        file_menu.addAction("Export as VTKjs", self._qt_export_vtkjs)
+        file_menu.addSeparator()
+        # member variable for testing only
+        self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)
+
+        view_menu = self.main_menu.addMenu("View")
+        self._edl_action = view_menu.addAction(
+            "Toggle Eye Dome Lighting", self._toggle_edl
+        )
+        view_menu.addAction("Scale Axes", self.scale_axes_dialog)
+        view_menu.addAction("Clear All", self.clear)
+
+        tool_menu = self.main_menu.addMenu("Tools")
+        tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
+        tool_menu.addAction(
+            "Enable Cell Picking (visible)",
+            lambda: self.enable_cell_picking(through=False),
+        )
+
+        cam_menu = view_menu.addMenu("Camera")
+        self._parallel_projection_action = cam_menu.addAction(
+            "Toggle Parallel Projection", self._toggle_parallel_projection
+        )
+
+        view_menu.addSeparator()
+        # Orientation marker
+        orien_menu = view_menu.addMenu("Orientation Marker")
+        orien_menu.addAction("Show All", self.show_axes_all)
+        orien_menu.addAction("Hide All", self.hide_axes_all)
+        # Bounds axes
+        axes_menu = view_menu.addMenu("Bounds Axes")
+        axes_menu.addAction("Add Bounds Axes (front)", self.show_bounds)
+        axes_menu.addAction("Add Bounds Grid (back)", self.show_grid)
+        axes_menu.addAction("Add Bounding Box", self.add_bounding_box)
+        axes_menu.addSeparator()
+        axes_menu.addAction("Remove Bounding Box", self.remove_bounding_box)
+        axes_menu.addAction("Remove Bounds", self.remove_bounds_axes)
+
+        # A final separator to separate OS options
+        view_menu.addSeparator()
+
     def add_editor(self) -> None:
         """Add the editor."""
         self.editor = Editor(parent=self.app_window, renderers=self.renderers)
         self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
         self.app_window.signal_close.connect(self.editor.close)
+
+
+class MultiPlotter:
+    """Qt interactive plotter.
+
+    Multi plotter for pyvista that allows to maintain an
+    interactive window with multiple plotters without
+    blocking the main python thread.
+
+    Parameters
+    ----------
+    app : optional
+        Creates a `QApplication` if left as `None`.
+    nrows : int
+        Number of rows. Defaults to 1.
+    ncols : int
+        Number of columns. Defaults to 1.
+    show : bool
+        Show the plotting window.  If ``False``, show this window by
+        running ``show()``
+    window_size : tuple, optional
+        Window size in pixels.  Defaults to ``[1024, 768]``
+    off_screen : bool, optional
+        Renders off screen when True.  Useful for automated
+        screenshots or debug testing.
+
+    Examples
+    --------
+    >>> import pyvista as pv
+    >>> from pyvistaqt import MultiPlotter
+    >>> plotter = MultiPlotter()
+    >>> _ = plotter[0, 0].add_mesh(pv.Sphere())
+    """
+
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
+
+    def __init__(
+        self,
+        app: Optional[QApplication] = None,
+        nrows: int = 1,
+        ncols: int = 1,
+        show: bool = True,
+        window_size: Optional[Tuple[int, int]] = None,
+        title: Optional[str] = None,
+        off_screen: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the multi plotter."""
+        _check_type(app, "app", [QApplication, type(None)])
+        _check_type(nrows, "nrows", [int])
+        _check_type(ncols, "ncols", [int])
+        _check_type(show, "show", [bool])
+        _check_type(window_size, "window_size", [tuple, type(None)])
+        _check_type(title, "title", [str, type(None)])
+        _check_type(off_screen, "off_screen", [bool, type(None)])
+        self.ipython = _setup_ipython()
+        self.app = _setup_application(app)
+        self.off_screen = _setup_off_screen(off_screen)
+        self._nrows = nrows
+        self._ncols = ncols
+        self._window = MainWindow(title=title, size=window_size)
+        self._central_widget = QWidget(parent=self._window)
+        self._layout = QGridLayout()
+        self._plotter = None
+        self._plotters = [None] * (self._nrows * self._ncols)
+        kwargs.update(show=False)  # only show main window
+        kwargs.update(allow_quit_keypress=False)  # dynamic removal is not supported
+        for row in range(self._nrows):
+            for col in range(self._ncols):
+                self._plotter = BackgroundPlotter(off_screen=self.off_screen, **kwargs)
+                self._window.signal_close.connect(self._plotter.close)
+                self.__setitem__((row, col), self._plotter)
+                self._layout.addWidget(self._plotter.app_window, row, col)
+        self._central_widget.setLayout(self._layout)
+        self._window.setCentralWidget(self._central_widget)
+        if show:
+            self.show()
+
+    def show(self) -> None:
+        """Show the multi plotter."""
+        if not self.off_screen:
+            self._window.show()
+
+    def close(self) -> None:
+        """Close the multi plotter."""
+        self._window.close()
+
+    def __setitem__(self, idx: Tuple[int, int], plotter: Any) -> None:
+        """Set a valid plotter in the grid.
+
+        Parameters
+        ----------
+        idx : tuple
+            The index of the plotter to select. It can either
+            be an integer or a tuple ``(row, col)``.
+        plotter : BackgroundPlotter
+            The plotter to set.
+        """
+        row, col = idx
+        self._plotters[row * self._ncols + col] = plotter
+
+    def __getitem__(self, idx: Tuple[int, int]) -> Optional[BackgroundPlotter]:
+        """Get a valid plotter in the grid.
+
+        Parameters
+        ----------
+        idx : tuple
+            The index of the plotter to select. It can either
+            be an integer or a tuple ``(row, col)``.
+
+        Returns
+        -------
+        plotter : BackgroundPlotter
+            The selected plotter.
+        """
+        row, col = idx
+        self._plotter = self._plotters[row * self._ncols + col]
+        return self._plotter
 
 
 def _create_menu_bar(parent: Any) -> QMenuBar:
@@ -870,3 +960,35 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
     if parent is not None:
         parent.setMenuBar(menu_bar)
     return menu_bar
+
+
+def _setup_ipython(ipython: Any = None) -> Any:
+    # ipython magic
+    if scooby.in_ipython():  # pragma: no cover
+        # pylint: disable=import-outside-toplevel
+        from IPython import get_ipython
+
+        ipython = get_ipython()
+        ipython.magic("gui qt")
+
+        # pylint: disable=redefined-outer-name
+        # pylint: disable=import-outside-toplevel
+        from IPython.external.qt_for_kernel import QtGui
+
+        QtGui.QApplication.instance()
+    return ipython
+
+
+def _setup_application(app: Optional[QApplication] = None) -> QApplication:
+    # run within python
+    if app is None:
+        app = QApplication.instance()
+        if not app:  # pragma: no cover
+            app = QApplication(["PyVista"])
+    return app
+
+
+def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
+    if off_screen is None:
+        off_screen = pyvista.OFF_SCREEN
+    return off_screen
