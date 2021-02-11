@@ -1,6 +1,5 @@
 numpy
 vtk
-matplotlib
 appdirs
 pytest
 pytest-cov
