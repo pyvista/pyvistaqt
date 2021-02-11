@@ -41,7 +41,6 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: 'x64'
         name: 'Setup python'
         if: matrix.install == 'pip'
       - shell: bash -el {0}
