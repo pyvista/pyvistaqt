@@ -222,6 +222,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.ren_win.PolygonSmoothingOn()
 
         for renderer in self.renderers:
+            renderer.view_isometric()
             self.ren_win.AddRenderer(renderer)
 
         self.render_signal.connect(self._render)
@@ -270,7 +271,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     renderer.enable_depth_peeling()
 
         self._first_time = False  # Crucial!
-        self.view_isometric()
         LOG.debug("QtInteractor init stop")
 
     def gesture_event(self, event: QGestureEvent) -> bool:
