@@ -846,6 +846,8 @@ class MultiPlotter:
     show : bool
         Show the plotting window.  If ``False``, show this window by
         running ``show()``
+    margin : bool
+        Show a space between the plotters. Default to True.
     window_size : tuple, optional
         Window size in pixels.  Defaults to ``[1024, 768]``
     off_screen : bool, optional
@@ -869,6 +871,7 @@ class MultiPlotter:
         nrows: int = 1,
         ncols: int = 1,
         show: bool = True,
+        margin: bool = True,
         window_size: Optional[Tuple[int, int]] = None,
         title: Optional[str] = None,
         off_screen: Optional[bool] = None,
@@ -879,6 +882,7 @@ class MultiPlotter:
         _check_type(nrows, "nrows", [int])
         _check_type(ncols, "ncols", [int])
         _check_type(show, "show", [bool])
+        _check_type(margin, "margin", [bool])
         _check_type(window_size, "window_size", [tuple, type(None)])
         _check_type(title, "title", [str, type(None)])
         _check_type(off_screen, "off_screen", [bool, type(None)])
@@ -890,6 +894,9 @@ class MultiPlotter:
         self._window = MainWindow(title=title, size=window_size)
         self._central_widget = QWidget(parent=self._window)
         self._layout = QGridLayout()
+        if not margin:
+            self._layout.setSpacing(0)
+            self._layout.setContentsMargins(0, 0, 0, 0)
         self._plotter = None
         self._plotters = [None] * (self._nrows * self._ncols)
         kwargs.update(show=False)  # only show main window
@@ -897,6 +904,10 @@ class MultiPlotter:
         for row in range(self._nrows):
             for col in range(self._ncols):
                 self._plotter = BackgroundPlotter(off_screen=self.off_screen, **kwargs)
+                if not margin:
+                    self._plotter.app_window.centralWidget().layout().setContentsMargins(
+                        0, 0, 0, 0
+                    )
                 self._window.signal_close.connect(self._plotter.close)
                 self.__setitem__((row, col), self._plotter)
                 self._layout.addWidget(self._plotter.app_window, row, col)
