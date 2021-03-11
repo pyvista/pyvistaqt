@@ -1,11 +1,8 @@
 """This module contains utilities routines."""
-from typing import Any, List, Type, Optional
+from typing import Any, List, Optional, Type
 import pyvista
 import scooby  # type: ignore
-from qtpy.QtWidgets import (
-    QApplication,
-    QMenuBar,
-)
+from qtpy.QtWidgets import QApplication, QMenuBar
 
 
 def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:

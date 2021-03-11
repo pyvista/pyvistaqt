@@ -74,10 +74,10 @@ from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
 from .utils import (
     _check_type,
-    _setup_ipython,
-    _setup_application,
-    _setup_off_screen,
     _create_menu_bar,
+    _setup_application,
+    _setup_ipython,
+    _setup_off_screen,
 )
 from .window import MainWindow
 
