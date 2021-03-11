@@ -721,7 +721,12 @@ def test_multiplotter(qtbot):
         assert p._closed
 
     # cover default show=True
-    mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
+    mp = MultiPlotter(
+        off_screen=False,
+        menu_bar=False,
+        toolbar=False,
+        margin=False,
+    )
     qtbot.addWidget(mp._window)
     qtbot.waitForWindowShown(mp._window)
     assert mp._window.isVisible()
