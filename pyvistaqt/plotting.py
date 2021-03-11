@@ -62,6 +62,7 @@ from qtpy.QtWidgets import (
     QFrame,
     QGestureEvent,
     QGridLayout,
+    QMenuBar,
     QToolBar,
     QVBoxLayout,
     QWidget,
