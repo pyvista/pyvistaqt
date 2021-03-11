@@ -1,5 +1,6 @@
 """This module contains utilities routines."""
 from typing import Any, List, Optional, Type
+
 import pyvista
 import scooby  # type: ignore
 from qtpy.QtWidgets import QApplication, QMenuBar
