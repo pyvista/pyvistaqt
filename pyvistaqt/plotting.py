@@ -931,6 +931,35 @@ class MultiPlotter:
         """Close the multi plotter."""
         self._window.close()
 
+    def resize_content(self, w, h):
+        """Resize the central widget."""
+        for row in range(self._nrows):
+            for col in range(self._ncols):
+                plotter = self._plotters[row * self._ncols + col]
+                plotter.app_window.setMinimumSize(0, 0)
+                plotter.setMinimumSize(0, 0)
+        self._central_widget.resize(w, h)
+        self._central_widget.setMinimumSize(w, h)
+        self.app.processEvents()
+        self._central_widget.setMinimumSize(0, 0)
+        self.app.processEvents()
+
+    def screenshot(self, filename=None, transparent_background=None):
+        """Take a screenshot."""
+        self.app.processEvents()
+        w = self._plotter.size().width()
+        h = self._plotter.size().height()
+        img = np.zeros((h * self._nrows, w * self._ncols, 3), dtype=np.uint8)
+        for row in range(self._nrows):
+            for col in range(self._ncols):
+                plotter = self._plotters[row * self._ncols + col]
+                img[h*row:h*(row+1), w*col:w*(col+1)] = plotter.screenshot(
+                    transparent_background=transparent_background)
+        if filename is not None:
+            from PIL import Image
+            Image.fromarray(img).save(filename)
+        return img
+
     def __setitem__(self, idx: Tuple[int, int], plotter: Any) -> None:
         """Set a valid plotter in the grid.
 
