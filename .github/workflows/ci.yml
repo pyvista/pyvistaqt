@@ -37,7 +37,7 @@ jobs:
       - run: |
           pip install --progress-bar off https://github.com/pyvista/pyvistaqt/zipball/master
         name: 'Install latest version'
-      - run: pip install ${{ matrix.qt }}
+      - run: pip install PyQt5
         name: 'Install Qt binding'
       - run: |
           pip install -e .
