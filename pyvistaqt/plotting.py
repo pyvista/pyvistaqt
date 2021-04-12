@@ -54,7 +54,7 @@ import vtk
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
-from pyvista.utilities import conditional_decorator, threaded, try_callback
+from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
 from qtpy.QtWidgets import (
