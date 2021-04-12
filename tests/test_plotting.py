@@ -11,6 +11,7 @@ from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
 from pyvista import rcParams
 from pyvista.plotting import Renderer, system_supports_plotting
+from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
@@ -215,7 +216,7 @@ def test_qt_interactor(qtbot):
     vtk_widget = window.vtk_widget  # QtInteractor
 
     # check that QtInteractor.__init__() is called
-    assert_hasattr(vtk_widget, "iren", vtk.vtkRenderWindowInteractor)
+    assert_hasattr(vtk_widget, "iren", RenderWindowInteractor)
     assert_hasattr(vtk_widget, "render_timer", QTimer)
     # check that BasePlotter.__init__() is called
     assert_hasattr(vtk_widget, "_closed", bool)
@@ -637,7 +638,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
     assert_hasattr(plotter, "app_window", MainWindow)
     assert_hasattr(plotter, "main_menu", QMenuBar)
     # check that QtInteractor.__init__() is called
-    assert_hasattr(plotter, "iren", vtk.vtkRenderWindowInteractor)
+    assert_hasattr(plotter, "iren", RenderWindowInteractor)
     assert_hasattr(plotter, "render_timer", QTimer)
     # check that BasePlotter.__init__() is called
     assert_hasattr(plotter, "_closed", bool)

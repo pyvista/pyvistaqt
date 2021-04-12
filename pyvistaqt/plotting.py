@@ -53,6 +53,7 @@ import scooby  # type: ignore
 import vtk
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
+from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 from pyvista.utilities import conditional_decorator, threaded, try_callback
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
@@ -239,16 +240,16 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.ren_win.SetOffScreenRendering(1)
             self.iren = None
         else:
-            self.iren = self.ren_win.GetInteractor()
-            self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
+            self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
+            self.reset_key_events()
+            self.iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
 
             # Enter trackball camera mode
             istyle = vtk.vtkInteractorStyleTrackballCamera()
             self.SetInteractorStyle(istyle)
 
-            self.iren.Initialize()
-            self._observers = {}  # Map of events to observers of self.iren
-            self._add_observer("KeyPressEvent", self.key_press_event)
+            self.iren.initialize()
+            self.iren.add_observer("KeyPressEvent", self.key_press_event)
 
         # Make the render timer but only activate if using auto update
         self.render_timer = QTimer(parent=parent)
@@ -523,7 +524,8 @@ class BackgroundPlotter(QtInteractor):
             assert update_app_icon is False
 
         # Keypress events
-        self.add_key_event("S", self._qt_screenshot)  # shift + s
+        if self.iren is not None:
+            self.add_key_event("S", self._qt_screenshot)  # shift + s
         LOG.debug("BackgroundPlotter init stop")
 
     def reset_key_events(self) -> None:
