@@ -44,7 +44,7 @@ import os
 import platform
 import time
 import warnings
-from functools import wraps, partial
+from functools import wraps
 from typing import Any, Callable, Generator, List, Optional, Tuple, Union
 
 import numpy as np  # type: ignore
