@@ -44,8 +44,8 @@ import os
 import platform
 import time
 import warnings
-from functools import wraps
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
+from functools import wraps, partial
+from typing import Any, Callable, Generator, List, Optional, Tuple, Union
 
 import numpy as np  # type: ignore
 import pyvista
@@ -53,7 +53,7 @@ import scooby  # type: ignore
 import vtk
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
-from pyvista.utilities import conditional_decorator, threaded
+from pyvista.utilities import conditional_decorator, threaded, try_callback
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
 from qtpy.QtWidgets import (
@@ -247,10 +247,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.SetInteractorStyle(istyle)
 
             self.iren.Initialize()
-
-            self._observers: Dict[
-                None, None
-            ] = {}  # Map of events to observers of self.iren
+            self._observers = {}    # Map of events to observers of self.iren
             self._add_observer("KeyPressEvent", self.key_press_event)
 
         # Make the render timer but only activate if using auto update
@@ -555,6 +552,10 @@ class BackgroundPlotter(QtInteractor):
 
     def _close(self) -> None:
         super().close()
+
+    def _add_observer(self, event, call):
+        call = partial(try_callback, call)
+        self._observers[event] = self.iren.AddObserver(event, call)
 
     def update_app_icon(self) -> None:
         """Update the app icon if the user is not trying to resize the window."""
