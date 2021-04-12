@@ -241,8 +241,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.iren = None
         else:
             self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
-            self.reset_key_events()
             self.iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
+            self.reset_key_events()
 
             # Enter trackball camera mode
             istyle = vtk.vtkInteractorStyleTrackballCamera()
