@@ -555,10 +555,6 @@ class BackgroundPlotter(QtInteractor):
     def _close(self) -> None:
         super().close()
 
-    def _add_observer(self, event, call):
-        call = partial(try_callback, call)
-        self._observers[event] = self.iren.AddObserver(event, call)
-
     def update_app_icon(self) -> None:
         """Update the app icon if the user is not trying to resize the window."""
         if os.name == "nt" or not hasattr(
