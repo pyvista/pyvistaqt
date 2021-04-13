@@ -274,10 +274,16 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         else:
             try:
                 # pylint: disable=import-outside-toplevel
-                from pyvista.plotting.render_window_interactor import RenderWindowInteractor
+                from pyvista.plotting.render_window_interactor import (
+                    RenderWindowInteractor,
+                )
 
-                self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
-                self.iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
+                self.iren = RenderWindowInteractor(
+                    self, interactor=self.ren_win.GetInteractor()
+                )
+                self.iren.interactor.RemoveObservers(
+                    "MouseMoveEvent"
+                )  # slows window update?
                 self.iren.initialize()
             except ImportError:
                 self.iren = self.ren_win.GetInteractor()
