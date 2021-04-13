@@ -35,7 +35,7 @@ jobs:
           pip install -r requirements_test.txt
         name: 'Install dependencies with pip'
       - run: |
-          pip install --progress-bar off https://github.com/GuillaumeFavelier/pyvista/zipball/patch/rwi
+          pip install --progress-bar off https://github.com/pyvista/pyvista/zipball/master
         name: 'Install latest version'
       - run: pip install PyQt5
         name: 'Install Qt binding'
