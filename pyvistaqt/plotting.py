@@ -75,8 +75,8 @@ from .editor import Editor
 from .utils import (
     _check_type,
     _create_menu_bar,
-    _setup_ipython,
     _setup_application,
+    _setup_ipython,
     _setup_off_screen,
 )
 from .window import MainWindow
@@ -241,14 +241,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen is None:
             off_screen = pyvista.OFF_SCREEN
 
-        self.iren = self._setup_interactor(off_screen)
+        self._setup_interactor(off_screen)
 
         if off_screen:
             self.ren_win.SetOffScreenRendering(1)
         else:
             self._setup_key_press()
-            self.reset_key_events()
-            self.enable_trackball_style()
 
         # Make the render timer but only activate if using auto update
         self.render_timer = QTimer(parent=parent)
@@ -270,21 +268,22 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._first_time = False  # Crucial!
         LOG.debug("QtInteractor init stop")
 
-    def _setup_interactor(self, off_screen: bool) -> Any:
+    def _setup_interactor(self, off_screen: bool) -> None:
         if off_screen:
-            return None
-        try:
-            # pylint: disable=import-outside-toplevel
-            from pyvista.plotting.render_window_interactor import RenderWindowInteractor
+            self.iren = None
+        else:
+            try:
+                # pylint: disable=import-outside-toplevel
+                from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 
-            iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
-            iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
-            iren.initialize()
-        except ImportError:
-            iren = self.ren_win.GetInteractor()
-            iren.RemoveObservers("MouseMoveEvent")  # slows window update?
-            iren.Initialize()
-        return iren
+                self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
+                self.iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
+                self.iren.initialize()
+            except ImportError:
+                self.iren = self.ren_win.GetInteractor()
+                self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
+                self.iren.Initialize()
+            self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
         try:
@@ -294,6 +293,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.iren.add_observer("KeyPressEvent", self.key_press_event)
         except AttributeError:
             self._add_observer("KeyPressEvent", self.key_press_event)
+        self.reset_key_events()
 
     def gesture_event(self, event: QGestureEvent) -> bool:
         """Handle gesture events."""
