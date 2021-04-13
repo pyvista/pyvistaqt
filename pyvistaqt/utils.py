@@ -3,7 +3,6 @@ from typing import Any, List, Optional, Type
 
 import pyvista
 import scooby  # type: ignore
-from pyvista.plotting.plotting import BasePlotter
 from qtpy.QtWidgets import (
     QApplication,
     QMenuBar,
