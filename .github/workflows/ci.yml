@@ -45,6 +45,9 @@ jobs:
         name: 'Install pyvistaqt'
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
+      - uses: codecov/codecov-action@v1
+        if: success()
+        name: 'Upload coverage to CodeCov'
 
   pip:
     name: ${{ matrix.os }} / pip / ${{ matrix.qt }}
@@ -91,6 +94,9 @@ jobs:
         name: 'Install pyvistaqt'
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
+      - uses: codecov/codecov-action@v1
+        if: success()
+        name: 'Upload coverage to CodeCov'
 
   conda:
     name: ${{ matrix.os }} / conda / ${{ matrix.qt }}
@@ -138,3 +144,6 @@ jobs:
       - shell: bash -el {0}
         run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
+      - uses: codecov/codecov-action@v1
+        if: success()
+        name: 'Upload coverage to CodeCov'
