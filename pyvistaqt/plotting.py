@@ -45,7 +45,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Generator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np  # type: ignore
 import pyvista
@@ -286,9 +286,11 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             iren.Initialize()
         return iren
 
-    def _setup_key_press(self):
+    def _setup_key_press(self) -> None:
         try:
-            self._observers = {}
+            self._observers: Dict[
+                None, None
+            ] = {}  # Map of events to observers of self.iren
             self.iren.add_observer("KeyPressEvent", self.key_press_event)
         except AttributeError:
             self._add_observer("KeyPressEvent", self.key_press_event)
