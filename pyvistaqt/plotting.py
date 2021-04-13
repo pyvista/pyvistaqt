@@ -270,7 +270,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     def _setup_interactor(self, off_screen: bool) -> None:
         if off_screen:
-            self.iren = None
+            self.iren: Any = None
         else:
             try:
                 # pylint: disable=import-outside-toplevel
