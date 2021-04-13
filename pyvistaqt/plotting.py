@@ -53,7 +53,6 @@ import scooby  # type: ignore
 import vtk
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
-from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
@@ -73,7 +72,15 @@ from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
-from .utils import _check_type
+from .utils import (
+    _check_type,
+    _create_menu_bar,
+    _setup_ipython,
+    _setup_application,
+    _setup_off_screen,
+    _setup_interactor,
+    _setup_key_press,
+)
 from .window import MainWindow
 
 if scooby.in_ipython():  # pragma: no cover
@@ -236,20 +243,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen is None:
             off_screen = pyvista.OFF_SCREEN
 
+        self.iren = _setup_interactor(self, off_screen)
+
         if off_screen:
             self.ren_win.SetOffScreenRendering(1)
-            self.iren = None
         else:
-            self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
-            self.iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
+            _setup_key_press(self)
             self.reset_key_events()
-
-            # Enter trackball camera mode
-            istyle = vtk.vtkInteractorStyleTrackballCamera()
-            self.SetInteractorStyle(istyle)
-
-            self.iren.initialize()
-            self.iren.add_observer("KeyPressEvent", self.key_press_event)
+            self.enable_trackball_style()
 
         # Make the render timer but only activate if using auto update
         self.render_timer = QTimer(parent=parent)
@@ -944,50 +945,3 @@ class MultiPlotter:
         row, col = idx
         self._plotter = self._plotters[row * self._ncols + col]
         return self._plotter
-
-
-def _create_menu_bar(parent: Any) -> QMenuBar:
-    """Create a menu bar.
-
-    The menu bar is expected to behave consistently
-    for every operating system since `setNativeMenuBar(False)`
-    is called by default and therefore lifetime and ownership can
-    be tested.
-    """
-    menu_bar = QMenuBar(parent=parent)
-    menu_bar.setNativeMenuBar(False)
-    if parent is not None:
-        parent.setMenuBar(menu_bar)
-    return menu_bar
-
-
-def _setup_ipython(ipython: Any = None) -> Any:
-    # ipython magic
-    if scooby.in_ipython():  # pragma: no cover
-        # pylint: disable=import-outside-toplevel
-        from IPython import get_ipython
-
-        ipython = get_ipython()
-        ipython.magic("gui qt")
-
-        # pylint: disable=redefined-outer-name
-        # pylint: disable=import-outside-toplevel
-        from IPython.external.qt_for_kernel import QtGui
-
-        QtGui.QApplication.instance()
-    return ipython
-
-
-def _setup_application(app: Optional[QApplication] = None) -> QApplication:
-    # run within python
-    if app is None:
-        app = QApplication.instance()
-        if not app:  # pragma: no cover
-            app = QApplication(["PyVista"])
-    return app
-
-
-def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
-    if off_screen is None:
-        off_screen = pyvista.OFF_SCREEN
-    return off_screen
