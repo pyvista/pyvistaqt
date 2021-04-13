@@ -78,8 +78,6 @@ from .utils import (
     _setup_ipython,
     _setup_application,
     _setup_off_screen,
-    _setup_interactor,
-    _setup_key_press,
 )
 from .window import MainWindow
 
@@ -243,12 +241,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen is None:
             off_screen = pyvista.OFF_SCREEN
 
-        self.iren = _setup_interactor(self, off_screen)
+        self.iren = self._setup_interactor(off_screen)
 
         if off_screen:
             self.ren_win.SetOffScreenRendering(1)
         else:
-            _setup_key_press(self)
+            self._setup_key_press()
             self.reset_key_events()
             self.enable_trackball_style()
 
@@ -271,6 +269,29 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         self._first_time = False  # Crucial!
         LOG.debug("QtInteractor init stop")
+
+    def _setup_interactor(self, off_screen: bool) -> Any:
+        if off_screen:
+            return None
+        try:
+            # pylint: disable=import-outside-toplevel
+            from pyvista.plotting.render_window_interactor import RenderWindowInteractor
+
+            iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
+            iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
+            iren.initialize()
+        except ImportError:
+            iren = self.ren_win.GetInteractor()
+            iren.RemoveObservers("MouseMoveEvent")  # slows window update?
+            iren.Initialize()
+        return iren
+
+    def _setup_key_press(self):
+        try:
+            self._observers = {}
+            self.iren.add_observer("KeyPressEvent", self.key_press_event)
+        except AttributeError:
+            self._add_observer("KeyPressEvent", self.key_press_event)
 
     def gesture_event(self, event: QGestureEvent) -> bool:
         """Handle gesture events."""

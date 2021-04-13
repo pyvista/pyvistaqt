@@ -64,29 +64,3 @@ def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen
-
-
-def _setup_interactor(plotter: BasePlotter, off_screen: bool) -> Any:
-    if off_screen:
-        return None
-    try:
-        from pyvista.plotting.render_window_interactor import RenderWindowInteractor
-
-        iren = RenderWindowInteractor(
-            plotter, interactor=plotter.ren_win.GetInteractor()
-        )
-        iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
-        iren.initialize()
-    except ImportError:
-        iren = plotter.ren_win.GetInteractor()
-        iren.RemoveObservers("MouseMoveEvent")  # slows window update?
-        iren.Initialize()
-    return iren
-
-
-def _setup_key_press(plotter: BasePlotter):
-    try:
-        setattr(plotter, "_observers", {})
-        plotter.iren.add_observer("KeyPressEvent", plotter.key_press_event)
-    except AttributeError:
-        plotter._add_observer("KeyPressEvent", plotter.key_press_event)
