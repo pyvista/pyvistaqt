@@ -10,15 +10,13 @@ from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
 from pyvista import rcParams
-from pyvista.plotting import Renderer, system_supports_plotting
+from pyvista.plotting import Renderer
 
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
 from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
                                 _create_menu_bar, _check_type)
 from pyvistaqt.editor import Editor
-
-NO_PLOTTING = not system_supports_plotting()
 
 
 class TstWindow(MainWindow):
@@ -136,8 +134,7 @@ def test_counter(qtbot):
     assert counter.count == 0
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_editor(qtbot):
+def test_editor(qtbot, plotting):
     # test editor=False
     plotter = BackgroundPlotter(editor=False, off_screen=False)
     qtbot.addWidget(plotter.app_window)
@@ -200,8 +197,7 @@ def test_editor(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_qt_interactor(qtbot):
+def test_qt_interactor(qtbot, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
@@ -265,12 +261,11 @@ def test_qt_interactor(qtbot):
     assert len(_ALL_PLOTTERS) == 1
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
     ])
-def test_background_plotting_axes_scale(qtbot, show_plotter):
+def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     plotter = BackgroundPlotter(
         show=show_plotter,
         off_screen=False,
@@ -318,8 +313,7 @@ def test_background_plotting_axes_scale(qtbot, show_plotter):
     assert not dlg.isVisible()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_camera(qtbot):
+def test_background_plotting_camera(qtbot, plotting):
     plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
 
@@ -339,12 +333,11 @@ def test_background_plotting_camera(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
     ])
-def test_background_plotter_export_files(qtbot, tmpdir, show_plotter):
+def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
@@ -393,12 +386,11 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter):
     assert os.path.isfile(filename)
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
     ])
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter):
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
@@ -447,8 +439,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter):
     assert os.path.isfile(filename + '.vtkjs')
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_orbit(qtbot):
+def test_background_plotting_orbit(qtbot, plotting):
     plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
     # perform the orbit:
@@ -456,8 +447,7 @@ def test_background_plotting_orbit(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_toolbar(qtbot):
+def test_background_plotting_toolbar(qtbot, plotting):
     with pytest.raises(TypeError, match='toolbar'):
         p = BackgroundPlotter(off_screen=False, toolbar="foo")
         p.close()
@@ -491,8 +481,7 @@ def test_background_plotting_toolbar(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_menu_bar(qtbot):
+def test_background_plotting_menu_bar(qtbot, plotting):
     with pytest.raises(TypeError, match='menu_bar'):
         p = BackgroundPlotter(off_screen=False, menu_bar="foo")
         p.close()
@@ -537,8 +526,7 @@ def test_background_plotting_menu_bar(qtbot):
     assert plotter._last_update_time == -np.inf
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_background_plotting_add_callback(qtbot, monkeypatch):
+def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     class CallBack(object):
         def __init__(self, sphere):
             self.sphere = sphere
@@ -614,7 +602,6 @@ def test_background_plotting_add_callback(qtbot, monkeypatch):
     assert not callback_timer.isActive()  # window stops the callback
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
 @pytest.mark.parametrize('close_event', [
     "plotter_close",
     "window_close",
@@ -626,7 +613,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch):
     True,
     False,
     ])
-def test_background_plotting_close(qtbot, close_event, empty_scene):
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
@@ -696,8 +683,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
     assert len(_ALL_PLOTTERS) == 1
 
 
-@pytest.mark.skipif(NO_PLOTTING, reason="Requires system to support plotting")
-def test_multiplotter(qtbot):
+def test_multiplotter(qtbot, plotting):
     mp = MultiPlotter(
         nrows=1,
         ncols=2,

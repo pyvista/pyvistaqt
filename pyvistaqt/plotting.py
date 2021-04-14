@@ -226,7 +226,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.ren_win.AddRenderer(renderer)
 
         self.render_signal.connect(self._render)
-        self.key_press_event_signal.connect(super(QtInteractor, self).key_press_event)
+        self.key_press_event_signal.connect(super().key_press_event)
 
         self.background_color = rcParams["background"]
         if self.title:
@@ -488,9 +488,7 @@ class BackgroundPlotter(QtInteractor):
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
-        super(BackgroundPlotter, self).__init__(
-            parent=self.frame, off_screen=self.off_screen, **kwargs
-        )
+        super().__init__(parent=self.frame, off_screen=off_screen, **kwargs)
         assert not self._closed
         vlayout.addWidget(self)
         self.frame.setLayout(vlayout)
@@ -534,7 +532,7 @@ class BackgroundPlotter(QtInteractor):
 
         Handles closing configuration for q-key.
         """
-        super(BackgroundPlotter, self).reset_key_events()
+        super().reset_key_events()
         if self.allow_quit_keypress:
             # pylint: disable=unnecessary-lambda
             self.add_key_event("q", lambda: self.close())
@@ -583,12 +581,12 @@ class BackgroundPlotter(QtInteractor):
         # Update trackers
         self._last_window_size = self.window_size
 
-    def set_icon(self, img: np.ndarray) -> None:
+    def set_icon(self, img: Union[np.ndarray, str]) -> None:
         """Set the icon image.
 
         Parameters
         ----------
-        img : shape (w, h, c) | str
+        img : ndarray, shape (w, h, c) | str
             The image. Should be uint8 and square (w == h).
             Can have 3 or 4 color/alpha channels (``c``).
             Can also be a string path that QIcon can load.

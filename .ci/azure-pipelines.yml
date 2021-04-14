@@ -375,7 +375,7 @@ jobs:
     displayName: Upload Documentation to pyvistaqt-docs
     env:
       GH_TOKEN: $(gh.token)
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))    
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
   # don't run job on no-ci builds
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
