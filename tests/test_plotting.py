@@ -215,7 +215,7 @@ def test_qt_interactor(qtbot):
     vtk_widget = window.vtk_widget  # QtInteractor
 
     # check that QtInteractor.__init__() is called
-    hasattr(vtk_widget, "iren")
+    assert hasattr(vtk_widget, "iren")
     assert_hasattr(vtk_widget, "render_timer", QTimer)
     # check that BasePlotter.__init__() is called
     assert_hasattr(vtk_widget, "_closed", bool)
@@ -637,7 +637,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene):
     assert_hasattr(plotter, "app_window", MainWindow)
     assert_hasattr(plotter, "main_menu", QMenuBar)
     # check that QtInteractor.__init__() is called
-    hasattr(plotter, "iren")
+    assert hasattr(plotter, "iren")
     assert_hasattr(plotter, "render_timer", QTimer)
     # check that BasePlotter.__init__() is called
     assert_hasattr(plotter, "_closed", bool)
