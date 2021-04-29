@@ -2,25 +2,17 @@ name: pyvistaqt-env
 channels:
   - conda-forge
 dependencies:
-  - python>=3.5
+  - python>=3.5,<3.9
+  - codecov
+  - ipython
   - numpy
-  - vtk
-  - scooby>=0.5.1
-  - meshio>=4.0.3, <5.0
-  - appdirs
-  - qtpy
-  - imageio>=2.5.0
-  - imageio-ffmpeg
-  - colorcet
-  - cmocean
-  - itkwidgets>=0.25.2
-  - tqdm
   - pytest
   - pytest-cov
   - pytest-qt
-  - pyvista
-  - codecov
-  - hypothesis>=5.8.0
+  - qtpy
+  - scooby>=0.5.1
   - pip
   - pip:
+      - vtk
+      - pyvista
       - pytest-memprof
