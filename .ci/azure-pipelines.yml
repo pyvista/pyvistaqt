@@ -198,13 +198,13 @@ jobs:
 
     - script: |
         source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda activate pyvista-vtk$(VTK.VERSION)
+        conda activate pyvistaqt-env
         pytest -v --cov pyvistaqt --cov-report html
       displayName: 'Test Core API against VTK'
 
     - script: |
         source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda activate pyvista-vtk$(VTK.VERSION)
+        conda activate pyvistaqt-env
         pytest -v --doctest-modules pyvistaqt
       displayName: 'Test Package Docstrings against VTK'
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
