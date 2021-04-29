@@ -182,11 +182,9 @@ jobs:
   strategy:
     matrix:
       VTKv81:
-        VTK.VERSION: 8.1
-      VTKv82:
-        VTK.VERSION: 8.2
+        VTK.VERSION: 8.1.2
       VTKv90:
-        VTK.VERSION: 9.0
+        VTK.VERSION: 9.0.1
 
   steps:
     - script: |
