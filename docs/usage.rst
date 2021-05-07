@@ -75,14 +75,13 @@ sphere to an empty plotting window.
     os.environ["QT_API"] = "pyqt5"
 
     from qtpy import QtWidgets
-    from qtpy.QtWidgets import QMainWindow
 
     import numpy as np
 
     import pyvista as pv
-    from pyvistaqt import QtInteractor
+    from pyvistaqt import QtInteractor, MainWindow
 
-    class MainWindow(QMainWindow):
+    class MyMainWindow(MainWindow):
 
         def __init__(self, parent=None, show=True):
             QtWidgets.QMainWindow.__init__(self, parent)
@@ -94,6 +93,7 @@ sphere to an empty plotting window.
             # add the pyvista interactor object
             self.plotter = QtInteractor(self.frame)
             vlayout.addWidget(self.plotter.interactor)
+            self.signal_close.connect(self.plotter.close)
 
             self.frame.setLayout(vlayout)
             self.setCentralWidget(self.frame)
@@ -124,7 +124,7 @@ sphere to an empty plotting window.
 
     if __name__ == '__main__':
         app = QtWidgets.QApplication(sys.argv)
-        window = MainWindow()
+        window = MyMainWindow()
         sys.exit(app.exec_())
 
 

@@ -232,7 +232,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.ren_win.AddRenderer(renderer)
 
         self.render_signal.connect(self._render)
-        self.key_press_event_signal.connect(super(QtInteractor, self).key_press_event)
+        self.key_press_event_signal.connect(super().key_press_event)
 
         self.background_color = rcParams["background"]
         if self.title:
@@ -241,23 +241,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen is None:
             off_screen = pyvista.OFF_SCREEN
 
+        self._setup_interactor(off_screen)
+
         if off_screen:
             self.ren_win.SetOffScreenRendering(1)
-            self.iren = None
         else:
-            self.iren = self.ren_win.GetInteractor()
-            self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
-
-            # Enter trackball camera mode
-            istyle = vtk.vtkInteractorStyleTrackballCamera()
-            self.SetInteractorStyle(istyle)
-
-            self.iren.Initialize()
-
-            self._observers: Dict[
-                None, None
-            ] = {}  # Map of events to observers of self.iren
-            self._add_observer("KeyPressEvent", self.key_press_event)
+            self._setup_key_press()
 
         # Make the render timer but only activate if using auto update
         self.render_timer = QTimer(parent=parent)
@@ -278,6 +267,39 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         self._first_time = False  # Crucial!
         LOG.debug("QtInteractor init stop")
+
+    def _setup_interactor(self, off_screen: bool) -> None:
+        if off_screen:
+            self.iren: Any = None
+        else:
+            try:
+                # pylint: disable=import-outside-toplevel
+                from pyvista.plotting.render_window_interactor import (
+                    RenderWindowInteractor,
+                )
+
+                self.iren = RenderWindowInteractor(
+                    self, interactor=self.ren_win.GetInteractor()
+                )
+                self.iren.interactor.RemoveObservers(
+                    "MouseMoveEvent"
+                )  # slows window update?
+                self.iren.initialize()
+            except ImportError:
+                self.iren = self.ren_win.GetInteractor()
+                self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
+                self.iren.Initialize()
+            self.enable_trackball_style()
+
+    def _setup_key_press(self) -> None:
+        try:
+            self._observers: Dict[
+                None, None
+            ] = {}  # Map of events to observers of self.iren
+            self.iren.add_observer("KeyPressEvent", self.key_press_event)
+        except AttributeError:
+            self._add_observer("KeyPressEvent", self.key_press_event)
+        self.reset_key_events()
 
     def gesture_event(self, event: QGestureEvent) -> bool:
         """Handle gesture events."""
@@ -494,9 +516,7 @@ class BackgroundPlotter(QtInteractor):
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
-        super(BackgroundPlotter, self).__init__(
-            parent=self.frame, off_screen=self.off_screen, **kwargs
-        )
+        super().__init__(parent=self.frame, off_screen=off_screen, **kwargs)
         assert not self._closed
         vlayout.addWidget(self)
         self.frame.setLayout(vlayout)
@@ -532,7 +552,8 @@ class BackgroundPlotter(QtInteractor):
             assert update_app_icon is False
 
         # Keypress events
-        self.add_key_event("S", self._qt_screenshot)  # shift + s
+        if self.iren is not None:
+            self.add_key_event("S", self._qt_screenshot)  # shift + s
         LOG.debug("BackgroundPlotter init stop")
 
     def reset_key_events(self) -> None:
@@ -540,7 +561,7 @@ class BackgroundPlotter(QtInteractor):
 
         Handles closing configuration for q-key.
         """
-        super(BackgroundPlotter, self).reset_key_events()
+        super().reset_key_events()
         if self.allow_quit_keypress:
             # pylint: disable=unnecessary-lambda
             self.add_key_event("q", lambda: self.close())
@@ -589,12 +610,12 @@ class BackgroundPlotter(QtInteractor):
         # Update trackers
         self._last_window_size = self.window_size
 
-    def set_icon(self, img: np.ndarray) -> None:
+    def set_icon(self, img: Union[np.ndarray, str]) -> None:
         """Set the icon image.
 
         Parameters
         ----------
-        img : shape (w, h, c) | str
+        img : ndarray, shape (w, h, c) | str
             The image. Should be uint8 and square (w == h).
             Can have 3 or 4 color/alpha channels (``c``).
             Can also be a string path that QIcon can load.
