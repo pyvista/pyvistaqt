@@ -178,16 +178,6 @@ jobs:
   variables:
     DISPLAY: ':99.0'
     PYVISTA_OFF_SCREEN: 'True'
-
-  strategy:
-    matrix:
-      VTKv81:
-        VTK.VERSION: 8.1
-      VTKv82:
-        VTK.VERSION: 8.2
-      VTKv90:
-        VTK.VERSION: 9.0
-
   steps:
     - script: |
         .ci/setup_headless_display.sh
@@ -197,9 +187,8 @@ jobs:
         export CONDA_ALWAYS_YES=1
         source /usr/share/miniconda/etc/profile.d/conda.sh
         conda config --add channels conda-forge
-        sed -i -e 's/- vtk$/- vtk=$(VTK.VERSION)/' environment.yml
-        conda env create --quiet -n pyvista-vtk$(VTK.VERSION) --file environment.yml
-        conda activate pyvista-vtk$(VTK.VERSION)
+        conda env create --quiet -n pyvistaqt-env --file environment.yml
+        conda activate pyvistaqt-env
         pip install PyQt5==5.11.3
         pip install -e .
         conda list
@@ -209,13 +198,13 @@ jobs:
 
     - script: |
         source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda activate pyvista-vtk$(VTK.VERSION)
+        conda activate pyvistaqt-env
         pytest -v --cov pyvistaqt --cov-report html
       displayName: 'Test Core API against VTK'
 
     - script: |
         source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda activate pyvista-vtk$(VTK.VERSION)
+        conda activate pyvistaqt-env
         pytest -v --doctest-modules pyvistaqt
       displayName: 'Test Package Docstrings against VTK'
   condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))

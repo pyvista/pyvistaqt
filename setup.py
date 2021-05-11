@@ -44,7 +44,6 @@ setup(
     install_requires=[
         'pyvista>=0.25.0',
         'QtPy>=1.9.0',
-        'imageio>=2.5.0',
     ],
     package_data={'pyvistaqt': [
         os.path.join('data', '*.png'),
