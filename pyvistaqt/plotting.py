@@ -51,6 +51,7 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
+from PIL import Image
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
@@ -942,8 +943,6 @@ class MultiPlotter:
                     height * row : height * (row + 1), width * col : width * (col + 1)
                 ] = plotter.screenshot(transparent_background=transparent_background)
         if filename is not None:
-            from PIL import Image
-
             Image.fromarray(img).save(filename)
         return img
 
