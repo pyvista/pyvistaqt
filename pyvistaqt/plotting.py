@@ -80,7 +80,6 @@ from .utils import (
     _setup_ipython,
     _setup_off_screen,
     pad_image,
-    resample_image,
 )
 from .window import MainWindow
 
