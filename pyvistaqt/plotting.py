@@ -901,7 +901,7 @@ class MultiPlotter:
         if not margin:
             self._layout.setSpacing(0)
             self._layout.setContentsMargins(0, 0, 0, 0)
-        self._plotter = None
+        self._plotter: Optional[BackgroundPlotter] = None
         self._plotters = [None] * (self._nrows * self._ncols)
         kwargs.update(show=False)  # only show main window
         kwargs.update(allow_quit_keypress=False)  # dynamic removal is not supported
@@ -929,7 +929,11 @@ class MultiPlotter:
         """Close the multi plotter."""
         self._window.close()
 
-    def screenshot(self, filename=None, transparent_background=None):
+    def screenshot(
+        self,
+        filename: Optional[str] = None,
+        transparent_background: Optional[bool] = None,
+    ) -> np.ndarray:
         """Take a screenshot."""
         self.app.processEvents()
         width = self._plotter.size().width()
