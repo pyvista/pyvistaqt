@@ -955,16 +955,18 @@ class MultiPlotter:
     def screenshot(self, filename=None, transparent_background=None):
         """Take a screenshot."""
         self.app.processEvents()
-        w = self._plotter.size().width()
-        h = self._plotter.size().height()
-        img = np.zeros((h * self._nrows, w * self._ncols, 3), dtype=np.uint8)
+        width = self._plotter.size().width()
+        height = self._plotter.size().height()
+        img = np.zeros((height * self._nrows, width * self._ncols, 3), dtype=np.uint8)
         for row in range(self._nrows):
             for col in range(self._ncols):
                 plotter = self._plotters[row * self._ncols + col]
-                img[h*row:h*(row+1), w*col:w*(col+1)] = plotter.screenshot(
-                    transparent_background=transparent_background)
+                img[
+                    height * row : height * (row + 1), width * col : width * (col + 1)
+                ] = plotter.screenshot(transparent_background=transparent_background)
         if filename is not None:
             from PIL import Image
+
             Image.fromarray(img).save(filename)
         return img
 
