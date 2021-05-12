@@ -683,7 +683,9 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     assert len(_ALL_PLOTTERS) == 1
 
 
-def test_multiplotter(qtbot, plotting):
+def test_multiplotter(qtbot, plotting, tmpdir):
+    output_dir = str(tmpdir.mkdir("tmpdir"))
+    assert os.path.isdir(output_dir)
     mp = MultiPlotter(
         nrows=1,
         ncols=2,
@@ -699,6 +701,9 @@ def test_multiplotter(qtbot, plotting):
     mp.show()
     qtbot.waitForWindowShown(mp._window)
     assert mp._window.isVisible()
+    filename = str(os.path.join(output_dir, "tmp.png"))
+    mp.screenshot(filename=filename)
+    assert os.path.isfile(filename)
     for p in mp._plotters:
         assert not p._closed
     with qtbot.wait_signals([mp._window.signal_close], timeout=1000):
