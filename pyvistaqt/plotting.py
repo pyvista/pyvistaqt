@@ -51,8 +51,8 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
+from pyvista import rcParams
 from pyvista.plotting.plotting import BasePlotter
-from pyvista.plotting.theme import rcParams
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
