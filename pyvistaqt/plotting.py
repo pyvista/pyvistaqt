@@ -57,7 +57,7 @@ try:
 except ImportError:  # workaround for older PyVista
     from pyvista import rcParams
 
-    class GlobalTheme:
+    class _GlobalTheme:
         """Wrap global_theme too rcParams."""
 
         def __setattr__(self, k, v):  # noqa: D105
@@ -66,7 +66,7 @@ except ImportError:  # workaround for older PyVista
         def __getattr__(self, k):  # noqa: D105
             return rcParams[k]
 
-    global_theme = GlobalTheme()  # pylint: disable=invalid-name
+    global_theme = _GlobalTheme()  # pylint: disable=invalid-name
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
