@@ -51,6 +51,7 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
+
 try:
     from pyvista import global_theme
 except ImportError:  # workaround for older PyVista
@@ -526,8 +527,7 @@ class BackgroundPlotter(QtInteractor):
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
 
-        self.app_window = MainWindow(title=kwargs.get(
-            "title", global_theme.title))
+        self.app_window = MainWindow(title=kwargs.get("title", global_theme.title))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
