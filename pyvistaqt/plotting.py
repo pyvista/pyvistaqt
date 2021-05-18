@@ -64,7 +64,7 @@ except ImportError:  # workaround for older PyVista
             rcParams[k] = v
 
         def __getattr__(self, k):  # noqa: D105
-            return rcParams[k]
+            return rcParams[k] if k != '__wrapped__' else None
 
     global_theme = _GlobalTheme()  # pylint: disable=invalid-name
 from pyvista.plotting.plotting import BasePlotter
