@@ -51,22 +51,6 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
-
-try:
-    from pyvista import global_theme
-except ImportError:  # workaround for older PyVista
-    from pyvista import rcParams
-
-    class _GlobalTheme:
-        """Wrap global_theme too rcParams."""
-
-        def __setattr__(self, k: str, v: Any) -> None:  # noqa: D105
-            rcParams[k] = v
-
-        def __getattr__(self, k: str) -> None:  # noqa: D105
-            return rcParams[k] if k != "__wrapped__" else None
-
-    global_theme = _GlobalTheme()  # pylint: disable=invalid-name
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
@@ -95,6 +79,22 @@ from .utils import (
     _setup_off_screen,
 )
 from .window import MainWindow
+
+try:
+    from pyvista import global_theme
+except ImportError:  # workaround for older PyVista
+    from pyvista import rcParams
+
+    class _GlobalTheme:
+        """Wrap global_theme too rcParams."""
+
+        def __setattr__(self, k: str, v: Any) -> None:  # noqa: D105
+            rcParams[k] = v
+
+        def __getattr__(self, k: str) -> None:  # noqa: D105
+            return rcParams[k] if k != "__wrapped__" else None
+
+    global_theme = _GlobalTheme()  # pylint: disable=invalid-name
 
 if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
