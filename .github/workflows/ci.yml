@@ -11,7 +11,7 @@ on:
 
 jobs:
   pip:
-    name: ${{ matrix.os }} / pip / ${{ matrix.qt }} / ${{ matrix.pyvista }}
+    name: ${{ matrix.os }} / pip / ${{ matrix.qt }} / pyvista-${{ matrix.pyvista }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
