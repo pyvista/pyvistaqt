@@ -83,7 +83,7 @@ from .window import MainWindow
 try:
     from pyvista import global_theme  # pylint: disable=ungrouped-imports
 except ImportError:  # workaround for older PyVista
-    from pyvista import rcParams
+    from pyvista import rcParams  # pylint: disable=ungrouped-imports
 
     class _GlobalTheme:
         """Wrap global_theme too rcParams."""
