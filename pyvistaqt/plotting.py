@@ -53,10 +53,11 @@ import scooby  # type: ignore
 import vtk
 try:
     from pyvista import global_theme
-except Exception:  # workaround for older PyVista
+except ImportError:  # workaround for older PyVista
     from pyvista import rcParams
 
     class GlobalTheme:
+        """Wrap global_theme too rcParams."""
 
         def __setattr__(self, k, v):
             rcParams[k] = v
@@ -64,7 +65,7 @@ except Exception:  # workaround for older PyVista
         def __getattr__(self, k):
             return rcParams[k]
 
-    global_theme = GlobalTheme()
+    global_theme = GlobalTheme()  # pylint: disable=invalid-name
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
