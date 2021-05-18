@@ -60,10 +60,10 @@ except ImportError:  # workaround for older PyVista
     class _GlobalTheme:
         """Wrap global_theme too rcParams."""
 
-        def __setattr__(self, k, v):  # noqa: D105
+        def __setattr__(self, k: str, v: Any) -> None:  # noqa: D105
             rcParams[k] = v
 
-        def __getattr__(self, k):  # noqa: D105
+        def __getattr__(self, k: str) -> None: # noqa: D105
             return rcParams[k] if k != "__wrapped__" else None
 
     global_theme = _GlobalTheme()  # pylint: disable=invalid-name
