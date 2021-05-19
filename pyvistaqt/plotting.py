@@ -271,7 +271,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             # Modified() and upstream objects won't be updated.  This
             # ensures the render window stays updated without consuming too
             # many resources.
-            twait = (auto_update ** -1) * 1000.0
+            twait = int((auto_update ** -1) * 1000.0)
             self.render_timer.timeout.connect(self.render)
             self.render_timer.start(twait)
 
