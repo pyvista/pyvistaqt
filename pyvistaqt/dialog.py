@@ -40,7 +40,7 @@ class FileDialog(QFileDialog):
         directory: bool = False,
     ) -> None:
         """Initialize the file dialog."""
-        super(FileDialog, self).__init__(parent)
+        super().__init__(parent)
 
         if filefilter is not None:
             self.setNameFilters(filefilter)
@@ -143,7 +143,7 @@ class RangeGroup(QHBoxLayout):
         value: float = 1.0,
     ) -> None:
         """Initialize the range widget."""
-        super(RangeGroup, self).__init__(parent)
+        super().__init__(parent)
         self.slider = DoubleSlider(QtCore.Qt.Horizontal)
         self.slider.setMinimum(minimum)
         self.slider.setMaximum(maximum)
@@ -204,7 +204,7 @@ class ScaleAxesDialog(QDialog):
         self, parent: MainWindow, plotter: pv.Plotter, show: bool = True
     ) -> None:
         """Initialize the scaling dialog."""
-        super(ScaleAxesDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setGeometry(300, 300, 50, 50)
         self.setMinimumWidth(500)
         self.signal_close.connect(self.close)

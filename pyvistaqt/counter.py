@@ -12,7 +12,7 @@ class Counter(QObject):
 
     def __init__(self, count: int) -> None:
         """Initialize the counter."""
-        super(Counter, self).__init__()
+        super().__init__()
         if isinstance(count, int) and count > 0:
             self.count = count
         elif count > 0:
