@@ -51,7 +51,6 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
-from pyvista import rcParams
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
@@ -80,6 +79,22 @@ from .utils import (
     _setup_off_screen,
 )
 from .window import MainWindow
+
+try:
+    from pyvista import global_theme  # pylint: disable=ungrouped-imports
+except ImportError:  # workaround for older PyVista
+    from pyvista import rcParams  # pylint: disable=ungrouped-imports
+
+    class _GlobalTheme:
+        """Wrap global_theme too rcParams."""
+
+        def __setattr__(self, k: str, v: Any) -> None:  # noqa: D105
+            rcParams[k] = v
+
+        def __getattr__(self, k: str) -> None:  # noqa: D105
+            return rcParams[k] if k != "__wrapped__" else None
+
+    global_theme = _GlobalTheme()  # pylint: disable=invalid-name
 
 if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
@@ -213,7 +228,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.interactor = self
 
         if multi_samples is None:
-            multi_samples = rcParams["multi_samples"]
+            multi_samples = global_theme.multi_samples
 
         self.setAcceptDrops(True)
 
@@ -234,7 +249,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.render_signal.connect(self._render)
         self.key_press_event_signal.connect(super().key_press_event)
 
-        self.background_color = rcParams["background"]
+        self.background_color = global_theme.background
         if self.title:
             self.setWindowTitle(title)
 
@@ -260,7 +275,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.render_timer.timeout.connect(self.render)
             self.render_timer.start(twait)
 
-        if rcParams["depth_peeling"]["enabled"]:
+        if global_theme.depth_peeling["enabled"]:
             if self.enable_depth_peeling():
                 for renderer in self.renderers:
                     renderer.enable_depth_peeling()
@@ -503,7 +518,7 @@ class BackgroundPlotter(QtInteractor):
         self.allow_quit_keypress = allow_quit_keypress
 
         if window_size is None:
-            window_size = rcParams["window_size"]
+            window_size = global_theme.window_size
 
         # Remove notebook argument in case user passed it
         kwargs.pop("notebook", None)
@@ -512,7 +527,7 @@ class BackgroundPlotter(QtInteractor):
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
 
-        self.app_window = MainWindow(title=kwargs.get("title", rcParams["title"]))
+        self.app_window = MainWindow(title=kwargs.get("title", global_theme.title))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()

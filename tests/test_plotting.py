@@ -9,7 +9,7 @@ import vtk
 from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QTreeWidget, QStackedWidget, QCheckBox
-from pyvista import rcParams
+from pyvistaqt.plotting import global_theme
 from pyvista.plotting import Renderer
 
 import pyvistaqt
@@ -83,12 +83,12 @@ def test_depth_peeling(qtbot):
     qtbot.addWidget(plotter.app_window)
     assert not plotter.renderer.GetUseDepthPeeling()
     plotter.close()
-    rcParams["depth_peeling"]["enabled"] = True
+    global_theme.depth_peeling["enabled"] = True
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
     assert plotter.renderer.GetUseDepthPeeling()
     plotter.close()
-    rcParams["depth_peeling"]["enabled"] = False
+    global_theme.depth_peeling["enabled"] = False
 
 
 def test_off_screen(qtbot):
