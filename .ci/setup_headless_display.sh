@@ -1,16 +1,5 @@
-#!/bin/sh
-set -x
+#!/bin/bash -ef
 
-# sudo apt-get update && sudo apt-get install python-qt4 libgl1-mesa-glx
-sudo apt-get install python-qt4 libgl1-mesa-glx
-sudo apt-get install -y xvfb
-export DISPLAY=:99.0
-export PYVISTA_OFF_SCREEN=True
-which Xvfb
-Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-# Debugging commands:
-# ls -l /etc/init.d/
-# sh -e /etc/init.d/xvfb start
-# give xvfb some time to start
-sleep 3
-set +x
+sudo apt-get update
+sudo apt-get install -yqq libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 libopengl0
+/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset

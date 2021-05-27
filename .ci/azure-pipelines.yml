@@ -35,75 +35,10 @@ jobs:
     displayName: 'Run doctest'
 
 
-# # DESCRIPTION: Linux multiple qt version testing
-# - job: LinuxPyQT
-#   pool:
-#     vmImage: 'ubuntu-16.04'
-#   variables:
-#     DISPLAY: ':99.0'
-#     PYVISTA_OFF_SCREEN: 'True'
-
-#   strategy:
-#     matrix:
-#       5.14.2:
-#         pyqt5.version: '5.14.2'
-#       5.14.1:
-#         pyqt5.version: '5.14.1'
-#       5.14.0:
-#         pyqt5.version: '5.14.0'
-#       5.13.2:
-#         pyqt5.version: '5.13.2'
-#       5.13.1:
-#         pyqt5.version: '5.13.1'
-#       5.13.0:
-#         pyqt5.version: '5.13.0'
-#       5.12.3:
-#         pyqt5.version: '5.12.3'
-#       5.12.2:
-#         pyqt5.version: '5.12.2'
-#       5.12.1:
-#         pyqt5.version: '5.12.1'
-#       5.12.0:
-#         pyqt5.version: '5.12.0'
-#       5.11.3:
-#         pyqt5.version: '5.11.3'
-
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '3.7'
-#     displayName: 'Set Python 3.7'
-
-#   - script: |
-#       pip install pyqt5==$(pyqt5.version)
-#     displayName: 'Install PyQt5==$(pyqt5.version)'
-
-#   - script: |
-#       pip install -e .
-#     displayName: Install pyvistaqt
-
-#   - script: |
-#       .ci/setup_headless_display.sh
-#     displayName: Install headless display
-
-#   - script: |
-#       sudo apt-get install python3-tk
-#       pip install -r requirements_test.txt
-#       python -c "import pyvista; print(pyvista.Report())"
-#       which python
-#       pip list
-#     displayName: 'Install dependencies'
-
-#   - script: |
-#       pip install pytest-azurepipelines
-#       pytest -v --cov pyvistaqt --cov-report html
-#     displayName: 'Test Core API'
-
-
 # DESCRIPTION: Core API and doc string testing for Linux
 - job: Linux
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   variables:
     DISPLAY: ':99.0'
     PYVISTA_OFF_SCREEN: 'True'
@@ -174,7 +109,7 @@ jobs:
 # DESCRIPTION: Core API and doc string testing across VTK versions using conda
 - job: LinuxConda
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   variables:
     DISPLAY: ':99.0'
     PYVISTA_OFF_SCREEN: 'True'
@@ -292,7 +227,7 @@ jobs:
 # Builds the documentation
 - job: BuildDocumentation
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
 
   variables:
     DISPLAY: ':99.0'
