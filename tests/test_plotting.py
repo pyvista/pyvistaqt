@@ -147,8 +147,8 @@ def test_editor(qtbot, plotting):
     assert_hasattr(plotter, "editor", Editor)
     editor = plotter.editor
     assert not editor.isVisible()
-    editor.toggle()
-    qtbot.waitForWindowShown(editor)
+    with qtbot.wait_exposed(editor):
+        editor.toggle()
     assert editor.isVisible()
     plotter.close()
     assert not editor.isVisible()
@@ -157,8 +157,8 @@ def test_editor(qtbot, plotting):
     plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
     qtbot.addWidget(plotter.app_window)
     editor = plotter.editor
-    editor.toggle()
-    qtbot.waitForWindowShown(editor)
+    with qtbot.wait_exposed(editor):
+        editor.toggle()
 
     # add at least an actor
     plotter.subplot(0, 0)
@@ -230,10 +230,10 @@ def test_qt_interactor(qtbot, plotting):
     window.add_sphere()
     assert np.any(window.vtk_widget.mesh.points)
 
-    window.show()
-    qtbot.waitForWindowShown(window)
-    interactor.show()
-    qtbot.waitForWindowShown(interactor)
+    with qtbot.wait_exposed(window):
+        window.show()
+    with qtbot.wait_exposed(interactor):
+        interactor.show()
 
     assert window.isVisible()
     assert interactor.isVisible()
@@ -278,8 +278,8 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     # show the window
     if not show_plotter:
         assert not window.isVisible()
-        window.show()
-        qtbot.waitForWindowShown(window)
+        with qtbot.wait_exposed(window):
+            window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -293,8 +293,8 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
 
     # show the dialog
     assert not dlg.isVisible()
-    dlg.show()
-    qtbot.waitForWindowShown(dlg)
+    with qtbot.wait_exposed(dlg):
+        dlg.show()
     assert dlg.isVisible()
 
     value = 2.0
@@ -354,8 +354,8 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     # show the window
     if not show_plotter:
         assert not window.isVisible()
-        window.show()
-        qtbot.waitForWindowShown(window)
+        with qtbot.wait_exposed(window):
+            window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -372,8 +372,8 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
 
     # show the dialog
     assert not dlg.isVisible()
-    dlg.show()
-    qtbot.waitForWindowShown(dlg)
+    with qtbot.wait_exposed(dlg):
+        dlg.show()
     assert dlg.isVisible()
 
     # synchronise signal and callback
@@ -407,8 +407,8 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     # show the window
     if not show_plotter:
         assert not window.isVisible()
-        window.show()
-        qtbot.waitForWindowShown(window)
+        with qtbot.wait_exposed(window):
+            window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -425,8 +425,8 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
 
     # show the dialog
     assert not dlg.isVisible()
-    dlg.show()
-    qtbot.waitForWindowShown(dlg)
+    with qtbot.wait_exposed(dlg):
+        dlg.show()
     assert dlg.isVisible()
 
     # synchronise signal and callback
@@ -469,8 +469,8 @@ def test_background_plotting_toolbar(qtbot, plotting):
     default_camera_tool_bar = plotter.default_camera_tool_bar
     saved_cameras_tool_bar = plotter.saved_cameras_tool_bar
 
-    window.show()
-    qtbot.waitForWindowShown(window)
+    with qtbot.wait_exposed(window):
+        window.show()
 
     assert default_camera_tool_bar.isVisible()
     assert saved_cameras_tool_bar.isVisible()
@@ -503,8 +503,8 @@ def test_background_plotting_menu_bar(qtbot, plotting):
     main_menu = plotter.main_menu
     assert not main_menu.isNativeMenuBar()
 
-    window.show()
-    qtbot.waitForWindowShown(window)
+    with qtbot.wait_exposed(window):
+        window.show()
 
     # EDL action
     assert not hasattr(plotter.renderer, 'edl_pass')
@@ -565,8 +565,8 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
 
     # ensure that the window is showed
     assert not window.isVisible()
-    window.show()
-    qtbot.waitForWindowShown(window)
+    with qtbot.wait_exposed(window):
+        window.show()
     assert window.isVisible()
     assert update_count[0] in [0, 1]  # macOS sometimes updates (1)
     # don't check _last_update_time for non-inf-ness, won't be updated on Win
@@ -644,10 +644,10 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     render_blocker.wait()
 
     # ensure that the widgets are showed
-    window.show()
-    qtbot.waitForWindowShown(window)
-    interactor.show()
-    qtbot.waitForWindowShown(interactor)
+    with qtbot.wait_exposed(window):
+        window.show()
+    with qtbot.wait_exposed(interactor):
+        interactor.show()
 
     # check that the widgets are showed properly
     assert window.isVisible()
@@ -696,8 +696,8 @@ def test_multiplotter(qtbot, plotting):
     mp[0, 0].add_mesh(pyvista.Cone())
     mp[0, 1].add_mesh(pyvista.Box())
     assert not mp._window.isVisible()
-    mp.show()
-    qtbot.waitForWindowShown(mp._window)
+    with qtbot.wait_exposed(mp._window):
+        mp.show()
     assert mp._window.isVisible()
     for p in mp._plotters:
         assert not p._closed
@@ -709,8 +709,8 @@ def test_multiplotter(qtbot, plotting):
     # cover default show=True
     mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
     qtbot.addWidget(mp._window)
-    qtbot.waitForWindowShown(mp._window)
-    assert mp._window.isVisible()
+    with qtbot.wait_exposed(mp._window):
+        assert mp._window.isVisible()
     mp.close()
 
 
