@@ -645,9 +645,9 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     render_blocker.wait()
 
     # ensure that the widgets are showed
-    with qtbot.wait_exposed(window, timeout):
+    with qtbot.wait_exposed(window, timeout=timeout):
         window.show()
-    with qtbot.wait_exposed(interactor, timeout):
+    with qtbot.wait_exposed(interactor, timeout=timeout):
         interactor.show()
 
     # check that the widgets are showed properly
