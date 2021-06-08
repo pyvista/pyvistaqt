@@ -617,6 +617,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
+    timeout = 10
 
     plotter = _create_testing_scene(empty_scene)
 
@@ -644,9 +645,9 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     render_blocker.wait()
 
     # ensure that the widgets are showed
-    with qtbot.wait_exposed(window):
+    with qtbot.wait_exposed(window, timeout):
         window.show()
-    with qtbot.wait_exposed(interactor):
+    with qtbot.wait_exposed(interactor, timeout):
         interactor.show()
 
     # check that the widgets are showed properly
