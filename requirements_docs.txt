@@ -2,6 +2,7 @@ imageio>=2.5.0
 imageio-ffmpeg
 colorcet
 cmocean
+matplotlib
 meshio>=4.0.3, <5.0
 qtpy
 pytest-sphinx
