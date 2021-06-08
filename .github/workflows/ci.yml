@@ -57,7 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        pyvista: ['0.29', '0.30']
+        pyvista: ['0.29', '0.30', '0.31']
         qt: ['PySide2']
     defaults:
       run:
