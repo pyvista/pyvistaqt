@@ -18,7 +18,7 @@ from qtpy.QtWidgets import (
 )
 try:  # backwards compatibility with pyvista<=0.29.0
     from pyvista._vtk import vtkActor
-except ImportError:
+except ImportError:  # pragma: no cover
     from vtk import vtkActor
 
 from .window import MainWindow

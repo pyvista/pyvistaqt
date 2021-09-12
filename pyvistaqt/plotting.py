@@ -67,11 +67,11 @@ from qtpy.QtWidgets import (
 )
 try:
     from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-except ImportError:
+except ImportError:  # pragma: no cover
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 try:  # backwards compatibility with pyvista<=0.29.0
     from pyvista._vtk import vtkGenericRenderWindowInteractor
-except ImportError:
+except ImportError:  # pragma: no cover
     from vtk import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
