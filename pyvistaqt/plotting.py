@@ -50,7 +50,6 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
-from pyvista._vtk import vtkGenericRenderWindowInteractor
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
@@ -70,6 +69,10 @@ try:
     from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 except ImportError:
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+try:  # backwards compatibility with pyvista<=0.30.0
+    from pyvista._vtk import vtkGenericRenderWindowInteractor
+except ImportError:
+    from vtk import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog

@@ -3,7 +3,6 @@
 from typing import List
 
 from pyvista import Renderer
-from pyvista._vtk import vtkActor
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -17,6 +16,10 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+try:  # backwards compatibility with pyvista<=0.30.0
+    from pyvista._vtk import vtkActor
+except ImportError:
+    from vtk import vtkActor
 
 from .window import MainWindow
 
