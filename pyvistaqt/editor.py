@@ -2,8 +2,8 @@
 
 from typing import List
 
-import vtk
 from pyvista import Renderer
+from pyvista._vtk import vtkActor
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -98,7 +98,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     return widget
 
 
-def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
+def _get_actor_widget(actor: vtkActor) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 
