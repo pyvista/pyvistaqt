@@ -2,7 +2,6 @@
 
 from typing import List
 
-import vtk
 from pyvista import Renderer
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
@@ -17,6 +16,10 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+try:  # backwards compatibility with pyvista<0.29.0
+    from pyvista._vtk import vtkActor
+except ImportError:  # pragma: no cover
+    from vtk import vtkActor
 
 from .window import MainWindow
 
@@ -98,7 +101,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     return widget
 
 
-def _get_actor_widget(actor: vtk.vtkActor) -> QWidget:
+def _get_actor_widget(actor: vtkActor) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
 

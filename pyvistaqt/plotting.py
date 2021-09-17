@@ -50,7 +50,6 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
-import vtk
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
@@ -66,7 +65,14 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+try:
+    from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+except ImportError:  # pragma: no cover
+    from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+try:  # backwards compatibility with pyvista<0.32.0
+    from pyvista._vtk import vtkGenericRenderWindowInteractor
+except ImportError:  # pragma: no cover
+    from vtk import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
@@ -194,7 +200,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     # Signals must be class attributes
     render_signal = Signal()
-    key_press_event_signal = Signal(vtk.vtkGenericRenderWindowInteractor, str)
+    key_press_event_signal = Signal(vtkGenericRenderWindowInteractor, str)
 
     # pylint: disable=too-many-arguments
     def __init__(
