@@ -69,7 +69,7 @@ try:
     from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 except ImportError:  # pragma: no cover
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-try:  # backwards compatibility with pyvista<=0.29.0
+try:  # backwards compatibility with pyvista<0.32.0
     from pyvista._vtk import vtkGenericRenderWindowInteractor
 except ImportError:  # pragma: no cover
     from vtk import vtkGenericRenderWindowInteractor
