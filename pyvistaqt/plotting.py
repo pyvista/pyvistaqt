@@ -599,7 +599,16 @@ class BackgroundPlotter(QtInteractor):
 
         """
         if not self._closed:
-            self.app_window.close()
+            # Can get:
+            #
+            #     RuntimeError: wrapped C/C++ object of type MainWindow has
+            #     been deleted
+            #
+            # So let's be safe and try/except this in case of a problem.
+            try:
+                self.app_window.close()
+            except Exception:
+                pass
 
     def _close(self) -> None:
         super().close()
