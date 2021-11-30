@@ -356,6 +356,42 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.setDisabled(True)
         return BasePlotter.disable(self)
 
+    def link_views_across_plotters(self, other_plotter, view=0, other_views=None):
+        """Link the views' cameras across two plotters.
+
+        Parameters
+        ----------
+        other_plotter: Plotter
+            The plotter whose views will be linked.
+        view: int
+            Link the views in `other_plotter` to the this view index.
+        other_views: int | list of ints
+            Link these views from `other_plotter` to the reference view. The default
+            is None, in which case all views from `other_plotter` will be linked to
+            the reference view.
+
+        Note
+        ----
+        For linking views belonging to a single plotter, please use
+        pyvista's `Plotter.link_views` method.
+
+        """
+
+        if other_views is None:
+            other_views = np.arange(len(other_plotter.renderers))
+        elif isinstance(other_views, int):
+            other_views = np.asarray([other_views])
+        else:
+            other_views = np.asarray(other_views)
+
+        if not np.issubdtype(other_views.dtype, int):
+            raise TypeError('Expected `other_views` type is int, or list or tuple of ints:'
+                        f'{other_views.dtype} is given')
+
+        renderer = self.renderers[view]
+        for view_index in other_views:
+            other_plotter.renderers[view_index].camera = renderer.camera
+
     # pylint: disable=invalid-name,no-self-use
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
