@@ -376,7 +376,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         pyvista's `Plotter.link_views` method.
 
         """
-
         if other_views is None:
             other_views = np.arange(len(other_plotter.renderers))
         elif isinstance(other_views, int):
