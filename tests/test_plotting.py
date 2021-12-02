@@ -333,6 +333,41 @@ def test_background_plotting_camera(qtbot, plotting):
     plotter.close()
 
 
+def test_link_views_across_plotters(qtbot, plotting):
+
+    def _to_array(camera_position):
+        return np.asarray([list(row) for row in camera_position])
+
+    plotter_one = BackgroundPlotter(off_screen=True, title='Testing Window')
+    plotter_one.add_mesh(pyvista.Sphere())
+
+    plotter_two = BackgroundPlotter(off_screen=True, title='Testing Window')
+    plotter_two.add_mesh(pyvista.Sphere())
+
+    plotter_one.link_views_across_plotters(plotter_two)
+
+    plotter_one.camera_position = [(0.0, 0.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    np.testing.assert_allclose(
+        _to_array(plotter_one.camera_position),
+        _to_array(plotter_two.camera_position),
+    )
+
+    plotter_two.camera_position = [(0.0, 0.0, 3.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    np.testing.assert_allclose(
+        _to_array(plotter_one.camera_position),
+        _to_array(plotter_two.camera_position),
+    )
+
+    plotter_one.unlink_views()
+    plotter_one.camera_position = [(0.0, 0.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+
+    with pytest.raises(AssertionError):
+        np.testing.assert_allclose(
+            _to_array(plotter_one.camera_position),
+            _to_array(plotter_two.camera_position),
+        )
+
+
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
