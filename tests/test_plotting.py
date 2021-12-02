@@ -1,6 +1,7 @@
 import os
 import platform
 from distutils.version import LooseVersion
+from typing import Type
 
 import numpy as np
 import pytest
@@ -333,7 +334,8 @@ def test_background_plotting_camera(qtbot, plotting):
     plotter.close()
 
 
-def test_link_views_across_plotters(qtbot, plotting):
+@pytest.mark.parametrize('other_views', [None, 0, [0]])
+def test_link_views_across_plotters(other_views):
 
     def _to_array(camera_position):
         return np.asarray([list(row) for row in camera_position])
@@ -344,7 +346,7 @@ def test_link_views_across_plotters(qtbot, plotting):
     plotter_two = BackgroundPlotter(off_screen=True, title='Testing Window')
     plotter_two.add_mesh(pyvista.Sphere())
 
-    plotter_one.link_views_across_plotters(plotter_two)
+    plotter_one.link_views_across_plotters(plotter_two, other_views=other_views)
 
     plotter_one.camera_position = [(0.0, 0.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
     np.testing.assert_allclose(
@@ -367,6 +369,9 @@ def test_link_views_across_plotters(qtbot, plotting):
             _to_array(plotter_two.camera_position),
         )
 
+    match = 'Expected `other_views` type is int, or list or tuple of ints, but float64 is given'
+    with pytest.raises(TypeError, match=match):
+        plotter_one.link_views_across_plotters(plotter_two, other_views=[0.0])
 
 @pytest.mark.parametrize('show_plotter', [
     True,
