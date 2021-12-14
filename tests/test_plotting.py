@@ -129,7 +129,7 @@ def test_counter(qtbot):
 
     counter = Counter(count=1)
     assert counter.count == 1
-    with qtbot.wait_signals([counter.signal_finished], timeout=300):
+    with qtbot.wait_signals([counter.signal_finished], timeout=1000):
         counter.decrease()
     assert counter.count == 0
 
@@ -172,7 +172,7 @@ def test_editor(qtbot, plotting):
     assert top_item is not None
 
     # simulate selection
-    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=1000):
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=2000):
         top_item.setSelected(True)
 
     # toggle all the renderer-associated checkboxes twice
@@ -187,9 +187,9 @@ def test_editor(qtbot, plotting):
         widget_item = page_layout.itemAt(widget_idx)
         widget = widget_item.widget()
         if isinstance(widget, QCheckBox):
-            with qtbot.wait_signals([widget.toggled], timeout=1000):
+            with qtbot.wait_signals([widget.toggled], timeout=2000):
                 widget.toggle()
-            with qtbot.wait_signals([widget.toggled], timeout=1000):
+            with qtbot.wait_signals([widget.toggled], timeout=2000):
                 widget.toggle()
 
     # hide the editor for coverage
