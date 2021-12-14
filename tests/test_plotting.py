@@ -591,7 +591,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     sphere = pyvista.Sphere()
     mycallback = CallBack(sphere)
     plotter.add_mesh(sphere)
-    plotter.add_callback(mycallback, interval=200, count=3)
+    plotter.add_callback(mycallback, interval=1000, count=3)
 
     # check that timers are set properly in add_callback()
     assert_hasattr(plotter, "app_window", MainWindow)
@@ -622,10 +622,10 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
         "pyvista_logo_square.png"))
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=300)
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=1000)
     callback_blocker.wait()
     # ensure that self.counters send a signal
-    counter_blocker = qtbot.wait_signals([counter.signal_finished], timeout=700)
+    counter_blocker = qtbot.wait_signals([counter.signal_finished], timeout=1000)
     counter_blocker.wait()
     assert not callback_timer.isActive()  # counter stops the callback
 
@@ -633,7 +633,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     callback_timer = plotter._callback_timer  # QTimer
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=300)
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=1000)
     callback_blocker.wait()
 
     assert callback_timer.isActive()
