@@ -747,9 +747,9 @@ def _create_testing_scene():
         border=True,
         border_width=10,
         border_color='grey',
-        show=show,
+        show=False,
         auto_update=False,  # prevent untimely updates
-        off_screen=off_screen,
+        off_screen=False,
     )
     plotter.set_background('black', top='blue')
     plotter.subplot(0, 0)
