@@ -268,7 +268,7 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     plotter = BackgroundPlotter(
         show=show_plotter,
         off_screen=False,
-        title='Testing Window',
+        title='Testing Window'
     )
     assert_hasattr(plotter, "app_window", MainWindow)
     window = plotter.app_window  # MainWindow
@@ -422,6 +422,7 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     plotter.close()
     assert not window.isVisible()
     assert os.path.isfile(filename)
+
 
 @pytest.mark.parametrize('show_plotter', [
     True,
@@ -771,7 +772,7 @@ def _create_testing_scene(empty_scene, show=False, off_screen=False):
             border_width=10,
             border_color='grey',
             show=show,
-            off_screen=off_screen,
+            off_screen=off_screen
         )
         plotter.set_background('black', top='blue')
         plotter.subplot(0, 0)
