@@ -20,7 +20,7 @@ from pyvistaqt.editor import Editor
 
 
 class TstWindow(MainWindow):
-    def __init__(self, parent=None, show=False, off_screen=False):
+    def __init__(self, parent=None, show=True, off_screen=True):
         MainWindow.__init__(self, parent)
 
         self.frame = QFrame()
@@ -29,7 +29,6 @@ class TstWindow(MainWindow):
             parent=self.frame,
             off_screen=off_screen,
             stereo=False,
-            auto_update=False,
         )
         vlayout.addWidget(self.vtk_widget.interactor)
 
@@ -224,6 +223,10 @@ def test_qt_interactor(qtbot, plotting):
     render_timer = vtk_widget.render_timer  # QTimer
     renderer = vtk_widget.renderer  # vtkRenderer
 
+    # ensure that self.render is called by the timer
+    render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
+    render_blocker.wait()
+
     window.add_sphere()
     assert np.any(window.vtk_widget.mesh.points)
 
@@ -234,7 +237,7 @@ def test_qt_interactor(qtbot, plotting):
 
     assert window.isVisible()
     assert interactor.isVisible()
-    assert not render_timer.isActive()
+    assert render_timer.isActive()
     assert not vtk_widget._closed
 
     # test enable/disable interactivity
@@ -257,12 +260,14 @@ def test_qt_interactor(qtbot, plotting):
     # check that BasePlotter.__init__() is called only once
     assert len(_ALL_PLOTTERS) == 1
 
-
-def test_background_plotting_axes_scale(qtbot, plotting):
+@pytest.mark.parametrize('show_plotter', [
+    True,
+    False,
+    ])
+def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     plotter = BackgroundPlotter(
-        show=False,
+        show=show_plotter,
         off_screen=False,
-        auto_update=False,
         title='Testing Window',
     )
     assert_hasattr(plotter, "app_window", MainWindow)
@@ -270,9 +275,10 @@ def test_background_plotting_axes_scale(qtbot, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    assert not window.isVisible()
-    with qtbot.wait_exposed(window):
-        window.show()
+    if not show_plotter:
+        assert not window.isVisible()
+        with qtbot.wait_exposed(window):
+            window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -365,13 +371,17 @@ def test_link_views_across_plotters(other_views):
     with pytest.raises(TypeError, match=match):
         plotter_one.link_views_across_plotters(plotter_two, other_views=[0.0])
 
-def test_background_plotter_export_files(qtbot, tmpdir, plotting):
+@pytest.mark.parametrize('show_plotter', [
+    True,
+    False,
+    ])
+def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
 
     plotter = BackgroundPlotter(
-        show=False,
+        show=show_plotter,
         off_screen=False,
         title='Testing Window'
     )
@@ -380,9 +390,10 @@ def test_background_plotter_export_files(qtbot, tmpdir, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    assert not window.isVisible()
-    with qtbot.wait_exposed(window):
-        window.show()
+    if not show_plotter:
+        assert not window.isVisible()
+        with qtbot.wait_exposed(window):
+            window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -412,14 +423,17 @@ def test_background_plotter_export_files(qtbot, tmpdir, plotting):
     assert not window.isVisible()
     assert os.path.isfile(filename)
 
-
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
+@pytest.mark.parametrize('show_plotter', [
+    True,
+    False,
+    ])
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
 
     plotter = BackgroundPlotter(
-        show=False,
+        show=show_plotter,
         off_screen=False,
         title='Testing Window'
     )
@@ -428,9 +442,10 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    assert not window.isVisible()
-    with qtbot.wait_exposed(window):
-        window.show()
+    if not show_plotter:
+        assert not window.isVisible()
+        with qtbot.wait_exposed(window):
+            window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -637,12 +652,16 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     "menu_exit",
     "del_finalizer",
     ])
-def test_background_plotting_close(qtbot, close_event, plotting):
+@pytest.mark.parametrize('empty_scene', [
+    True,
+    False,
+    ])
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
 
-    plotter = _create_testing_scene()
+    plotter = _create_testing_scene(empty_scene)
 
     # check that BackgroundPlotter.__init__() is called
     assert_hasattr(plotter, "app_window", MainWindow)
@@ -663,6 +682,10 @@ def test_background_plotting_close(qtbot, close_event, plotting):
 
     qtbot.addWidget(window)  # register the main widget
 
+    # ensure that self.render is called by the timer
+    render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
+    render_blocker.wait()
+
     # ensure that the widgets are showed
     with qtbot.wait_exposed(window, timeout=10000):
         window.show()
@@ -673,7 +696,7 @@ def test_background_plotting_close(qtbot, close_event, plotting):
     assert window.isVisible()
     assert interactor.isVisible()
     assert main_menu.isVisible()
-    assert not render_timer.isActive()
+    assert render_timer.isActive()
     assert not plotter._closed
 
     with qtbot.wait_signals([window.signal_close], timeout=500):
@@ -734,35 +757,41 @@ def test_multiplotter(qtbot, plotting):
     mp.close()
 
 
-def _create_testing_scene():
-    plotter = BackgroundPlotter(
-        shape=(2, 2),
-        border=True,
-        border_width=10,
-        border_color='grey',
-        show=False,
-        auto_update=False,  # prevent untimely updates
-        off_screen=False,
-    )
-    plotter.set_background('black', top='blue')
-    plotter.subplot(0, 0)
-    cone = pyvista.Cone(resolution=4)
-    actor = plotter.add_mesh(cone)
-    plotter.remove_actor(actor)
-    plotter.add_text('Actor is removed')
-    plotter.subplot(0, 1)
-    plotter.add_mesh(pyvista.Box(), color='green', opacity=0.8)
-    plotter.subplot(1, 0)
-    cylinder = pyvista.Cylinder(resolution=6)
-    plotter.add_mesh(cylinder, smooth_shading=True)
-    plotter.show_bounds()
-    plotter.subplot(1, 1)
-    sphere = pyvista.Sphere(
-        phi_resolution=6,
-        theta_resolution=6
-    )
-    plotter.add_mesh(sphere)
-    plotter.enable_cell_picking()
+def _create_testing_scene(empty_scene, show=False, off_screen=False):
+    if empty_scene:
+        plotter = BackgroundPlotter(
+            show=show,
+            off_screen=off_screen,
+            update_app_icon=False,
+        )
+    else:
+        plotter = BackgroundPlotter(
+            shape=(2, 2),
+            border=True,
+            border_width=10,
+            border_color='grey',
+            show=show,
+            off_screen=off_screen,
+        )
+        plotter.set_background('black', top='blue')
+        plotter.subplot(0, 0)
+        cone = pyvista.Cone(resolution=4)
+        actor = plotter.add_mesh(cone)
+        plotter.remove_actor(actor)
+        plotter.add_text('Actor is removed')
+        plotter.subplot(0, 1)
+        plotter.add_mesh(pyvista.Box(), color='green', opacity=0.8)
+        plotter.subplot(1, 0)
+        cylinder = pyvista.Cylinder(resolution=6)
+        plotter.add_mesh(cylinder, smooth_shading=True)
+        plotter.show_bounds()
+        plotter.subplot(1, 1)
+        sphere = pyvista.Sphere(
+            phi_resolution=6,
+            theta_resolution=6
+        )
+        plotter.add_mesh(sphere)
+        plotter.enable_cell_picking()
     return plotter
 
 
