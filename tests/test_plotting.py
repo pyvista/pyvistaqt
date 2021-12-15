@@ -29,6 +29,7 @@ class TstWindow(MainWindow):
             parent=self.frame,
             off_screen=off_screen,
             stereo=False,
+            auto_update=False,
         )
         vlayout.addWidget(self.vtk_widget.interactor)
 
@@ -223,9 +224,8 @@ def test_qt_interactor(qtbot, plotting):
     render_timer = vtk_widget.render_timer  # QTimer
     renderer = vtk_widget.renderer  # vtkRenderer
 
-    # ensure that self.render is called by the timer
-    render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
-    render_blocker.wait()
+    # force rendering
+    interactor._render()
 
     window.add_sphere()
     assert np.any(window.vtk_widget.mesh.points)
@@ -237,7 +237,7 @@ def test_qt_interactor(qtbot, plotting):
 
     assert window.isVisible()
     assert interactor.isVisible()
-    assert render_timer.isActive()
+    assert not render_timer.isActive()
     assert not vtk_widget._closed
 
     # test enable/disable interactivity
@@ -665,21 +665,20 @@ def test_background_plotting_close(qtbot, close_event, plotting):
 
     qtbot.addWidget(window)  # register the main widget
 
-    # ensure that self.render is called by the timer
-    render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
-    render_blocker.wait()
-
     # ensure that the widgets are showed
     with qtbot.wait_exposed(window, timeout=10000):
         window.show()
     with qtbot.wait_exposed(interactor, timeout=10000):
         interactor.show()
 
+    # force rendering
+    plotter._render()
+
     # check that the widgets are showed properly
     assert window.isVisible()
     assert interactor.isVisible()
     assert main_menu.isVisible()
-    assert render_timer.isActive()
+    assert not render_timer.isActive()
     assert not plotter._closed
 
     with qtbot.wait_signals([window.signal_close], timeout=500):
@@ -747,7 +746,8 @@ def _create_testing_scene(show=False, off_screen=False):
         border_width=10,
         border_color='grey',
         show=show,
-        off_screen=off_screen
+        auto_update=False,  # prevent untimely updates
+        off_screen=off_screen,
     )
     plotter.set_background('black', top='blue')
     plotter.subplot(0, 0)
