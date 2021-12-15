@@ -19,287 +19,312 @@ pr:
     exclude:
     - '*no-ci*'
 
-jobs:
+stages:
+
+- stage: Check
+  jobs:
+    - job: Skip
+      pool:
+        vmImage: 'ubuntu-latest'
+      variables:
+        DECODE_PERCENTS: 'false'
+        RET: 'true'
+        BUILD_REASON: $(Build.Reason)
+      steps:
+      - bash: |
+          git_log=`git log --format=oneline -n 1 --skip=1`
+          echo "##vso[task.setvariable variable=log]$git_log"
+      - bash: echo "##vso[task.setvariable variable=RET]false"
+        condition: and(eq(variables.BUILD_REASON, 'PullRequest'), or(contains(variables.log, '[skip azp]'), contains(variables.log, '[azp skip]'), contains(variables.log, '[skip ci]'), contains(variables.log, '[ci skip]')))
+      - bash: echo "##vso[task.setvariable variable=start_main;isOutput=true]$RET"
+        name: result
 
 # DESCRIPTION: Quickly check the spelling and documentation style
-- job: CodeSpellStyle
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.7'
-  - script: |
-      pip install codespell pydocstyle
-      make doctest
-    displayName: 'Run doctest'
-
-
-# DESCRIPTION: Core API and doc string testing for Linux
-- job: Linux
-  pool:
-    vmImage: 'ubuntu-latest'
+- stage: Style
   variables:
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
-
-  strategy:
-    matrix:
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-    displayName: 'Use Python $(python.version)'
-
-  - script: |
-      pip install wheel --upgrade
-      python setup.py bdist_wheel
-      pip install dist/pyvistaqt*.whl
-    displayName: Build wheel and install pyvistaqt
-
-  - script: |
-      .ci/setup_headless_display.sh
-    displayName: Install headless display
-
-  - script: |
-      sudo apt-get install python3-tk
-      pip install -r requirements_test.txt
-      pip install PyQt5==5.11.3
-      python -c "import pyvista; print(pyvista.Report())"
-      which python
-      pip list
-    displayName: 'Install dependencies'
-
-  - script: |
-      pip install pytest-azurepipelines
-      pytest -v --cov pyvistaqt --cov-report xml
-    displayName: 'Test Core API'
-
-  - script: |  # this must be right after the core API
-      bash <(curl -s https://codecov.io/bash)
-    displayName: 'Upload coverage to codecov.io'
-    condition: eq(variables['python.version'], '3.7')
-
-  - script: |
-      pytest -v --doctest-modules pyvistaqt
-    displayName: 'Test Package Docstrings'
-
-  - script: |
-      pip install twine
-      python setup.py sdist
-      twine upload --skip-existing dist/pyvistaqt*
-    displayName: 'Upload to PyPi'
-    condition: and(eq(variables['python.version'], '3.7'), contains(variables['Build.SourceBranch'], 'refs/tags/'))
-    env:
-      TWINE_USERNAME: $(twine.username)
-      TWINE_PASSWORD: $(twine.password)
-      TWINE_REPOSITORY_URL: "https://upload.pypi.org/legacy/"
-
-  # don't run job on no-ci builds
-  condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
+    AZURE_CI: 'true'
+  jobs:
+  - job: CodeSpellStyle
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+    - script: |
+        pip install codespell pydocstyle
+        make doctest
+      displayName: 'Run doctest'
 
 
-# DESCRIPTION: Core API and doc string testing across VTK versions using conda
-- job: LinuxConda
-  pool:
-    vmImage: 'ubuntu-latest'
-  variables:
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
-  steps:
+- stage: Test
+  jobs:
+
+  # DESCRIPTION: Core API and doc string testing for Linux
+  - job: Linux
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      DISPLAY: ':99.0'
+      PYVISTA_OFF_SCREEN: 'True'
+
+    strategy:
+      matrix:
+        Python36:
+          python.version: '3.6'
+        Python37:
+          python.version: '3.7'
+        Python38:
+          python.version: '3.8'
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+      displayName: 'Use Python $(python.version)'
+
+    - script: |
+        pip install wheel --upgrade
+        python setup.py bdist_wheel
+        pip install dist/pyvistaqt*.whl
+      displayName: Build wheel and install pyvistaqt
+
     - script: |
         .ci/setup_headless_display.sh
       displayName: Install headless display
 
     - script: |
-        export CONDA_ALWAYS_YES=1
-        source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda config --add channels conda-forge
-        conda env create --quiet -n pyvistaqt-env --file environment.yml
-        conda activate pyvistaqt-env
+        sudo apt-get install python3-tk
+        pip install -r requirements_test.txt
         pip install PyQt5==5.11.3
-        pip install -e .
-        conda list
+        python -c "import pyvista; print(pyvista.Report())"
         which python
-        python -c "import pyvista; print(pyvista.Report())"
-      displayName: Create Anaconda environment
+        pip list
+      displayName: 'Install dependencies'
 
     - script: |
-        source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda activate pyvistaqt-env
-        pytest -v --cov pyvistaqt --cov-report html
-      displayName: 'Test Core API against VTK'
+        pip install pytest-azurepipelines
+        pytest -v --cov pyvistaqt --cov-report xml
+      displayName: 'Test Core API'
+
+    - script: |  # this must be right after the core API
+        bash <(curl -s https://codecov.io/bash)
+      displayName: 'Upload coverage to codecov.io'
+      condition: eq(variables['python.version'], '3.7')
 
     - script: |
-        source /usr/share/miniconda/etc/profile.d/conda.sh
-        conda activate pyvistaqt-env
         pytest -v --doctest-modules pyvistaqt
-      displayName: 'Test Package Docstrings against VTK'
-  condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
-
-
-# DESCRIPTION: Core API testing for Windows
-- job: Windows
-  pool:
-    vmIMage: 'VS2017-Win2016'
-  variables:
-    AZURE_CI_WINDOWS: 'true'
-  strategy:
-    maxParallel: 4
-    matrix:
-      Python36-64bit:
-        PYTHON_VERSION: '3.6'
-      Python37-64bit:
-        PYTHON_VERSION: '3.7'
-      Python38-64bit:
-        PYTHON_VERSION: '3.8'
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: $(PYTHON_VERSION)
-      addToPath: true
-  - powershell: |
-      Set-StrictMode -Version Latest
-      $ErrorActionPreference = "Stop"
-      $PSDefaultParameterValues['*:ErrorAction']='Stop'
-      git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
-      powershell gl-ci-helpers/appveyor/install_opengl.ps1
-    displayName: 'Install OpenGL'
-  - script: |
-      python -m pip install -r requirements_test.txt
-    displayName: 'Install test dependencies'
-  - script: |
-      pip install PyQt5>=5.11
-      python -m pip install -e .
-      python -c "import pyvista; print(pyvista.Report())"
-    displayName: 'Install PyVista'
-  - script: |
-      pytest -v --cov pyvistaqt --cov-report html
-    displayName: 'Run Tests'
-
-  # don't run job on no-ci builds
-  condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
-
-
-# DESCRIPTION: Core API testing for MacOS
-- job: macOS
-  variables:
-    python.architecture: 'x64'
-  strategy:
-    matrix:
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
-  pool:
-    vmImage: 'macOS-10.15'
-  steps:
-    - script: |
-        .ci/macos-install-python.sh '$(python.version)'
-        python -c "import sys; print(sys.version)"
-      displayName: Install Python
+      displayName: 'Test Package Docstrings'
 
     - script: |
-        python -m pip install PyQt5>=5.11
-        python -m pip install -e .
-        python -c "import pyvista; print(pyvista.Report())"
-      displayName: 'Install pyvistaqt'
+        pip install twine
+        python setup.py sdist
+        twine upload --skip-existing dist/pyvistaqt*
+      displayName: 'Upload to PyPi'
+      condition: and(eq(variables['python.version'], '3.7'), contains(variables['Build.SourceBranch'], 'refs/tags/'))
+      env:
+        TWINE_USERNAME: $(twine.username)
+        TWINE_PASSWORD: $(twine.password)
+        TWINE_REPOSITORY_URL: "https://upload.pypi.org/legacy/"
 
+    # don't run job on no-ci builds
+    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
+
+
+  # DESCRIPTION: Core API and doc string testing across VTK versions using conda
+  - job: LinuxConda
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      DISPLAY: ':99.0'
+      PYVISTA_OFF_SCREEN: 'True'
+    steps:
+      - script: |
+          .ci/setup_headless_display.sh
+        displayName: Install headless display
+
+      - script: |
+          export CONDA_ALWAYS_YES=1
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+          conda config --add channels conda-forge
+          conda env create --quiet -n pyvistaqt-env --file environment.yml
+          conda activate pyvistaqt-env
+          pip install PyQt5==5.11.3
+          pip install -e .
+          conda list
+          which python
+          python -c "import pyvista; print(pyvista.Report())"
+        displayName: Create Anaconda environment
+
+      - script: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+          conda activate pyvistaqt-env
+          pytest -v --cov pyvistaqt --cov-report html
+        displayName: 'Test Core API against VTK'
+
+      - script: |
+          source /usr/share/miniconda/etc/profile.d/conda.sh
+          conda activate pyvistaqt-env
+          pytest -v --doctest-modules pyvistaqt
+        displayName: 'Test Package Docstrings against VTK'
+    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
+
+
+  # DESCRIPTION: Core API testing for Windows
+  - job: Windows
+    pool:
+      vmIMage: 'VS2017-Win2016'
+    variables:
+      AZURE_CI_WINDOWS: 'true'
+    strategy:
+      maxParallel: 4
+      matrix:
+        Python36-64bit:
+          PYTHON_VERSION: '3.6'
+        Python37-64bit:
+          PYTHON_VERSION: '3.7'
+        Python38-64bit:
+          PYTHON_VERSION: '3.8'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: $(PYTHON_VERSION)
+        addToPath: true
+    - powershell: |
+        Set-StrictMode -Version Latest
+        $ErrorActionPreference = "Stop"
+        $PSDefaultParameterValues['*:ErrorAction']='Stop'
+        git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+        powershell gl-ci-helpers/appveyor/install_opengl.ps1
+      displayName: 'Install OpenGL'
     - script: |
         python -m pip install -r requirements_test.txt
-        python -m pip install pytest-azurepipelines
-        python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
+      displayName: 'Install test dependencies'
+    - script: |
+        pip install PyQt5>=5.11
+        python -m pip install -e .
+        python -c "import pyvista; print(pyvista.Report())"
+      displayName: 'Install PyVista'
+    - script: |
+        pytest -v --cov pyvistaqt --cov-report html
       displayName: 'Run Tests'
 
-  # don't run job on no-ci builds
-  condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
+    # don't run job on no-ci builds
+    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
 
-# Builds the documentation
-- job: BuildDocumentation
-  pool:
-    vmImage: 'ubuntu-latest'
+  # DESCRIPTION: Core API testing for MacOS
+  - job: MacOS
+    variables:
+      python.architecture: 'x64'
+    strategy:
+      matrix:
+        Python36:
+          python.version: '3.6'
+        Python37:
+          python.version: '3.7'
+        Python38:
+          python.version: '3.8'
+    pool:
+      vmImage: 'macOS-10.15'
+    steps:
+      - script: |
+          .ci/macos-install-python.sh '$(python.version)'
+          python -c "import sys; print(sys.version)"
+        displayName: Install Python
 
-  variables:
-    DISPLAY: ':99.0'
-    PYVISTA_OFF_SCREEN: 'True'
+      - script: |
+          python -m pip install PyQt5>=5.11
+          python -m pip install -e .
+          python -c "import pyvista; print(pyvista.Report())"
+        displayName: 'Install pyvistaqt'
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: 3.7
-    displayName: 'Use Python 3.7'
+      - script: |
+          python -m pip install -r requirements_test.txt
+          python -m pip install pytest-azurepipelines
+          python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
+        displayName: 'Run Tests'
 
-  - script: |
-      git config --global user.name ${GH_NAME}
-      git config --global user.email ${GH_EMAIL}
-      git config --list | grep user.
-    displayName: 'Configure git'
-    env:
-      GH_NAME: $(gh.name)
-      GH_EMAIL: $(gh.email)
+    # don't run job on no-ci builds
+    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
-  - script: |
-      sudo apt-get install python3-tk
-      # The following linux deps are necessary to use the builtin xcb:
-      # https://github.com/pyvista/pyvistaqt/pull/61#issuecomment-709320826
-      sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0    \
-                              libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
-                              libxcb-xinerama0 libxcb-xfixes0
-      pip install -r requirements_docs.txt
-    displayName: 'Install dependencies'
 
-  - script: |
-      pip install PyQt5>=5.11
-      pip install -e .
-    displayName: Install pyvistaqt
+  # Builds the documentation
+  - job: BuildDocumentation
+    pool:
+      vmImage: 'ubuntu-latest'
 
-  - script: |
-      .ci/setup_headless_display.sh
-      # python .ci/pyvista_test.py  # for debug
-    displayName: Install headless display
+    variables:
+      DISPLAY: ':99.0'
+      PYVISTA_OFF_SCREEN: 'True'
 
-  - script: |
-      make -C docs html -b coverage
-      cat docs/_build/coverage/python.txt
-    displayName: 'Build documentation'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: 3.7
+      displayName: 'Use Python 3.7'
 
-  - script: |
-      make -C docs doctest
-    displayName: 'Test documentation code snippets'
+    - script: |
+        git config --global user.name ${GH_NAME}
+        git config --global user.email ${GH_EMAIL}
+        git config --list | grep user.
+      displayName: 'Configure git'
+      env:
+        GH_NAME: $(gh.name)
+        GH_EMAIL: $(gh.email)
 
-  - script: |
-      make -C docs html
-    displayName: 'Update figures from doctest'
+    - script: |
+        sudo apt-get install python3-tk
+        # The following linux deps are necessary to use the builtin xcb:
+        # https://github.com/pyvista/pyvistaqt/pull/61#issuecomment-709320826
+        sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0    \
+                                libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+                                libxcb-xinerama0 libxcb-xfixes0
+        pip install -r requirements_docs.txt
+      displayName: 'Install dependencies'
 
-  # upload documentation to pyvistaqt-docs
-  - script: |
-      git clone --depth 1 https://${GH_TOKEN}@github.com/pyvista/pyvistaqt-docs.git
-      cd pyvistaqt-docs
-      git gc --prune=now
-      git remote prune origin
-      rm -rf *
-      cp -r $BUILD_SOURCESDIRECTORY/docs/_build/html/* .
-      cp $BUILD_SOURCESDIRECTORY/docs/README.md .
-      touch .nojekyll
-      echo "qtdocs.pyvista.org" >> CNAME
-      echo $(date) > BUILD_DATETIME
-      git add .
-      git commit -am "Azure CI commit ref $(Build.SourceVersion)"
-      git push
-    displayName: Upload Documentation to pyvistaqt-docs
-    env:
-      GH_TOKEN: $(gh.token)
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    - script: |
+        pip install PyQt5>=5.11
+        pip install -e .
+      displayName: Install pyvistaqt
 
-  # don't run job on no-ci builds
-  condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
+    - script: |
+        .ci/setup_headless_display.sh
+        # python .ci/pyvista_test.py  # for debug
+      displayName: Install headless display
+
+    - script: |
+        make -C docs html -b coverage
+        cat docs/_build/coverage/python.txt
+      displayName: 'Build documentation'
+
+    - script: |
+        make -C docs doctest
+      displayName: 'Test documentation code snippets'
+
+    - script: |
+        make -C docs html
+      displayName: 'Update figures from doctest'
+
+    # upload documentation to pyvistaqt-docs
+    - script: |
+        git clone --depth 1 https://${GH_TOKEN}@github.com/pyvista/pyvistaqt-docs.git
+        cd pyvistaqt-docs
+        git gc --prune=now
+        git remote prune origin
+        rm -rf *
+        cp -r $BUILD_SOURCESDIRECTORY/docs/_build/html/* .
+        cp $BUILD_SOURCESDIRECTORY/docs/README.md .
+        touch .nojekyll
+        echo "qtdocs.pyvista.org" >> CNAME
+        echo $(date) > BUILD_DATETIME
+        git add .
+        git commit -am "Azure CI commit ref $(Build.SourceVersion)"
+        git push
+      displayName: Upload Documentation to pyvistaqt-docs
+      env:
+        GH_TOKEN: $(gh.token)
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+    # don't run job on no-ci builds
+    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
