@@ -85,7 +85,7 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements_test.txt
         name: 'Install dependencies with pip'
-      - run: pip install ${{ matrix.qt }}
+      - run: pip install PyQt5>=5.11
         name: 'Install Qt binding'
       - run: pip install pyvista==${{ matrix.pyvista }}
         name: 'Install PyVista'
