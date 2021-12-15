@@ -129,7 +129,7 @@ def test_counter(qtbot):
 
     counter = Counter(count=1)
     assert counter.count == 1
-    with qtbot.wait_signals([counter.signal_finished], timeout=300):
+    with qtbot.wait_signals([counter.signal_finished], timeout=1000):
         counter.decrease()
     assert counter.count == 0
 
@@ -172,7 +172,7 @@ def test_editor(qtbot, plotting):
     assert top_item is not None
 
     # simulate selection
-    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=1000):
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=2000):
         top_item.setSelected(True)
 
     # toggle all the renderer-associated checkboxes twice
@@ -187,9 +187,9 @@ def test_editor(qtbot, plotting):
         widget_item = page_layout.itemAt(widget_idx)
         widget = widget_item.widget()
         if isinstance(widget, QCheckBox):
-            with qtbot.wait_signals([widget.toggled], timeout=1000):
+            with qtbot.wait_signals([widget.toggled], timeout=2000):
                 widget.toggle()
-            with qtbot.wait_signals([widget.toggled], timeout=1000):
+            with qtbot.wait_signals([widget.toggled], timeout=2000):
                 widget.toggle()
 
     # hide the editor for coverage
@@ -587,20 +587,17 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
         title='Testing Window',
         update_app_icon=True,  # also does add_callback
     )
-    assert plotter._last_update_time == -np.inf
-    sphere = pyvista.Sphere()
-    mycallback = CallBack(sphere)
-    plotter.add_mesh(sphere)
-    plotter.add_callback(mycallback, interval=200, count=3)
-
-    # check that timers are set properly in add_callback()
     assert_hasattr(plotter, "app_window", MainWindow)
     assert_hasattr(plotter, "_callback_timer", QTimer)
     assert_hasattr(plotter, "counters", list)
+    assert plotter._last_update_time == -np.inf
 
+    sphere = pyvista.Sphere()
+    plotter.add_mesh(sphere)
+    mycallback = CallBack(sphere)
     window = plotter.app_window  # MainWindow
     callback_timer = plotter._callback_timer  # QTimer
-    counter = plotter.counters[-1]  # Counter
+    assert callback_timer.isActive()
 
     # ensure that the window is showed
     assert not window.isVisible()
@@ -620,23 +617,31 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     plotter.set_icon(os.path.join(
         os.path.dirname(pyvistaqt.__file__), "data",
         "pyvista_logo_square.png"))
+    callback_timer.stop()
+    assert not callback_timer.isActive()
+
+    # check that timers are set properly in add_callback()
+    plotter.add_callback(mycallback, interval=200, count=3)
+    callback_timer = plotter._callback_timer  # QTimer
+    assert callback_timer.isActive()
+    counter = plotter.counters[-1]  # Counter
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=300)
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=2000)
     callback_blocker.wait()
     # ensure that self.counters send a signal
-    counter_blocker = qtbot.wait_signals([counter.signal_finished], timeout=700)
+    counter_blocker = qtbot.wait_signals([counter.signal_finished], timeout=2000)
     counter_blocker.wait()
     assert not callback_timer.isActive()  # counter stops the callback
 
     plotter.add_callback(mycallback, interval=200)
     callback_timer = plotter._callback_timer  # QTimer
+    assert callback_timer.isActive()
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=300)
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=2000)
     callback_blocker.wait()
 
-    assert callback_timer.isActive()
     plotter.close()
     assert not callback_timer.isActive()  # window stops the callback
 

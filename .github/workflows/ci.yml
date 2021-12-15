@@ -51,14 +51,13 @@ jobs:
         name: 'Upload coverage to CodeCov'
 
   pip:
-    name: ${{ matrix.os }} / pip / ${{ matrix.qt }} / pyvista-${{ matrix.pyvista }}
+    name: ${{ matrix.os }} / pip / pyvista-${{ matrix.pyvista }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        pyvista: ['0.29', '0.30', '0.31']
-        qt: ['PySide2']
+        pyvista: ['0.30', '0.31', '0.32']
     defaults:
       run:
         shell: bash
@@ -85,8 +84,12 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements_test.txt
         name: 'Install dependencies with pip'
-      - run: pip install ${{ matrix.qt }}
+      - run: pip install PyQt5
         name: 'Install Qt binding'
+        if: matrix.os == 'macos-latest'
+      - run: pip install PySide2
+        name: 'Install Qt binding'
+        if: matrix.os != 'macos-latest'
       - run: pip install pyvista==${{ matrix.pyvista }}
         name: 'Install PyVista'
       - run: |
@@ -106,7 +109,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        qt: ['PySide2']
+        qt: ['PyQt5']
     defaults:
       run:
         shell: bash
