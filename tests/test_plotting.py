@@ -565,6 +565,7 @@ def test_background_plotting_menu_bar(qtbot, plotting):
     assert plotter._last_update_time == -np.inf
 
 
+@pytest.mark.skipif(platform.system()=="Darwin", reason="Crashes on MacOS")
 def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     class CallBack(object):
         def __init__(self, sphere):
