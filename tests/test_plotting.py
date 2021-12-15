@@ -260,6 +260,7 @@ def test_qt_interactor(qtbot, plotting):
     # check that BasePlotter.__init__() is called only once
     assert len(_ALL_PLOTTERS) == 1
 
+
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
