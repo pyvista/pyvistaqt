@@ -265,7 +265,8 @@ def test_background_plotting_axes_scale(qtbot, plotting):
     plotter = BackgroundPlotter(
         show=False,
         off_screen=False,
-        title='Testing Window'
+        auto_update=False,
+        title='Testing Window',
     )
     assert_hasattr(plotter, "app_window", MainWindow)
     window = plotter.app_window  # MainWindow
@@ -276,6 +277,7 @@ def test_background_plotting_axes_scale(qtbot, plotting):
     with qtbot.wait_exposed(window):
         window.show()
     assert window.isVisible()
+    plotter._render()
 
     plotter.add_mesh(pyvista.Sphere())
     assert_hasattr(plotter, "renderer", Renderer)
@@ -739,7 +741,7 @@ def test_multiplotter(qtbot, plotting):
     mp.close()
 
 
-def _create_testing_scene(show=False, off_screen=False):
+def _create_testing_scene():
     plotter = BackgroundPlotter(
         shape=(2, 2),
         border=True,
