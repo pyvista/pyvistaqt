@@ -224,9 +224,6 @@ def test_qt_interactor(qtbot, plotting):
     render_timer = vtk_widget.render_timer  # QTimer
     renderer = vtk_widget.renderer  # vtkRenderer
 
-    # force rendering
-    interactor._render()
-
     window.add_sphere()
     assert np.any(window.vtk_widget.mesh.points)
 
@@ -277,7 +274,6 @@ def test_background_plotting_axes_scale(qtbot, plotting):
     with qtbot.wait_exposed(window):
         window.show()
     assert window.isVisible()
-    plotter._render()
 
     plotter.add_mesh(pyvista.Sphere())
     assert_hasattr(plotter, "renderer", Renderer)
@@ -672,9 +668,6 @@ def test_background_plotting_close(qtbot, close_event, plotting):
         window.show()
     with qtbot.wait_exposed(interactor, timeout=10000):
         interactor.show()
-
-    # force rendering
-    plotter._render()
 
     # check that the widgets are showed properly
     assert window.isVisible()
