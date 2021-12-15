@@ -58,6 +58,8 @@ stages:
 
 
 - stage: Test
+  condition: and(succeeded(), eq(dependencies.Check.outputs['Skip.result.start_main'], 'true'))
+  dependsOn: Check
   jobs:
 
   # DESCRIPTION: Core API and doc string testing for Linux
