@@ -639,16 +639,12 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     "menu_exit",
     "del_finalizer",
     ])
-@pytest.mark.parametrize('empty_scene', [
-    True,
-    False,
-    ])
-def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
+def test_background_plotting_close(qtbot, close_event, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
 
-    plotter = _create_testing_scene(empty_scene)
+    plotter = _create_testing_scene()
 
     # check that BackgroundPlotter.__init__() is called
     assert_hasattr(plotter, "app_window", MainWindow)
@@ -744,41 +740,34 @@ def test_multiplotter(qtbot, plotting):
     mp.close()
 
 
-def _create_testing_scene(empty_scene, show=False, off_screen=False):
-    if empty_scene:
-        plotter = BackgroundPlotter(
-            show=show,
-            off_screen=off_screen,
-            update_app_icon=False,
-        )
-    else:
-        plotter = BackgroundPlotter(
-            shape=(2, 2),
-            border=True,
-            border_width=10,
-            border_color='grey',
-            show=show,
-            off_screen=off_screen
-        )
-        plotter.set_background('black', top='blue')
-        plotter.subplot(0, 0)
-        cone = pyvista.Cone(resolution=4)
-        actor = plotter.add_mesh(cone)
-        plotter.remove_actor(actor)
-        plotter.add_text('Actor is removed')
-        plotter.subplot(0, 1)
-        plotter.add_mesh(pyvista.Box(), color='green', opacity=0.8)
-        plotter.subplot(1, 0)
-        cylinder = pyvista.Cylinder(resolution=6)
-        plotter.add_mesh(cylinder, smooth_shading=True)
-        plotter.show_bounds()
-        plotter.subplot(1, 1)
-        sphere = pyvista.Sphere(
-            phi_resolution=6,
-            theta_resolution=6
-        )
-        plotter.add_mesh(sphere)
-        plotter.enable_cell_picking()
+def _create_testing_scene(show=False, off_screen=False):
+    plotter = BackgroundPlotter(
+        shape=(2, 2),
+        border=True,
+        border_width=10,
+        border_color='grey',
+        show=show,
+        off_screen=off_screen
+    )
+    plotter.set_background('black', top='blue')
+    plotter.subplot(0, 0)
+    cone = pyvista.Cone(resolution=4)
+    actor = plotter.add_mesh(cone)
+    plotter.remove_actor(actor)
+    plotter.add_text('Actor is removed')
+    plotter.subplot(0, 1)
+    plotter.add_mesh(pyvista.Box(), color='green', opacity=0.8)
+    plotter.subplot(1, 0)
+    cylinder = pyvista.Cylinder(resolution=6)
+    plotter.add_mesh(cylinder, smooth_shading=True)
+    plotter.show_bounds()
+    plotter.subplot(1, 1)
+    sphere = pyvista.Sphere(
+        phi_resolution=6,
+        theta_resolution=6
+    )
+    plotter.add_mesh(sphere)
+    plotter.enable_cell_picking()
     return plotter
 
 
