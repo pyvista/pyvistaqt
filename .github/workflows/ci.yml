@@ -51,7 +51,7 @@ jobs:
         name: 'Upload coverage to CodeCov'
 
   pip:
-    name: ${{ matrix.os }} / pip / ${{ matrix.qt }} / pyvista-${{ matrix.pyvista }}
+    name: ${{ matrix.os }} / pip / pyvista-${{ matrix.pyvista }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
