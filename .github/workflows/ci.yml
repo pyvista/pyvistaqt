@@ -58,7 +58,6 @@ jobs:
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
         pyvista: ['0.30', '0.31', '0.32']
-        qt: ['PyQt5']
     defaults:
       run:
         shell: bash
@@ -85,8 +84,12 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements_test.txt
         name: 'Install dependencies with pip'
-      - run: pip install ${{ matrix.qt }}
+      - run: pip install PyQt5
         name: 'Install Qt binding'
+        if: matrix.os == 'macos-latest'
+      - run: pip install PySide2
+        name: 'Install Qt binding'
+        if: matrix.os != 'macos-latest'
       - run: pip install pyvista==${{ matrix.pyvista }}
         name: 'Install PyVista'
       - run: |
