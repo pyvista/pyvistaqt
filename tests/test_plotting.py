@@ -565,7 +565,6 @@ def test_background_plotting_menu_bar(qtbot, plotting):
     assert plotter._last_update_time == -np.inf
 
 
-@pytest.mark.skipif(platform.system()=="Darwin", reason="Crashes on MacOS")
 def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     class CallBack(object):
         def __init__(self, sphere):
@@ -590,6 +589,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     )
     assert_hasattr(plotter, "app_window", MainWindow)
     assert_hasattr(plotter, "_callback_timer", QTimer)
+    assert_hasattr(plotter, "counters", list)
     assert plotter._last_update_time == -np.inf
 
     sphere = pyvista.Sphere()
@@ -624,7 +624,6 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     plotter.add_callback(mycallback, interval=200, count=3)
     callback_timer = plotter._callback_timer  # QTimer
     assert callback_timer.isActive()
-    assert_hasattr(plotter, "counters", list)
     counter = plotter.counters[-1]  # Counter
 
     # ensure that self.callback_timer send a signal
