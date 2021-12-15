@@ -20,7 +20,7 @@ from pyvistaqt.editor import Editor
 
 
 class TstWindow(MainWindow):
-    def __init__(self, parent=None, show=True, off_screen=True):
+    def __init__(self, parent=None, show=False, off_screen=False):
         MainWindow.__init__(self, parent)
 
         self.frame = QFrame()
@@ -261,13 +261,9 @@ def test_qt_interactor(qtbot, plotting):
     assert len(_ALL_PLOTTERS) == 1
 
 
-@pytest.mark.parametrize('show_plotter', [
-    True,
-    False,
-    ])
-def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
+def test_background_plotting_axes_scale(qtbot, plotting):
     plotter = BackgroundPlotter(
-        show=show_plotter,
+        show=False,
         off_screen=False,
         title='Testing Window'
     )
@@ -276,10 +272,9 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    if not show_plotter:
-        assert not window.isVisible()
-        with qtbot.wait_exposed(window):
-            window.show()
+    assert not window.isVisible()
+    with qtbot.wait_exposed(window):
+        window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -372,17 +367,13 @@ def test_link_views_across_plotters(other_views):
     with pytest.raises(TypeError, match=match):
         plotter_one.link_views_across_plotters(plotter_two, other_views=[0.0])
 
-@pytest.mark.parametrize('show_plotter', [
-    True,
-    False,
-    ])
-def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
+def test_background_plotter_export_files(qtbot, tmpdir, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
 
     plotter = BackgroundPlotter(
-        show=show_plotter,
+        show=False,
         off_screen=False,
         title='Testing Window'
     )
@@ -391,10 +382,9 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    if not show_plotter:
-        assert not window.isVisible()
-        with qtbot.wait_exposed(window):
-            window.show()
+    assert not window.isVisible()
+    with qtbot.wait_exposed(window):
+        window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
@@ -425,17 +415,13 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     assert os.path.isfile(filename)
 
 
-@pytest.mark.parametrize('show_plotter', [
-    True,
-    False,
-    ])
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
 
     plotter = BackgroundPlotter(
-        show=show_plotter,
+        show=False,
         off_screen=False,
         title='Testing Window'
     )
@@ -444,10 +430,9 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    if not show_plotter:
-        assert not window.isVisible()
-        with qtbot.wait_exposed(window):
-            window.show()
+    assert not window.isVisible()
+    with qtbot.wait_exposed(window):
+        window.show()
     assert window.isVisible()
 
     plotter.add_mesh(pyvista.Sphere())
