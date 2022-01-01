@@ -1,6 +1,6 @@
 import os
+from packaging.version import Version
 import platform
-from distutils.version import LooseVersion
 
 import numpy as np
 import pytest
@@ -253,7 +253,7 @@ def test_qt_interactor(qtbot, plotting):
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    if LooseVersion(pyvista.__version__) < '0.27.0':
+    if Version(pyvista.__version__) < Version('0.27.0'):
         assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
 
@@ -719,8 +719,8 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    if LooseVersion(pyvista.__version__) < '0.27.0':
-        assert not hasattr(vtk_widget, "iren")
+    if Version(pyvista.__version__) < Version('0.27.0'):
+        assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
 
     # check that BasePlotter.__init__() is called only once
