@@ -269,8 +269,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         else:
             self._setup_key_press()
 
-        self._auto_update_orig = auto_update
-
         # Make the render timer but only activate if using auto update
         self.render_timer = QTimer(parent=parent)
         if float(auto_update) > 0.0:  # Can be False as well
@@ -328,23 +326,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Handle gesture events."""
         pinch = event.gesture(QtCore.Qt.PinchGesture)
         if pinch:
-            state = pinch.state()
-            if state == 1:  # Pinching has started
-                # Update more frequently
-                self.render_timer.setInterval(
-                    min(
-                        1/30. * 1000.,  # 30 Hz
-                        int((self._auto_update_orig ** -1) * 1000.0)
-                    )
-                )
-            elif state == 2:  # Pinch in progress
-                self.camera.Zoom(pinch.scaleFactor())
-            else:  # Finished or aborted
-                # Reset update interval
-                self.render_timer.setInterval(
-                    int((self._auto_update_orig ** -1) * 1000.0)
-                )
-
+            self.camera.Zoom(pinch.scaleFactor())
             event.accept()
         return True
 
