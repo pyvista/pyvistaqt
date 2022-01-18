@@ -328,6 +328,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if pinch:
             self.camera.Zoom(pinch.scaleFactor())
             event.accept()
+            self.update()
         return True
 
     def key_press_event(self, obj: Any, event: Any) -> None:
