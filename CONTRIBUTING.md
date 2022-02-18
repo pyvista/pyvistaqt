@@ -7,5 +7,5 @@ volunteer basis and thus we need to foster a community that can
 support user questions and develop new features to make this software
 a useful tool for all users.
 
-Please reference the contributing guide at [pyvista/CONTRIBUTING.md](https://github.com/pyvista/pyvista/blob/master/CONTRIBUTING.md) for contributing to this repository.
+Please reference the contributing guide at [pyvista/CONTRIBUTING.rst](https://github.com/pyvista/pyvista/blob/master/CONTRIBUTING.rst) for contributing to this repository.
 
