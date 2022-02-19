@@ -86,7 +86,7 @@ class DoubleSlider(QSlider):
         """Initialize the double slider."""
         super().__init__(*args, **kwargs)
         self.decimals = 5
-        self._max_int = 10**self.decimals
+        self._max_int = 10 ** self.decimals
 
         super().setMinimum(0)
         super().setMaximum(self._max_int)
