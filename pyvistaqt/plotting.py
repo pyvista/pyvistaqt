@@ -655,7 +655,7 @@ class BackgroundPlotter(QtInteractor):
             # So let's be safe and try/except this in case of a problem.
             try:
                 self.app_window.close()
-            except Exception:  # pylint: disable=broad-except
+            except Exception:  # pragma: no cover # pylint: disable=broad-except
                 pass
 
     def _close(self) -> None:
