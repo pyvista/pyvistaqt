@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 """
 This module contains the QtInteractor and BackgroundPlotter.
 
@@ -65,13 +66,20 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
 try:
-    from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    from vtkmodules.qt.QVTKRenderWindowInteractor import (  # type: ignore
+        QVTKRenderWindowInteractor,
+    )
 except ImportError:  # pragma: no cover
-    from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    from vtk.qt.QVTKRenderWindowInteractor import (  # type: ignore
+        QVTKRenderWindowInteractor,
+    )
 try:  # backwards compatibility with pyvista<0.32.0
+    # pylint: disable=ungrouped-imports
     from pyvista._vtk import vtkGenericRenderWindowInteractor
 except ImportError:  # pragma: no cover
+    # pylint: disable=ungrouped-imports
     from vtk import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
@@ -357,7 +365,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.setDisabled(True)
         return BasePlotter.disable(self)
 
-    def link_views_across_plotters(self, other_plotter, view=0, other_views=None):
+    def link_views_across_plotters(
+        self, other_plotter: Any, view: int = 0, other_views: Any = None
+    ) -> None:
         """Link the views' cameras across two plotters.
 
         Parameters
@@ -385,8 +395,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             other_views = np.asarray(other_views)
 
         if not np.issubdtype(other_views.dtype, int):
-            raise TypeError('Expected `other_views` type is int, or list or tuple of ints, '
-                        f'but {other_views.dtype} is given')
+            raise TypeError(
+                "Expected `other_views` type is int, or list or tuple of ints, "
+                f"but {other_views.dtype} is given"
+            )
 
         renderer = self.renderers[view]
         for view_index in other_views:
@@ -643,7 +655,7 @@ class BackgroundPlotter(QtInteractor):
             # So let's be safe and try/except this in case of a problem.
             try:
                 self.app_window.close()
-            except Exception:
+            except Exception:  # pragma: no cover # pylint: disable=broad-except
                 pass
 
     def _close(self) -> None:

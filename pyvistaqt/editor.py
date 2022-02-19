@@ -16,8 +16,9 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
 try:  # backwards compatibility with pyvista<0.29.0
-    from pyvista._vtk import vtkActor
+    from pyvista._vtk import vtkActor  # pylint: disable=ungrouped-imports
 except ImportError:  # pragma: no cover
     from vtk import vtkActor
 
