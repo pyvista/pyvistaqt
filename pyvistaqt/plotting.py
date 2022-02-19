@@ -72,13 +72,11 @@ try:
 except ImportError:  # pragma: no cover
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 try:  # backwards compatibility with pyvista<0.32.0
-    from pyvista._vtk import (
-        vtkGenericRenderWindowInteractor,
-    )  # pylint: disable=ungrouped-imports
+    # pylint: disable=ungrouped-imports
+    from pyvista._vtk import vtkGenericRenderWindowInteractor
 except ImportError:  # pragma: no cover
-    from vtk import (
-        vtkGenericRenderWindowInteractor,
-    )  # pylint: disable=ungrouped-imports
+    # pylint: disable=ungrouped-imports
+    from vtk import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
