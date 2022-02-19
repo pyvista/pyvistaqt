@@ -72,9 +72,13 @@ try:
 except ImportError:  # pragma: no cover
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 try:  # backwards compatibility with pyvista<0.32.0
-    from pyvista._vtk import vtkGenericRenderWindowInteractor
+    from pyvista._vtk import (
+        vtkGenericRenderWindowInteractor,
+    )  # pylint: disable=ungrouped-imports
 except ImportError:  # pragma: no cover
-    from vtk import vtkGenericRenderWindowInteractor
+    from vtk import (
+        vtkGenericRenderWindowInteractor,
+    )  # pylint: disable=ungrouped-imports
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
@@ -647,7 +651,7 @@ class BackgroundPlotter(QtInteractor):
             # So let's be safe and try/except this in case of a problem.
             try:
                 self.app_window.close()
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 pass
 
     def _close(self) -> None:
