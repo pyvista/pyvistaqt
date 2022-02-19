@@ -65,6 +65,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
 try:
     from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 except ImportError:  # pragma: no cover
