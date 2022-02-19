@@ -278,7 +278,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             # Modified() and upstream objects won't be updated.  This
             # ensures the render window stays updated without consuming too
             # many resources.
-            twait = int((auto_update ** -1) * 1000.0)
+            twait = int((auto_update**-1) * 1000.0)
             self.render_timer.timeout.connect(self.render)
             self.render_timer.start(twait)
 
@@ -386,8 +386,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             other_views = np.asarray(other_views)
 
         if not np.issubdtype(other_views.dtype, int):
-            raise TypeError('Expected `other_views` type is int, or list or tuple of ints, '
-                        f'but {other_views.dtype} is given')
+            raise TypeError(
+                "Expected `other_views` type is int, or list or tuple of ints, "
+                f"but {other_views.dtype} is given"
+            )
 
         renderer = self.renderers[view]
         for view_index in other_views:
