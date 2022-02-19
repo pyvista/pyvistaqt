@@ -68,7 +68,9 @@ from qtpy.QtWidgets import (
 )
 
 try:
-    from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    from vtkmodules.qt.QVTKRenderWindowInteractor import (
+        QVTKRenderWindowInteractor,  # type: ignore
+    )
 except ImportError:  # pragma: no cover
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 try:  # backwards compatibility with pyvista<0.32.0
@@ -361,7 +363,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.setDisabled(True)
         return BasePlotter.disable(self)
 
-    def link_views_across_plotters(self, other_plotter, view=0, other_views=None):
+    def link_views_across_plotters(
+        self, other_plotter: Any, view: int = 0, other_views: Any = None
+    ) -> None:
         """Link the views' cameras across two plotters.
 
         Parameters
