@@ -115,7 +115,7 @@ jobs:
       ALLOW_PLOTTING: 'true'
       DISPLAY: ':99'
       CONDA_ENV: 'environment.yml'
-      PYTHON_VERSION: '3.9'
+      PYTHON_VERSION: '3.8'
     steps:
       - uses: actions/checkout@v2
       - run: .ci/setup_headless_display.sh
