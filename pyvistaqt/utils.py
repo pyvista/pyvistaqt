@@ -37,7 +37,7 @@ def _setup_ipython(ipython: Any = None) -> Any:
         from IPython import get_ipython
 
         ipython = get_ipython()
-        ipython.magic("gui qt")
+        ipython.run_line_magic("gui", "qt")
 
         # pylint: disable=redefined-outer-name
         # pylint: disable=import-outside-toplevel

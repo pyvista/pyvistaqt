@@ -49,7 +49,7 @@ class FileDialog(QFileDialog):
         self.accepted.connect(self.emit_accepted)
 
         if directory:
-            self.FileMode(QFileDialog.DirectoryOnly)
+            self.FileMode(QFileDialog.Directory)
             self.setOption(QFileDialog.ShowDirsOnly, True)
 
         if save_mode:

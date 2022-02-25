@@ -152,7 +152,7 @@ def test_editor(qtbot, plotting):
     with qtbot.wait_exposed(editor):
         editor.toggle()
     assert editor.isVisible()
-    plotter.close()
+    editor.close()
     assert not editor.isVisible()
 
     # editor=True by default
