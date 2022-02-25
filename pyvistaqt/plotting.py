@@ -772,10 +772,7 @@ class BackgroundPlotter(QtInteractor):
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
         if not self._closed:
-            try:
-                self.app_window.close()
-            except:
-                pass
+            self.app_window.close()
 
     def add_callback(
         self, func: Callable, interval: int = 1000, count: Optional[int] = None
