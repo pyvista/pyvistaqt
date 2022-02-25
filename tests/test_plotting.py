@@ -154,6 +154,7 @@ def test_editor(qtbot, plotting):
     assert editor.isVisible()
     editor.close()
     assert not editor.isVisible()
+    plotter.close()
 
     # editor=True by default
     plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
