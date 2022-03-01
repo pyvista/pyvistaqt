@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pyside: ['PySide2', 'PySide6', 'PyQt6']
+        qt: ['PySide2', 'PySide6', 'PyQt6']
     defaults:
       run:
         shell: bash
