@@ -1,3 +1,6 @@
+# modified from: https://gitlab.kitware.com/vtk/vtk/-/blob/master/Wrapping/Python/vtkmodules/qt/QVTKRenderWindowInteractor.py
+# under the OSI-approved BSD 3-clause License
+# pylint: skip-file
 # coding=utf-8
 """
 A simple VTK widget for PyQt or PySide.
