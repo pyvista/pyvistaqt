@@ -1,6 +1,6 @@
-# modified from: https://gitlab.kitware.com/vtk/vtk/-/blob/master/Wrapping/Python/vtkmodules/qt/QVTKRenderWindowInteractor.py
+# modified from: https://gitlab.kitware.com/vtk/vtk
 # under the OSI-approved BSD 3-clause License
-# pylint: skip-file
+# TODO: Mayavi has a potentially different version that might be better or worse
 # coding=utf-8
 """
 A simple VTK widget for PyQt or PySide.
