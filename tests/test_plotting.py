@@ -152,8 +152,9 @@ def test_editor(qtbot, plotting):
     with qtbot.wait_exposed(editor):
         editor.toggle()
     assert editor.isVisible()
-    plotter.close()
+    editor.close()
     assert not editor.isVisible()
+    plotter.close()
 
     # editor=True by default
     plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
@@ -803,7 +804,8 @@ def _create_testing_scene(empty_scene, show=False, off_screen=False):
             border_width=10,
             border_color='grey',
             show=show,
-            off_screen=off_screen
+            off_screen=off_screen,
+            update_app_icon=False,
         )
         plotter.set_background('black', top='blue')
         plotter.subplot(0, 0)
