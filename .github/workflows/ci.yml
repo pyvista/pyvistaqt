@@ -34,7 +34,7 @@ jobs:
         name: 'Setup python'
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install --find-links https://wheels.pyvista.org/ pyvista
+          pip install https://github.com/pyvista/pyvista-wheels/raw/main/vtk-9.1.0.dev0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
           pip install --progress-bar off vtk-9.0.20201117-cp39-cp39-linux_x86_64.whl
           pip install --progress-bar off https://github.com/pyvista/pyvista/zipball/main
           pip install --progress-bar off https://github.com/spyder-ide/qtpy/zipball/master
