@@ -88,7 +88,7 @@ jobs:
         name: 'Install dependencies with pip'
       - run: pip install PyQt5
         name: 'Install Qt binding'
-      - run: pip install pyvista==${{ matrix.pyvista }}
+      - run: pip install "pyvista==${{ matrix.pyvista }}.*"
         name: 'Install PyVista'
       - run: |
           pip install -e .
