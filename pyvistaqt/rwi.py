@@ -151,7 +151,7 @@ elif PyQtImpl == "PyQt5":
     from PyQt5.QtCore import QSize
     from PyQt5.QtCore import QEvent
 elif PyQtImpl == "PySide2":
-    if QVTKRIBase == "QGLWidget":
+    if QVTKRWIBase == "QGLWidget":
         from PySide2.QtOpenGL import QGLWidget
     from PySide2.QtWidgets import QWidget
     from PySide2.QtWidgets import QSizePolicy
