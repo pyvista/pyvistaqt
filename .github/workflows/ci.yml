@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        qt: ['PySide', 'PySide2', 'PySide6', 'PyQt4', 'PyQt5', 'PyQt6']
+        qt: ['PySide2', 'PySide6', 'PyQt5', 'PyQt6']
     defaults:
       run:
         shell: bash
@@ -38,14 +38,8 @@ jobs:
         if: matrix.os == 'windows-latest'
       - uses: actions/setup-python@v2
         with:
-          python-version: '2.7'
-        name: 'Setup python'
-        if: matrix.qt == 'PySide' || matrix.qt == 'PyQt4'
-      - uses: actions/setup-python@v2
-        with:
           python-version: ${{ env.PYTHON_VERSION }}
         name: 'Setup python'
-        if: matrix.qt != 'PySide' && matrix.qt != 'PyQt4'
       - run: |
           python -m pip install --upgrade pip wheel
           pip install --upgrade pytest vtk ipython
