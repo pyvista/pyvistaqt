@@ -611,7 +611,9 @@ def QVTKRenderWidgetConeExample():
     import vtkmodules.vtkInteractionStyle
 
     # every QT app needs an app
-    app = QApplication(['QVTKRenderWindowInteractor'])
+    app = QApplication.instance()
+    if not app:  # pragma: no cover
+        app = QApplication(["PyVista"])
 
     window = QMainWindow()
 
@@ -645,10 +647,10 @@ def QVTKRenderWidgetConeExample():
     # Source: https://doc.qt.io/qtforpython/porting_from2.html
     # 'exec_' is deprecated and will be removed in the future.
     # Use 'exec' instead.
-    try:
-        app.exec()
-    except AttributeError:
-        app.exec_()
+    # try:
+    #     app.exec()
+    # except AttributeError:
+    #     app.exec_()
 
 
 _keysyms_for_ascii = (
