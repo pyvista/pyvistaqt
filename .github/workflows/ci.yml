@@ -38,6 +38,7 @@ jobs:
         if: matrix.os == 'windows-latest'
       - uses: actions/setup-python@v2
         with:
+          architecture: 'x86'
           python-version: 3.4
         name: 'Setup python'
         if: matrix.qt == 'PySide'
