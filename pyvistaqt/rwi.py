@@ -313,7 +313,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             if "wflags" in kw:
                 wflags = kw['wflags']
             else:
-                wflags = 0
+                wflags = Qt.WindowType.Widget
             QWidget.__init__(self, parent, wflags | Qt.MSWindowsOwnDC)
         elif QVTKRWIBase == "QGLWidget":
             QGLWidget.__init__(self, parent)
