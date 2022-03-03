@@ -29,6 +29,13 @@ jobs:
       - uses: actions/checkout@v2
       - run: .ci/setup_headless_display.sh
         name: 'Setup xvfb'
+        if: matrix.os == 'ubuntu-latest'
+      - run: |
+          git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+          ./gl-ci-helpers/appveyor/install_opengl.ps1
+        shell: pwsh
+        name: 'Setup opengl'
+        if: matrix.os == 'windows-latest'
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
