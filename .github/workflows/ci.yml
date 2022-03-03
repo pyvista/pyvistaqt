@@ -50,5 +50,5 @@ jobs:
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: 'Install pyvistaqt'
-      - run: python pyvistaqt/rwi.py
+      - run: pytest -vv test/test_rwi.py
         name: 'Run Tests'
