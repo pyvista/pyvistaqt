@@ -47,8 +47,8 @@ jobs:
         name: 'Setup python'
         if: matrix.qt != 'PySide' && matrix.qt != 'PyQt4'
       - run: |
-          python -m pip install --upgrade pip wheel mne
-          pip install --upgrade -r pytest vtk
+          python -m pip install --upgrade pip wheel
+          pip install --upgrade -r pytest vtk ipython
         name: 'Install dependencies with pip'
       - run: pip install ${{ matrix.qt }}
         name: 'Install Qt binding'
