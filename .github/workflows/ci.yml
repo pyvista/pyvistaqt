@@ -11,7 +11,7 @@ on:
 
 jobs:
   rwi:
-    name: ${{ matrix.os }} / ${{ matrix.qt }}
+    name: RWI / ${{ matrix.os }} / ${{ matrix.qt }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
