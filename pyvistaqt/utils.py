@@ -43,7 +43,6 @@ def _setup_ipython(ipython: Any = None) -> Any:
         # pylint: disable=import-outside-toplevel
         from IPython.external.qt_for_kernel import QtGui
 
-        # pylint: disable=no-member
         QtGui.QApplication.instance()
     return ipython
 
