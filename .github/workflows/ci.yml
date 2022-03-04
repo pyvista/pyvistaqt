@@ -24,7 +24,7 @@ jobs:
     env:
       ALLOW_PLOTTING: 'true'
       DISPLAY: ':99'
-      PYTHON_VERSION: '3.7'
+      PYTHON_VERSION: '3.8'
     steps:
       - uses: actions/checkout@v2
       - run: .ci/setup_headless_display.sh
