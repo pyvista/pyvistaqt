@@ -74,10 +74,10 @@ except ImportError:  # pragma: no cover
     # pylint: disable=ungrouped-imports
     from vtk import vtkGenericRenderWindowInteractor
 
-from .rwi import QVTKRenderWindowInteractor
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
+from .rwi import QVTKRenderWindowInteractor
 from .utils import (
     _check_type,
     _create_menu_bar,
