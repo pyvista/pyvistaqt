@@ -18,11 +18,14 @@ jobs:
       with:
         python-root-list: pyvistaqt
         use-pylint: true
-        extra-pylint-options: --disable=F0401
         use-pycodestyle: true
         use-flake8: true
         use-black: true
         use-mypy: true
         use-isort: true
-        extra-pycodestyle-options: --ignore=E501,E203,W503
-        extra-flake8-options: --ignore=E501,E203,W503
+        extra-pylint-options: --disable=F0401 --ignore=rwi.py
+        extra-pycodestyle-options: --ignore=E501,E203,W503 --match='(?!(test_|rwi)).*\.py'
+        extra-flake8-options: --ignore=E501,E203,W503 --exclude=rwi.py
+        extra-black-options: --exclude=rwi.py
+        extra-mypy-options: --exclude=rwi.py
+        extra-isort-options: --skip rwi.py
