@@ -95,8 +95,8 @@ except ImportError:  # workaround for older PyVista
     class _GlobalTheme:
         """Wrap global_theme too rcParams."""
 
-        def __setattr__(self, k: str, v: Any) -> None:  # noqa: D105
-            rcParams[k] = v
+        def __setattr__(self, k: str, val: Any) -> None:  # noqa: D105
+            rcParams[k] = val
 
         def __getattr__(self, k: str) -> None:  # noqa: D105
             return rcParams[k] if k != "__wrapped__" else None
@@ -278,7 +278,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             # Modified() and upstream objects won't be updated.  This
             # ensures the render window stays updated without consuming too
             # many resources.
-            twait = int((auto_update ** -1) * 1000.0)
+            twait = int((auto_update**-1) * 1000.0)
             self.render_timer.timeout.connect(self.render)
             self.render_timer.start(twait)
 
@@ -412,7 +412,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     # only call accept on files
                     event.accept()
         except IOError as exception:  # pragma: no cover
-            warnings.warn("Exception when dropping files: %s" % str(exception))
+            warnings.warn(f"Exception when dropping files: {str(exception)}")
 
     # pylint: disable=invalid-name,useless-return
     def dropEvent(self, event: QtCore.QEvent) -> None:
@@ -809,9 +809,7 @@ class BackgroundPlotter(QtInteractor):
                 # pylint: disable=attribute-defined-outside-init
                 self.camera_position = camera_position
 
-            self.saved_cameras_tool_bar.addAction(
-                "Cam %2d" % ncam, load_camera_position
-            )
+            self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
             if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)
 
