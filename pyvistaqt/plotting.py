@@ -816,9 +816,7 @@ class BackgroundPlotter(QtInteractor):
                 # pylint: disable=attribute-defined-outside-init
                 self.camera_position = camera_position
 
-            self.saved_cameras_tool_bar.addAction(
-                f"Cam {ncam}", load_camera_position
-            )
+            self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
             if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)
 
