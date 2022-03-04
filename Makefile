@@ -9,6 +9,7 @@ FLAKE8_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
 CODESPELL_SKIP ?= "*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
 CODESPELL_IGNORE ?= "ignore_words.txt"
+EXTRA_BLACK_OPTIONS ?= --check
 EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203,W503"
 EXTRA_FLAKE8_OPTIONS ?= --ignore="E501,E203,W503"
 
@@ -20,7 +21,7 @@ doctest: codespell pydocstyle
 
 black:
 	@echo "Running black"
-	@black $(BLACK_DIRS)
+	@black --check $(BLACK_DIRS)
 
 isort:
 	@echo "Running isort"
