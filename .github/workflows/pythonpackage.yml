@@ -27,5 +27,5 @@ jobs:
         extra-pycodestyle-options: --ignore=E501,E203,W503 --exclude=rwi.py
         extra-flake8-options: --ignore=E501,E203,W503 --exclude=rwi.py
         extra-black-options: --exclude=rwi.py
-        extra-mypy-options: --exclude 'rwi\.py$'
+        extra-mypy-options: --exclude 'pyvistaqt/rwi.py'
         extra-isort-options: --skip rwi.py
