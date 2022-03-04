@@ -24,7 +24,7 @@ jobs:
         use-mypy: true
         use-isort: true
         extra-pylint-options: --disable=F0401 --ignore=rwi.py
-        extra-pycodestyle-options: --ignore=E501,E203,W503 --match='(?!(test_|rwi)).*\.py'
+        extra-pycodestyle-options: --ignore=E501,E203,W503 --exclude=rwi.py
         extra-flake8-options: --ignore=E501,E203,W503 --exclude=rwi.py
         extra-black-options: --exclude=rwi.py
         extra-mypy-options: --exclude=rwi.py
