@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Python Code Quality and Lint
-      uses: ricardochaves/python-lint@v1.3.0
+      uses: ricardochaves/python-lint@v1.4.0
       with:
         python-root-list: pyvistaqt
         use-pylint: true
@@ -27,5 +27,5 @@ jobs:
         extra-pycodestyle-options: --ignore=E501,E203,W503 --exclude=rwi.py
         extra-flake8-options: --ignore=E501,E203,W503 --exclude=rwi.py
         extra-black-options: --exclude=rwi.py
-        extra-mypy-options: --exclude 'rwi.py'
+        extra-mypy-options: --exclude '/rwi\.py$'
         extra-isort-options: --skip rwi.py
