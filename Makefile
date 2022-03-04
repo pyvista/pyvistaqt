@@ -14,7 +14,7 @@ EXTRA_BLACK_OPTIONS ?= --exclude rwi.py
 EXTRA_ISORT_OPTIONS ?= --skip=rwi.py
 EXTRA_PYLINT_OPTIONS ?= --ignore=rwi.py
 EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
-EXTRA_MYPY_OPTIONS ?= --exclude pyvistaqt/rwi.py
+EXTRA_MYPY_OPTIONS ?= --exclude rwi.py
 EXTRA_FLAKE8_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
 EXTRA_PYDOCSTYLE_OPTIONS = --match='(?!(test_|rwi)).*\.py'
 
