@@ -102,8 +102,8 @@ except ImportError:  # workaround for older PyVista
     class _GlobalTheme:
         """Wrap global_theme too rcParams."""
 
-        def __setattr__(self, k: str, v: Any) -> None:  # noqa: D105
-            rcParams[k] = v
+        def __setattr__(self, k: str, val: Any) -> None:  # noqa: D105
+            rcParams[k] = val
 
         def __getattr__(self, k: str) -> None:  # noqa: D105
             return rcParams[k] if k != "__wrapped__" else None
@@ -419,7 +419,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     # only call accept on files
                     event.accept()
         except IOError as exception:  # pragma: no cover
-            warnings.warn("Exception when dropping files: %s" % str(exception))
+            warnings.warn(f"Exception when dropping files: {str(exception)}")
 
     # pylint: disable=invalid-name,useless-return
     def dropEvent(self, event: QtCore.QEvent) -> None:
@@ -817,7 +817,7 @@ class BackgroundPlotter(QtInteractor):
                 self.camera_position = camera_position
 
             self.saved_cameras_tool_bar.addAction(
-                "Cam %2d" % ncam, load_camera_position
+                f"Cam {ncam}", load_camera_position
             )
             if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)

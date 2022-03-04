@@ -28,7 +28,7 @@ isort:
 
 pylint:
 	@echo "Running pylint"
-	@pylint $(PYLINT_DIRS)
+	@pylint $(PYLINT_DIRS) --rcfile=.pylintrc
 
 pycodestyle:
 	@echo "Running pycodestyle"
