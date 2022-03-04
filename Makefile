@@ -25,7 +25,7 @@ black:
 
 isort:
 	@echo "Running isort"
-	@isort $(ISORT_DIRS)
+	@isort --check $(ISORT_DIRS)
 
 pylint:
 	@echo "Running pylint"
