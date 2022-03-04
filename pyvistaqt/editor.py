@@ -59,7 +59,7 @@ class Editor(QDialog):
         for idx, renderer in enumerate(self.renderers):
             actors = renderer._actors  # pylint: disable=protected-access
             widget_idx = self.stacked_widget.addWidget(_get_renderer_widget(renderer))
-            top_item = QTreeWidgetItem(self.tree_widget, ["Renderer {}".format(idx)])
+            top_item = QTreeWidgetItem(self.tree_widget, [f"Renderer {idx}"])
             top_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
             self.tree_widget.addTopLevelItem(top_item)
             for name, actor in actors.items():
