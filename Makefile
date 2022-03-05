@@ -4,7 +4,7 @@ BLACK_DIRS ?= ./pyvistaqt/
 ISORT_DIRS ?= ./pyvistaqt/*.py
 PYCODESTYLE_DIRS ?= ./pyvistaqt/
 PYLINT_DIRS ?= ./pyvistaqt/
-MYPY_DIRS ?= ./pyvistaqt/
+MYPY_DIRS= ?= "mypy_checklist.txt"
 FLAKE8_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
 CODESPELL_SKIP ?= "*.json,*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
@@ -36,7 +36,7 @@ pycodestyle:
 
 mypy:
 	@echo "Running mypy"
-	@mypy $(MYPY_DIRS)
+	@mypy @$(MYPY_DIRS)
 
 flake8:
 	@echo "Running flake8"
