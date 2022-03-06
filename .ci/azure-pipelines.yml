@@ -78,8 +78,6 @@ stages:
           python.version: '3.7'
         Python38:
           python.version: '3.8'
-        PyQt5:
-          qt.binding: 'PyQt5'
 
     steps:
     - task: UsePythonVersion@0
@@ -100,7 +98,7 @@ stages:
     - script: |
         sudo apt-get install python3-tk
         pip install -r requirements_test.txt
-        pip install '$(qt.binding)==5.11.3'
+        pip install PyQt5==5.11.3
         python -c "import pyvista; print(pyvista.Report())"
         which python
         pip list
