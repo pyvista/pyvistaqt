@@ -167,7 +167,7 @@ jobs:
       - shell: bash -el {0}
         run: pip install ${{ matrix.qt }}
         name: 'Install Qt binding'
-      - shell: bash -el {0
+      - shell: bash -el {0}
         run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
@@ -177,4 +177,4 @@ jobs:
         name: 'Run Tests'
       - uses: codecov/codecov-action@v2
         if: success()
-        name: 'Upload coverage to CodeCov'}
+        name: 'Upload coverage to CodeCov'
