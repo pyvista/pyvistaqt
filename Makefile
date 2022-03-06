@@ -14,6 +14,7 @@ EXTRA_BLACK_OPTIONS ?= --exclude rwi.py
 EXTRA_ISORT_OPTIONS ?= --skip=rwi.py
 EXTRA_PYLINT_OPTIONS ?= --ignore=rwi.py
 EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
+EXTRA_MYPY_OPTIONS ?= --follow-imports=skip
 EXTRA_FLAKE8_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
 EXTRA_PYDOCSTYLE_OPTIONS = --match='(?!(test_|rwi)).*\.py'
 
@@ -41,7 +42,7 @@ pycodestyle:
 
 mypy:
 	@echo "Running mypy"
-	@mypy --follow-imports=skip --config-file mypy.ini @$(MYPY_DIRS)
+	@mypy --config-file mypy.ini @$(MYPY_DIRS) $(EXTRA_MYPY_OPTIONS)
 
 flake8:
 	@echo "Running flake8"
