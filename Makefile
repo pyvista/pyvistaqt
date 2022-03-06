@@ -4,7 +4,7 @@ BLACK_DIRS ?= ./pyvistaqt/
 ISORT_DIRS ?= ./pyvistaqt/
 PYCODESTYLE_DIRS ?= ./pyvistaqt/
 PYLINT_DIRS ?= ./pyvistaqt/
-MYPY_DIRS ?= ./pyvistaqt/
+MYPY_DIRS ?= "mypy_checklist.txt"
 FLAKE8_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
 CODESPELL_SKIP ?= "*.json,*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
@@ -14,7 +14,6 @@ EXTRA_BLACK_OPTIONS ?= --exclude rwi.py
 EXTRA_ISORT_OPTIONS ?= --skip=rwi.py
 EXTRA_PYLINT_OPTIONS ?= --ignore=rwi.py
 EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
-EXTRA_MYPY_OPTIONS ?= --exclude rwi.py
 EXTRA_FLAKE8_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
 EXTRA_PYDOCSTYLE_OPTIONS = --match='(?!(test_|rwi)).*\.py'
 
@@ -42,7 +41,7 @@ pycodestyle:
 
 mypy:
 	@echo "Running mypy"
-	@mypy $(MYPY_DIRS) $(EXTRA_MYPY_OPTIONS)
+	@mypy @$(MYPY_DIRS)
 
 flake8:
 	@echo "Running flake8"
