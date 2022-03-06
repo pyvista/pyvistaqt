@@ -41,7 +41,7 @@ pycodestyle:
 
 mypy:
 	@echo "Running mypy"
-	@mypy @$(MYPY_DIRS)
+	@mypy --follow-imports=skip --config-file mypy.ini @$(MYPY_DIRS)
 
 flake8:
 	@echo "Running flake8"
