@@ -611,7 +611,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self.update()
 
 
-def QVTKRenderWidgetConeExample():
+def QVTKRenderWidgetConeExample(block=False):
     """A simple example that uses the QVTKRenderWindowInteractor class."""
 
     from vtkmodules.vtkFiltersSources import vtkConeSource
@@ -657,10 +657,11 @@ def QVTKRenderWidgetConeExample():
     # Source: https://doc.qt.io/qtforpython/porting_from2.html
     # 'exec_' is deprecated and will be removed in the future.
     # Use 'exec' instead.
-    # try:
-    #     app.exec()
-    # except AttributeError:
-    #     app.exec_()
+    if block:
+        try:
+            app.exec()
+        except AttributeError:
+            app.exec_()
 
 
 _keysyms_for_ascii = (
