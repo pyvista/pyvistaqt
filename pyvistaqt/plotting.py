@@ -46,7 +46,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union, Type
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
 import numpy as np  # type: ignore
 import pyvista
