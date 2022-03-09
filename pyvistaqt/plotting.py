@@ -46,8 +46,7 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import (Any, Callable, Dict, Generator, List, Optional, Tuple,
-                    Union, Type)
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union, Type
 
 import numpy as np  # type: ignore
 import pyvista
@@ -587,7 +586,9 @@ class BackgroundPlotter(QtInteractor):
         self.off_screen = _setup_off_screen(off_screen)
         if app_window_class is None:
             app_window_class = MainWindow
-        self.app_window = app_window_class(title=kwargs.get("title", global_theme.title))
+        self.app_window = app_window_class(
+            title=kwargs.get("title", global_theme.title)
+        )
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
