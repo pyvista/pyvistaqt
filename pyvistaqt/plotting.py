@@ -46,7 +46,8 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import (Any, Callable, Dict, Generator, List, Optional, Tuple,
+                    Union, Type)
 
 import numpy as np  # type: ignore
 import pyvista
@@ -507,6 +508,9 @@ class BackgroundPlotter(QtInteractor):
         being automatically ``Modified``.  If set to ``True``, update
         rate will be 1 second.
 
+    app_window_class : None, class, optional
+        A subclass of MainWindow to use when creating the app window.
+
     Examples
     --------
     >>> import pyvista as pv
@@ -534,6 +538,7 @@ class BackgroundPlotter(QtInteractor):
         menu_bar: bool = True,
         editor: bool = True,
         update_app_icon: Optional[bool] = None,
+        app_window_class: Optional[Type[MainWindow]] = None,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-branches
@@ -580,8 +585,9 @@ class BackgroundPlotter(QtInteractor):
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
-
-        self.app_window = MainWindow(title=kwargs.get("title", global_theme.title))
+        if app_window_class is None:
+            app_window_class = MainWindow
+        self.app_window = app_window_class(title=kwargs.get("title", global_theme.title))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
