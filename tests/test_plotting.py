@@ -74,7 +74,6 @@ def test_check_type():
 
 
 def test_mouse_interactions(qtbot):
-    from qtpy import QtCore
     plotter = BackgroundPlotter()
     window = plotter.app_window
     interactor = plotter.interactor
