@@ -7,6 +7,7 @@ import pytest
 import pyvista
 import vtk
 from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
+from qtpy import QtCore
 from qtpy.QtCore import Qt, QPoint, QMimeData, QUrl
 from qtpy.QtGui import QDragEnterEvent
 from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
@@ -70,6 +71,18 @@ def test_check_type():
         _check_type(0, "foo", [str])
     _check_type(0, "foo", [int, float])
     _check_type("foo", "foo", [str])
+
+
+def test_mouse_interactions(qtbot):
+    from qtpy import QtCore
+    plotter = BackgroundPlotter()
+    window = plotter.app_window
+    interactor = plotter.interactor
+    qtbot.addWidget(window)
+    point = QPoint(0, 0)
+    qtbot.mouseMove(interactor, point)
+    qtbot.mouseClick(interactor, QtCore.Qt.LeftButton)
+    plotter.close()
 
 
 @pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
