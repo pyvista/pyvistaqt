@@ -210,6 +210,14 @@ SizePolicy = QSizePolicy.Policy if PyQtImpl == "PyQt6" else QSizePolicy
 ConnectionType = Qt.ConnectionType if PyQtImpl == "PyQt6" else Qt
 Key = Qt.Key if PyQtImpl == "PyQt6" else Qt
 
+
+def _get_event_pos(ev):
+    try:  # Qt6+
+        return ev.position().x(), ev.position().y()
+    except AttributeError:  # Qt5
+        return ev.x(), ev.y()
+
+
 class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     """ A QVTKRenderWindowInteractor for Python and Qt.  Uses a
@@ -537,11 +545,12 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self._Iren.LeaveEvent()
 
     def mousePressEvent(self, ev):
+        pos_x, pos_y = _get_event_pos(ev)
         ctrl, shift = self._GetCtrlShift(ev)
         repeat = 0
         if ev.type() == QEvent.MouseButtonDblClick:
             repeat = 1
-        self._setEventInformation(ev.x(), ev.y(),
+        self._setEventInformation(pos_x, pos_y,
                                   ctrl, shift, chr(0), repeat, None)
 
         self._ActiveButton = ev.button()
@@ -554,8 +563,9 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             self._Iren.MiddleButtonPressEvent()
 
     def mouseReleaseEvent(self, ev):
+        pos_x, pos_y = _get_event_pos(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(ev.x(), ev.y(),
+        self._setEventInformation(pos_x, pos_y,
                                   ctrl, shift, chr(0), 0, None)
 
         if self._ActiveButton == Qt.LeftButton:
@@ -566,13 +576,14 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             self._Iren.MiddleButtonReleaseEvent()
 
     def mouseMoveEvent(self, ev):
+        pos_x, pos_y = _get_event_pos(ev)
         self.__saveModifiers = ev.modifiers()
         self.__saveButtons = ev.buttons()
-        self.__saveX = ev.x()
-        self.__saveY = ev.y()
+        self.__saveX = pos_x
+        self.__saveY = pos_y
 
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(ev.x(), ev.y(),
+        self._setEventInformation(pos_x, pos_y,
                                   ctrl, shift, chr(0), 0, None)
         self._Iren.MouseMoveEvent()
 
