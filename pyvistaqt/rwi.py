@@ -212,9 +212,9 @@ Key = Qt.Key if PyQtImpl == "PyQt6" else Qt
 
 
 def _get_event_pos(ev):
-    if PyQtImpl in ["PySide6", "PyQt6"]:
+    try:  # Qt6+
         return ev.position().x(), ev.position().y()
-    else:
+    except AttributeError:  # Qt5
         return ev.x(), ev.y()
 
 
