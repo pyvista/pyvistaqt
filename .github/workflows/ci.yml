@@ -11,12 +11,12 @@ on:
 
 jobs:
   pip-pre:
-    name: ubuntu-latest / Python3.9 / ${{ matrix.pyside }} / pyvista-main / qtpy-master
+    name: ubuntu-latest / Python3.9 / ${{ matrix.qt }} / pyvista-main / qtpy-master
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        pyside: ['PySide2', 'PySide6']
+        qt: ['PySide2', 'PySide6', 'PyQt5', 'PyQt6']
     defaults:
       run:
         shell: bash
@@ -38,12 +38,14 @@ jobs:
           pip install --progress-bar off https://github.com/spyder-ide/qtpy/zipball/master
           pip install --upgrade -r requirements_test.txt
         name: 'Install dependencies with pip'
-      - run: pip install ${{ matrix.pyside }}
+      - run: pip install ${{ matrix.qt }}
         name: 'Install Qt binding'
       - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: 'Install pyvistaqt'
+      - run: python pyvistaqt/rwi.py
+        name: 'Run QVTKRenderWidgetConeExample'
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
       - uses: codecov/codecov-action@v2

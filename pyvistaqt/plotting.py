@@ -67,14 +67,6 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-try:
-    from vtkmodules.qt.QVTKRenderWindowInteractor import (  # type: ignore
-        QVTKRenderWindowInteractor,
-    )
-except ImportError:  # pragma: no cover
-    from vtk.qt.QVTKRenderWindowInteractor import (  # type: ignore
-        QVTKRenderWindowInteractor,
-    )
 try:  # backwards compatibility with pyvista<0.32.0
     # pylint: disable=ungrouped-imports
     from pyvista._vtk import vtkGenericRenderWindowInteractor
@@ -85,6 +77,7 @@ except ImportError:  # pragma: no cover
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
+from .rwi import QVTKRenderWindowInteractor
 from .utils import (
     _check_type,
     _create_menu_bar,
