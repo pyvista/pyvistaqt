@@ -80,13 +80,19 @@ def test_ipython(qapp):
     IPython.start_ipython(argv=["-c", cmd])
 
 
+class SuperWindow(MainWindow):
+    pass
+
+
 def test_depth_peeling(qtbot):
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
     assert not plotter.renderer.GetUseDepthPeeling()
     plotter.close()
     global_theme.depth_peeling["enabled"] = True
-    plotter = BackgroundPlotter()
+    plotter = BackgroundPlotter(app_window_class=SuperWindow)
+    assert isinstance(plotter.app_window, SuperWindow)
+    assert isinstance(plotter.app_window, MainWindow)
     qtbot.addWidget(plotter.app_window)
     assert plotter.renderer.GetUseDepthPeeling()
     plotter.close()
