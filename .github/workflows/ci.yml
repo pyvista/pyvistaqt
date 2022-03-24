@@ -122,7 +122,7 @@ jobs:
         name: 'Setup xvfb'
         if: matrix.os == 'ubuntu-latest'
       - run: |
-          git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+          git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
           ./gl-ci-helpers/appveyor/install_opengl.ps1
         shell: pwsh
         name: 'Setup opengl'
