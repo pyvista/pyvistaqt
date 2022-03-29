@@ -51,7 +51,9 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, 
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
+from pyvista import global_theme
 from pyvista.plotting.plotting import BasePlotter
+from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
@@ -66,9 +68,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
 from vtk import vtkGenericRenderWindowInteractor
-from pyvista import global_theme
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
@@ -82,7 +82,6 @@ from .utils import (
     _setup_off_screen,
 )
 from .window import MainWindow
-
 
 if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
@@ -275,11 +274,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen:
             self.iren: Any = None
         else:
-            # pylint: disable=import-outside-toplevel
-            from pyvista.plotting.render_window_interactor import (
-                RenderWindowInteractor,
-            )
-
             self.iren = RenderWindowInteractor(
                 self, interactor=self.ren_win.GetInteractor()
             )

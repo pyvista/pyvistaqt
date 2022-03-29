@@ -16,7 +16,6 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
 from vtkmodules.vtkRenderingCore import vtkActor
 
 from .window import MainWindow
