@@ -59,7 +59,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        pyvista: ['0.31', '0.32', '0.33']
+        pyvista: ['0.32', '0.33']
     defaults:
       run:
         shell: bash
