@@ -39,8 +39,6 @@ probably entirely separate from the Python ``super()`` process.
 We fix this by internally by temporarily monkey-patching
 ``BasePlotter.__init__`` with a no-op ``__init__``.
 """
-
-
 import contextlib
 import logging
 import os
