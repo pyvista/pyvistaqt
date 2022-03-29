@@ -68,7 +68,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from vtk import vtkGenericRenderWindowInteractor
+from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
