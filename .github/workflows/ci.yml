@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qt: ['PySide2', 'PySide6', 'PyQt5', 'PyQt6']
+        qt: ['None', 'PySide2', 'PySide6', 'PyQt5', 'PyQt6']
     defaults:
       run:
         shell: bash
@@ -40,6 +40,7 @@ jobs:
         name: 'Install dependencies with pip'
       - run: pip install ${{ matrix.qt }}
         name: 'Install Qt binding'
+        if: matrix.qt != 'None'
       - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
@@ -48,6 +49,10 @@ jobs:
         name: 'Run QVTKRenderWidgetConeExample'
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
+        if: matrix.qt != 'None'
+      - run: python -c "import pyvistaqt; print(pyvistaqt.__version__)"
+        name: 'Import without Qt'
+        if: matrix.qt == 'None'
       - uses: codecov/codecov-action@v2
         if: success()
         name: 'Upload coverage to CodeCov'
