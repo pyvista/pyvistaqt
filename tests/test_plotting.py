@@ -9,7 +9,7 @@ import vtk
 from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
 from qtpy import QtCore
 from qtpy.QtCore import Qt, QPoint, QMimeData, QUrl
-from qtpy.QtGui import QDragEnterEvent
+from qtpy.QtGui import QDragEnterEvent, QDropEvent
 from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
                             QGestureEvent, QPinchGesture)
 from pyvistaqt.plotting import global_theme
@@ -624,6 +624,27 @@ def test_background_plotting_menu_bar(qtbot, plotting):
     plotter.close()
     assert not main_menu.isVisible()
     assert plotter._last_update_time == -np.inf
+
+
+def test_drop_event(tmpdir):
+    output_dir = str(tmpdir.mkdir("tmpdir"))
+    filename = str(os.path.join(output_dir, "tmp.vtk"))
+    mesh = pyvista.Cone()
+    mesh.save(filename)
+    assert os.path.isfile(filename)
+    plotter = BackgroundPlotter()
+    point = QPoint(0, 0)
+    data = QMimeData()
+    data.setUrls([QUrl(filename)])
+    event = QDropEvent(
+        point,
+        Qt.DropAction.IgnoreAction,
+        data,
+        Qt.MouseButton.NoButton,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    plotter.dropEvent(event)
+    plotter.close()
 
 
 def test_drag_event(tmpdir):

@@ -378,26 +378,25 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         exist.  User can drop anything in this window and we only want
         to allow files.
         """
-        # pragma: no cover
         try:
             for url in event.mimeData().urls():
                 if os.path.isfile(url.path()):
                     # only call accept on files
                     event.accept()
         except IOError as exception:  # pragma: no cover
-            warnings.warn(f"Exception when dropping files: {str(exception)}")
+            warnings.warn(f"Exception when dragging files: {str(exception)}")
 
     # pylint: disable=invalid-name,useless-return
     def dropEvent(self, event: QtCore.QEvent) -> None:
         """Event is called after dragEnterEvent."""
-        for url in event.mimeData().urls():  # pragma: no cover
-            self.url = url
-            filename = self.url.path()
-            if os.path.isfile(filename):
-                try:
+        try:
+            for url in event.mimeData().urls():
+                self.url = url
+                filename = self.url.path()
+                if os.path.isfile(filename):
                     self.add_mesh(pyvista.read(filename))
-                except IOError as exception:
-                    print(str(exception))
+        except IOError as exception:  # pragma: no cover
+            warnings.warn(f"Exception when dropping files: {str(exception)}")
 
     def close(self) -> None:
         """Quit application."""
