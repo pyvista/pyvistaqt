@@ -9,3 +9,11 @@ pyvista>=0.25.0
 qtpy>=1.9.0
 scooby>=0.5.1
 vtk
+black
+isort
+pylint
+pycodestyle
+mypy
+flake8
+codespell
+pydocstyle
