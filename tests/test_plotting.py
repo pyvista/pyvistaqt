@@ -17,9 +17,10 @@ from pyvista.plotting import Renderer
 
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
-from pyvistaqt.plotting import (Counter, QTimer, QVTKRenderWindowInteractor,
-                                _create_menu_bar, _check_type)
+from pyvistaqt.plotting import Counter, QTimer, QVTKRenderWindowInteractor
 from pyvistaqt.editor import Editor
+from pyvistaqt.dialog import FileDialog
+from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
 class TstWindow(MainWindow):
@@ -64,6 +65,45 @@ class TstWindow(MainWindow):
         )
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
+
+
+def test_create_menu_bar(qtbot):
+    menu_bar = _create_menu_bar(parent=None)
+    qtbot.addWidget(menu_bar)
+
+
+def test_setup_application(qapp):
+    _setup_application(qapp)
+
+
+def test_file_dialog(tmpdir, qtbot):
+    dialog = FileDialog(
+        filefilter=None,
+        directory=False,
+        save_mode=False,
+        show=False,
+    )
+    qtbot.addWidget(dialog)
+
+    dialog.emit_accepted()  # test no result
+
+    p = tmpdir.mkdir("tmp").join("foo.png")
+    p.write('foo')
+    assert os.path.isfile(p)
+
+    filename = str(p)
+    dialog.selectFile(filename)
+
+    # show the dialog
+    assert not dialog.isVisible()
+    with qtbot.wait_exposed(dialog):
+        dialog.show()
+    assert dialog.isVisible()
+
+    # synchronise signal and callback
+    with qtbot.wait_signals([dialog.dlg_accepted], timeout=1000):
+        dialog.accept()
+    assert not dialog.isVisible()  # dialog is closed after accept()
 
 
 def test_check_type():
