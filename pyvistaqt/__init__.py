@@ -5,21 +5,21 @@ from ._version import __version__
 try:
     from qtpy import QtCore  # noqa
 except ModuleNotFoundError:
-    class BackgroundPlotter:
+    class _QtBindingError:
         def __init__(self, *args, **kwargs):
-            raise RuntimeError('No Qt binding found')
+            raise RuntimeError('No Qt binding is found')
 
-    class MainWindow:
-        def __init__(self, *args, **kwargs):
-            raise RuntimeError('No Qt binding found')
+    class BackgroundPlotter(_QtBindingError):
+        pass
 
-    class MultiPlotter:
-        def __init__(self, *args, **kwargs):
-            raise RuntimeError('No Qt binding found')
+    class MainWindow(_QtBindingError):
+        pass
 
-    class QtInteractor:
-        def __init__(self, *args, **kwargs):
-            raise RuntimeError('No Qt binding found')
+    class MultiPlotter(_QtBindingError):
+        pass
+
+    class QtInteractor(_QtBindingError):
+        pass
 else:
     from .plotting import BackgroundPlotter, MainWindow, MultiPlotter, QtInteractor
 
