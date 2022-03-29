@@ -5,7 +5,7 @@ pytest
 pytest-cov
 pytest-memprof
 pytest-qt
-pyvista>=0.25.0
+pyvista>=0.32.0
 qtpy>=1.9.0
 scooby>=0.5.1
 vtk
