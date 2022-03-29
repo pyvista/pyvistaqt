@@ -5,26 +5,26 @@ try:
     from qtpy import QtCore  # noqa
 except ModuleNotFoundError:
 
-    # pylint: disable=too-few-public-methods,missing-class-docstring
+    # pylint: disable=too-few-public-methods
     class _QtBindingError:
         def __init__(self, *args, **kwargs):
             raise RuntimeError("No Qt binding is found")
 
-    # pylint: disable=too-few-public-methods,missing-class-docstring
+    # pylint: disable=too-few-public-methods
     class BackgroundPlotter(_QtBindingError):
-        pass
+        """Handle Qt binding error for BackgroundPlotter."""
 
-    # pylint: disable=too-few-public-methods,missing-class-docstring
+    # pylint: disable=too-few-public-methods
     class MainWindow(_QtBindingError):
-        pass
+        """Handle Qt binding error for MainWindow."""
 
-    # pylint: disable=too-few-public-methods,missing-class-docstring
+    # pylint: disable=too-few-public-methods
     class MultiPlotter(_QtBindingError):
-        pass
+        """Handle Qt binding error for MultiPlotter."""
 
-    # pylint: disable=too-few-public-methods,missing-class-docstring
+    # pylint: disable=too-few-public-methods
     class QtInteractor(_QtBindingError):
-        pass
+        """Handle Qt binding error for QtInteractor."""
 
 else:
     from .plotting import BackgroundPlotter, MainWindow, MultiPlotter, QtInteractor
