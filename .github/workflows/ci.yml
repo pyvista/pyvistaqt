@@ -52,7 +52,7 @@ jobs:
         name: 'Run Tests'
         if: matrix.qt != 'None'
       - run: |
-          pip uninstall pytest-qt
+          pip uninstall -y pytest-qt
           pytest -v tests/test_qt.py
         name: 'Import without Qt'
         if: matrix.qt == 'None'
