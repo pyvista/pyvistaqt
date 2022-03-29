@@ -97,7 +97,7 @@ volunteer basis and thus we need to foster a community that can
 support user questions and develop new features to make this software
 a useful tool for all users while encouraging every member of the
 community to share their ideas. To learn more about contributing to
-PyVista, please see the the ``pyvista`` `Contributing Guide`_ and
+PyVista, please see the ``pyvista`` `Contributing Guide`_ and
 `Code of Conduct`_.
 
 .. _Contributing Guide: https://github.com/pyvista/pyvista/blob/main/CONTRIBUTING.md
