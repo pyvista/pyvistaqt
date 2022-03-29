@@ -51,7 +51,7 @@ jobs:
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
         if: matrix.qt != 'None'
-      - run: python -c "import pyvistaqt; print(pyvistaqt.__version__)"
+      - run: pytest -v tests/test_qt.py
         name: 'Import without Qt'
         if: matrix.qt == 'None'
       - uses: codecov/codecov-action@v2
