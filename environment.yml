@@ -14,5 +14,5 @@ dependencies:
   - pip
   - pip:
       - vtk
-      - pyvista>=0.25.0
+      - pyvista>=0.32.0
       - pytest-memprof

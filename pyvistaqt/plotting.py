@@ -51,7 +51,9 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, 
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
+from pyvista import global_theme
 from pyvista.plotting.plotting import BasePlotter
+from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
@@ -66,13 +68,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-try:  # backwards compatibility with pyvista<0.32.0
-    # pylint: disable=ungrouped-imports
-    from pyvista._vtk import vtkGenericRenderWindowInteractor
-except ImportError:  # pragma: no cover
-    # pylint: disable=ungrouped-imports
-    from vtk import vtkGenericRenderWindowInteractor
+from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
@@ -86,22 +82,6 @@ from .utils import (
     _setup_off_screen,
 )
 from .window import MainWindow
-
-try:
-    from pyvista import global_theme  # pylint: disable=ungrouped-imports
-except ImportError:  # workaround for older PyVista
-    from pyvista import rcParams  # pylint: disable=ungrouped-imports
-
-    class _GlobalTheme:
-        """Wrap global_theme too rcParams."""
-
-        def __setattr__(self, k: str, val: Any) -> None:  # noqa: D105
-            rcParams[k] = val
-
-        def __getattr__(self, k: str) -> None:  # noqa: D105
-            return rcParams[k] if k != "__wrapped__" else None
-
-    global_theme = _GlobalTheme()  # pylint: disable=invalid-name
 
 if scooby.in_ipython():  # pragma: no cover
     # pylint: disable=unused-import
@@ -294,33 +274,20 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen:
             self.iren: Any = None
         else:
-            try:
-                # pylint: disable=import-outside-toplevel
-                from pyvista.plotting.render_window_interactor import (
-                    RenderWindowInteractor,
-                )
-
-                self.iren = RenderWindowInteractor(
-                    self, interactor=self.ren_win.GetInteractor()
-                )
-                self.iren.interactor.RemoveObservers(
-                    "MouseMoveEvent"
-                )  # slows window update?
-                self.iren.initialize()
-            except ImportError:
-                self.iren = self.ren_win.GetInteractor()
-                self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
-                self.iren.Initialize()
+            self.iren = RenderWindowInteractor(
+                self, interactor=self.ren_win.GetInteractor()
+            )
+            self.iren.interactor.RemoveObservers(
+                "MouseMoveEvent"
+            )  # slows window update?
+            self.iren.initialize()
             self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
-        try:
-            self._observers: Dict[
-                None, None
-            ] = {}  # Map of events to observers of self.iren
-            self.iren.add_observer("KeyPressEvent", self.key_press_event)
-        except AttributeError:
-            self._add_observer("KeyPressEvent", self.key_press_event)
+        self._observers: Dict[
+            None, None
+        ] = {}  # Map of events to observers of self.iren
+        self.iren.add_observer("KeyPressEvent", self.key_press_event)
         self.reset_key_events()
 
     def gesture_event(self, event: QGestureEvent) -> bool:
@@ -405,26 +372,25 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         exist.  User can drop anything in this window and we only want
         to allow files.
         """
-        # pragma: no cover
         try:
             for url in event.mimeData().urls():
                 if os.path.isfile(url.path()):
                     # only call accept on files
                     event.accept()
         except IOError as exception:  # pragma: no cover
-            warnings.warn(f"Exception when dropping files: {str(exception)}")
+            warnings.warn(f"Exception when dragging files: {str(exception)}")
 
     # pylint: disable=invalid-name,useless-return
     def dropEvent(self, event: QtCore.QEvent) -> None:
         """Event is called after dragEnterEvent."""
-        for url in event.mimeData().urls():  # pragma: no cover
-            self.url = url
-            filename = self.url.path()
-            if os.path.isfile(filename):
-                try:
+        try:
+            for url in event.mimeData().urls():
+                self.url = url
+                filename = self.url.path()
+                if os.path.isfile(filename):
                     self.add_mesh(pyvista.read(filename))
-                except IOError as exception:
-                    print(str(exception))
+        except IOError as exception:  # pragma: no cover
+            warnings.warn(f"Exception when dropping files: {str(exception)}")
 
     def close(self) -> None:
         """Quit application."""

@@ -42,7 +42,7 @@ setup(
     keywords='vtk numpy plotting mesh qt',
     python_requires='>=3.6.*',
     install_requires=[
-        'pyvista>=0.25.0',
+        'pyvista>=0.32.0',
         'QtPy>=1.9.0',
     ],
     package_data={'pyvistaqt': [
