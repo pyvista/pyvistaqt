@@ -123,7 +123,7 @@ html_context = {
     # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
     'github_user': 'pyvista',
     'github_repo': 'pyvistaqt',
-    'github_version': 'main/docs',
+    'github_version': 'main/docs/',
     'menu_links_name': 'Getting Connected',
     'menu_links': [
         ('<i class="fa fa-slack fa-fw"></i> Slack Community', 'http://slack.pyvista.org'),
