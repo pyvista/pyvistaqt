@@ -8,7 +8,7 @@ import pyvista
 import vtk
 from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
 from qtpy import QtCore
-from qtpy.QtCore import Qt, QPoint, QMimeData, QUrl
+from qtpy.QtCore import Qt, QPoint, QPointF, QMimeData, QUrl
 from qtpy.QtGui import QDragEnterEvent, QDropEvent
 from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
                             QGestureEvent, QPinchGesture)
@@ -633,7 +633,7 @@ def test_drop_event(tmpdir):
     mesh.save(filename)
     assert os.path.isfile(filename)
     plotter = BackgroundPlotter()
-    point = QPoint(0, 0)
+    point = QPointF(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
     event = QDropEvent(
