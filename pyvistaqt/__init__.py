@@ -3,7 +3,7 @@ from ._version import __version__
 
 try:
     from qtpy import QtCore  # noqa
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
 
     # pylint: disable=too-few-public-methods
     class _QtBindingError:
