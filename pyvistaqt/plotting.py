@@ -40,10 +40,6 @@ We fix this by internally by temporarily monkey-patching
 ``BasePlotter.__init__`` with a no-op ``__init__``.
 """
 
-from . import QT_BINDING_ERROR
-
-if QT_BINDING_ERROR:
-    raise RuntimeError("Qt issue")
 
 import contextlib
 import logging
