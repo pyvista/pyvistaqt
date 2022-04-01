@@ -28,5 +28,8 @@ def no_qt(monkeypatch):
     """Require plotting."""
     if _check_qt_installed():
         monkeypatch.setenv('QT_API', 'bad_name')
-        importlib.reload(qtpy)
+        try:
+            importlib.reload(qtpy)
+        except Exception:
+            pass
     yield
