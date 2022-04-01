@@ -7,7 +7,7 @@ NO_PLOTTING = not system_supports_plotting()
 def _check_qt_installed():
     try:
         from qtpy import QtCore  # noqa
-    except ModuleNotFoundError:
+    except Exception:
         return False
     else:
         return True
@@ -22,8 +22,8 @@ def plotting():
 
 
 @pytest.fixture()
-def no_qt():
+def no_qt(monkeypatch):
     """Require plotting."""
     if _check_qt_installed():
-        pytest.skip(reason="Requires that Qt is not installed")
+        monkeypatch.setenv('QT_API', 'bad_name')
     yield

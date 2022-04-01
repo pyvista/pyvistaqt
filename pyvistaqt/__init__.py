@@ -3,7 +3,7 @@ from ._version import __version__
 
 try:
     from qtpy import QtCore  # noqa
-except ModuleNotFoundError as exc:  # pragma: no cover
+except Exception as exc:  # pragma: no cover
     _exc_msg = exc
 
     # pylint: disable=too-few-public-methods
