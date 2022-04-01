@@ -3,7 +3,7 @@ from ._version import __version__
 
 try:
     from qtpy import QtCore  # noqa
-except Exception as exc:  # pragma: no cover
+except Exception as exc:  # pragma: no cover # pylint: disable=broad-except
     _exc_msg = exc
 
     # pylint: disable=too-few-public-methods
