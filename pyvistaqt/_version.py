@@ -1,6 +1,6 @@
 """Version info for pyvistaqt."""
 # major, minor, patch
-VERSION_INFO = 0, 8, 0
+VERSION_INFO = 0, 9, 'dev0'
 
 # Nice string for the version
 __version__ = ".".join(map(str, VERSION_INFO))
