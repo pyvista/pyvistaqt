@@ -3,12 +3,12 @@ from ._version import __version__
 
 try:
     from qtpy import QtCore  # noqa
-except ModuleNotFoundError:  # pragma: no cover
+except ModuleNotFoundError as exc:  # pragma: no cover
 
     # pylint: disable=too-few-public-methods
     class _QtBindingError:
         def __init__(self, *args, **kwargs):
-            raise RuntimeError("No Qt binding is found")
+            raise RuntimeError(f"No Qt binding was found, got: {exc}")
 
     # pylint: disable=too-few-public-methods
     class BackgroundPlotter(_QtBindingError):
