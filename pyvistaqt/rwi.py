@@ -200,15 +200,27 @@ elif QVTKRWIBase == "QOpenGLWidget":
 else:
     raise ImportError("Unknown base class for QVTKRenderWindowInteractor " + QVTKRWIBase)
 
-CursorShape = Qt.CursorShape if PyQtImpl == "PyQt6" else Qt
-MouseButton = Qt.MouseButton if PyQtImpl == "PyQt6" else Qt
-WindowType = Qt.WindowType if PyQtImpl == "PyQt6" else Qt
-WidgetAttribute = Qt.WidgetAttribute if PyQtImpl == "PyQt6" else Qt
-KeyboardModifier = Qt.KeyboardModifier if PyQtImpl == "PyQt6" else Qt
-FocusPolicy = Qt.FocusPolicy if PyQtImpl == "PyQt6" else Qt
-SizePolicy = QSizePolicy.Policy if PyQtImpl == "PyQt6" else QSizePolicy
-ConnectionType = Qt.ConnectionType if PyQtImpl == "PyQt6" else Qt
-Key = Qt.Key if PyQtImpl == "PyQt6" else Qt
+if PyQtImpl == 'PyQt6':
+    CursorShape = Qt.CursorShape
+    MouseButton = Qt.MouseButton
+    WindowType = Qt.WindowType
+    WidgetAttribute = Qt.WidgetAttribute
+    KeyboardModifier = Qt.KeyboardModifier
+    FocusPolicy = Qt.FocusPolicy
+    ConnectionType = Qt.ConnectionType
+    Key = Qt.Key
+    SizePolicy = QSizePolicy.Policy
+    EventType = QEvent.Type
+else:
+    CursorShape = MouseButton = WindowType = WidgetAttribute = \
+        KeyboardModifier = FocusPolicy = ConnectionType = Key = Qt
+    SizePolicy = QSizePolicy
+    EventType = QEvent
+
+if PyQtImpl in ('PyQt4', 'PySide'):
+    MiddleButton = MouseButton.MidButton
+else:
+    MiddleButton = MouseButton.MiddleButton
 
 
 def _get_event_pos(ev):
@@ -497,14 +509,14 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         ctrl = shift = False
 
         if hasattr(ev, 'modifiers'):
-            if ev.modifiers() & Qt.ShiftModifier:
+            if ev.modifiers() & KeyboardModifier.ShiftModifier:
                 shift = True
-            if ev.modifiers() & Qt.ControlModifier:
+            if ev.modifiers() & KeyboardModifier.ControlModifier:
                 ctrl = True
         else:
-            if self.__saveModifiers & Qt.ShiftModifier:
+            if self.__saveModifiers & KeyboardModifier.ShiftModifier:
                 shift = True
-            if self.__saveModifiers & Qt.ControlModifier:
+            if self.__saveModifiers & KeyboardModifier.ControlModifier:
                 ctrl = True
 
         return ctrl, shift
@@ -548,18 +560,18 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         pos_x, pos_y = _get_event_pos(ev)
         ctrl, shift = self._GetCtrlShift(ev)
         repeat = 0
-        if ev.type() == QEvent.MouseButtonDblClick:
+        if ev.type() == EventType.MouseButtonDblClick:
             repeat = 1
         self._setEventInformation(pos_x, pos_y,
                                   ctrl, shift, chr(0), repeat, None)
 
         self._ActiveButton = ev.button()
 
-        if self._ActiveButton == Qt.LeftButton:
+        if self._ActiveButton == MouseButton.LeftButton:
             self._Iren.LeftButtonPressEvent()
-        elif self._ActiveButton == Qt.RightButton:
+        elif self._ActiveButton == MouseButton.RightButton:
             self._Iren.RightButtonPressEvent()
-        elif self._ActiveButton == Qt.MidButton:
+        elif self._ActiveButton == MiddleButton:
             self._Iren.MiddleButtonPressEvent()
 
     def mouseReleaseEvent(self, ev):
@@ -568,11 +580,11 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self._setEventInformation(pos_x, pos_y,
                                   ctrl, shift, chr(0), 0, None)
 
-        if self._ActiveButton == Qt.LeftButton:
+        if self._ActiveButton == MouseButton.LeftButton:
             self._Iren.LeftButtonReleaseEvent()
-        elif self._ActiveButton == Qt.RightButton:
+        elif self._ActiveButton == MouseButton.RightButton:
             self._Iren.RightButtonReleaseEvent()
-        elif self._ActiveButton == Qt.MidButton:
+        elif self._ActiveButton == MiddleButton:
             self._Iren.MiddleButtonReleaseEvent()
 
     def mouseMoveEvent(self, ev):
