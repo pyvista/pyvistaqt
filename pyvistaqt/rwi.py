@@ -51,6 +51,9 @@ Changes by Ruben de Bruin, Aug. 2019
 
 Changes by Chen Jintao, Aug. 2021
  Support for PySide6
+
+Changes by Eric Larson and Guillaume Favelier, Apr. 2022
+ Support for PyQt6
 """
 
 # Check whether a specific PyQt implementation was chosen
