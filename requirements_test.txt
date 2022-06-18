@@ -16,4 +16,3 @@ pytest-qt==4.0.2
 pyvista==0.34.1
 QtPy==2.1.0
 scooby==0.5.12
-vtk==9.0.1
