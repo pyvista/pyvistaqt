@@ -1,16 +1,16 @@
-imageio>=2.5.0
-imageio-ffmpeg
-colorcet
 cmocean
+colorcet
+imageio-ffmpeg
+imageio>=2.5.0
+lxml
 matplotlib
 meshio>=4.0.3, <5.0
-qtpy
 pytest-sphinx
+qtpy
 Sphinx
 sphinx-autobuild
+sphinx-copybutton
+sphinx-notfound-page>=0.3.0
 sphinx-rtd-theme
 sphinxcontrib-napoleon
 sphinxcontrib-websupport
-sphinx-notfound-page>=0.3.0
-sphinx-copybutton
-lxml
