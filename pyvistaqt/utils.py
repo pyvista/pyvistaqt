@@ -2,26 +2,24 @@
 from typing import Any, List, Optional, Type
 
 import pyvista
-import scooby  # type: ignore
 from qtpy.QtWidgets import QApplication, QMenuBar
+import scooby  # type: ignore
 
 
 def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:
     types = tuple(var_types)
     if not isinstance(var, types):
         raise TypeError(
-            f"Expected type for ``{var_name}`` is {str(types)}"
-            f" but {type(var)} was given."
+            f'Expected type for ``{var_name}`` is {str(types)}' f' but {type(var)} was given.'
         )
 
 
 def _create_menu_bar(parent: Any) -> QMenuBar:
     """Create a menu bar.
 
-    The menu bar is expected to behave consistently
-    for every operating system since `setNativeMenuBar(False)`
-    is called by default and therefore lifetime and ownership can
-    be tested.
+    The menu bar is expected to behave consistently for every operating
+    system since `setNativeMenuBar(False)` is called by default and
+    therefore lifetime and ownership can be tested.
     """
     menu_bar = QMenuBar(parent=parent)
     menu_bar.setNativeMenuBar(False)
@@ -37,7 +35,7 @@ def _setup_ipython(ipython: Any = None) -> Any:
         from IPython import get_ipython
 
         ipython = get_ipython()
-        ipython.run_line_magic("gui", "qt")
+        ipython.run_line_magic('gui', 'qt')
 
         # pylint: disable=redefined-outer-name
         # pylint: disable=import-outside-toplevel
@@ -52,7 +50,7 @@ def _setup_application(app: Optional[QApplication] = None) -> QApplication:
     if app is None:
         app = QApplication.instance()
         if not app:  # pragma: no cover
-            app = QApplication(["PyVista"])
+            app = QApplication(['PyVista'])
     return app
 
 

@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines
-"""
-This module contains the QtInteractor and BackgroundPlotter.
+"""This module contains the QtInteractor and BackgroundPlotter.
 
 Diagram
 ^^^^^^^
@@ -40,17 +39,16 @@ We fix this by internally by temporarily monkey-patching
 ``BasePlotter.__init__`` with a no-op ``__init__``.
 """
 import contextlib
+from functools import wraps
 import logging
 import os
 import platform
 import time
-import warnings
-from functools import wraps
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
+import warnings
 
 import numpy as np  # type: ignore
 import pyvista
-import scooby  # type: ignore
 from pyvista import global_theme
 from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
@@ -68,6 +66,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+import scooby  # type: ignore
 from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
@@ -89,7 +88,7 @@ if scooby.in_ipython():  # pragma: no cover
 else:
     from qtpy import QtGui  # pylint: disable=ungrouped-imports
 
-LOG = logging.getLogger("pyvistaqt")
+LOG = logging.getLogger('pyvistaqt')
 LOG.setLevel(logging.CRITICAL)
 LOG.addHandler(logging.StreamHandler())
 
@@ -104,8 +103,8 @@ LOG.addHandler(logging.StreamHandler())
 # LOG = logging.getLogger(__name__)
 # LOG.setLevel('DEBUG')
 
-SAVE_CAM_BUTTON_TEXT = "Save Camera"
-CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
+SAVE_CAM_BUTTON_TEXT = 'Save Camera'
+CLEAR_CAMS_BUTTON_TEXT = 'Clear Cameras'
 
 
 def resample_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
@@ -198,14 +197,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
-        LOG.debug("QtInteractor init start")
+        LOG.debug('QtInteractor init start')
         self.url: QtCore.QUrl = None
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
         # because they use **kwargs in their constructor...
         qvtk_kwargs = dict(parent=parent)
-        for key in ("stereo", "iren", "rw", "wflags"):
+        for key in ('stereo', 'iren', 'rw', 'wflags'):
             if key in kwargs:
                 qvtk_kwargs[key] = kwargs.pop(key)
         with _no_base_plotter_init():
@@ -262,32 +261,26 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.render_timer.timeout.connect(self.render)
             self.render_timer.start(twait)
 
-        if global_theme.depth_peeling["enabled"]:
+        if global_theme.depth_peeling['enabled']:
             if self.enable_depth_peeling():
                 for renderer in self.renderers:
                     renderer.enable_depth_peeling()
 
         self._first_time = False  # Crucial!
-        LOG.debug("QtInteractor init stop")
+        LOG.debug('QtInteractor init stop')
 
     def _setup_interactor(self, off_screen: bool) -> None:
         if off_screen:
             self.iren: Any = None
         else:
-            self.iren = RenderWindowInteractor(
-                self, interactor=self.ren_win.GetInteractor()
-            )
-            self.iren.interactor.RemoveObservers(
-                "MouseMoveEvent"
-            )  # slows window update?
+            self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
+            self.iren.interactor.RemoveObservers('MouseMoveEvent')  # slows window update?
             self.iren.initialize()
             self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
-        self._observers: Dict[
-            None, None
-        ] = {}  # Map of events to observers of self.iren
-        self.iren.add_observer("KeyPressEvent", self.key_press_event)
+        self._observers: Dict[None, None] = {}  # Map of events to observers of self.iren
+        self.iren.add_observer('KeyPressEvent', self.key_press_event)
         self.reset_key_events()
 
     def gesture_event(self, event: QGestureEvent) -> bool:
@@ -308,7 +301,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Wrap ``BasePlotter.render``."""
         return BasePlotter.render(self, *args, **kwargs)
 
-    @conditional_decorator(threaded, platform.system() == "Darwin")
+    @conditional_decorator(threaded, platform.system() == 'Darwin')
     def render(self) -> None:
         """Override the ``render`` method to handle threading issues."""
         return self.render_signal.emit()
@@ -345,7 +338,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         ----
         For linking views belonging to a single plotter, please use
         pyvista's `Plotter.link_views` method.
-
         """
         if other_views is None:
             other_views = np.arange(len(other_plotter.renderers))
@@ -356,8 +348,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         if not np.issubdtype(other_views.dtype, int):
             raise TypeError(
-                "Expected `other_views` type is int, or list or tuple of ints, "
-                f"but {other_views.dtype} is given"
+                'Expected `other_views` type is int, or list or tuple of ints, '
+                f'but {other_views.dtype} is given'
             )
 
         renderer = self.renderers[view]
@@ -368,9 +360,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
 
-        Only triggers event when event contains file paths that
-        exist.  User can drop anything in this window and we only want
-        to allow files.
+        Only triggers event when event contains file paths that exist.
+        User can drop anything in this window and we only want to allow
+        files.
         """
         try:
             for url in event.mimeData().urls():
@@ -378,7 +370,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     # only call accept on files
                     event.accept()
         except IOError as exception:  # pragma: no cover
-            warnings.warn(f"Exception when dragging files: {str(exception)}")
+            warnings.warn(f'Exception when dragging files: {str(exception)}')
 
     # pylint: disable=invalid-name,useless-return
     def dropEvent(self, event: QtCore.QEvent) -> None:
@@ -390,13 +382,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                 if os.path.isfile(filename):
                     self.add_mesh(pyvista.read(filename))
         except IOError as exception:  # pragma: no cover
-            warnings.warn(f"Exception when dropping files: {str(exception)}")
+            warnings.warn(f'Exception when dropping files: {str(exception)}')
 
     def close(self) -> None:
         """Quit application."""
         if self._closed:
             return
-        if hasattr(self, "render_timer"):
+        if hasattr(self, 'render_timer'):
             self.render_timer.stop()
         BasePlotter.close(self)
         QVTKRenderWindowInteractor.close(self)
@@ -426,7 +418,7 @@ class BackgroundPlotter(QtInteractor):
         screenshots or debug testing.
 
     allow_quit_keypress :
-        Allow user to exit by pressing ``"q"``.
+        Allow user to exit by pressing ``'q'``.
 
     toolbar : bool
         If True, display the default camera toolbar. Defaults to True.
@@ -505,16 +497,16 @@ class BackgroundPlotter(QtInteractor):
         # self._closed=True until the BasePlotter.__init__
         # is called
         self._closed = True
-        LOG.debug("BackgroundPlotter init start")
-        _check_type(show, "show", [bool])
-        _check_type(app, "app", [QApplication, type(None)])
-        _check_type(window_size, "window_size", [tuple, type(None)])
-        _check_type(off_screen, "off_screen", [bool, type(None)])
-        _check_type(allow_quit_keypress, "allow_quit_keypress", [bool])
-        _check_type(toolbar, "toolbar", [bool])
-        _check_type(menu_bar, "menu_bar", [bool])
-        _check_type(editor, "editor", [bool])
-        _check_type(update_app_icon, "update_app_icon", [bool, type(None)])
+        LOG.debug('BackgroundPlotter init start')
+        _check_type(show, 'show', [bool])
+        _check_type(app, 'app', [QApplication, type(None)])
+        _check_type(window_size, 'window_size', [tuple, type(None)])
+        _check_type(off_screen, 'off_screen', [bool, type(None)])
+        _check_type(allow_quit_keypress, 'allow_quit_keypress', [bool])
+        _check_type(toolbar, 'toolbar', [bool])
+        _check_type(menu_bar, 'menu_bar', [bool])
+        _check_type(editor, 'editor', [bool])
+        _check_type(update_app_icon, 'update_app_icon', [bool, type(None)])
 
         # toolbar
         self._view_action: QAction = None
@@ -538,16 +530,14 @@ class BackgroundPlotter(QtInteractor):
             window_size = global_theme.window_size
 
         # Remove notebook argument in case user passed it
-        kwargs.pop("notebook", None)
+        kwargs.pop('notebook', None)
 
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
         if app_window_class is None:
             app_window_class = MainWindow
-        self.app_window = app_window_class(
-            title=kwargs.get("title", global_theme.title)
-        )
+        self.app_window = app_window_class(title=kwargs.get('title', global_theme.title))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
@@ -579,17 +569,15 @@ class BackgroundPlotter(QtInteractor):
             self.add_callback(self.update_app_icon)
         elif update_app_icon is None:
             self.set_icon(
-                os.path.join(
-                    os.path.dirname(__file__), "data", "pyvista_logo_square.png"
-                )
+                os.path.join(os.path.dirname(__file__), 'data', 'pyvista_logo_square.png')
             )
         else:
             assert update_app_icon is False
 
         # Keypress events
         if self.iren is not None:
-            self.add_key_event("S", self._qt_screenshot)  # shift + s
-        LOG.debug("BackgroundPlotter init stop")
+            self.add_key_event('S', self._qt_screenshot)  # shift + s
+        LOG.debug('BackgroundPlotter init stop')
 
     def reset_key_events(self) -> None:
         """Reset all of the key press events to their defaults.
@@ -599,7 +587,7 @@ class BackgroundPlotter(QtInteractor):
         super().reset_key_events()
         if self.allow_quit_keypress:
             # pylint: disable=unnecessary-lambda
-            self.add_key_event("q", lambda: self.close())
+            self.add_key_event('q', lambda: self.close())
 
     def scale_axes_dialog(self, show: bool = True) -> ScaleAxesDialog:
         """Open scale axes dialog."""
@@ -608,9 +596,8 @@ class BackgroundPlotter(QtInteractor):
     def close(self) -> None:
         """Close the plotter.
 
-        This function closes the window which in turn will
-        close the plotter through `signal_close`.
-
+        This function closes the window which in turn will close the
+        plotter through `signal_close`.
         """
         if not self._closed:
             # Can get:
@@ -628,10 +615,9 @@ class BackgroundPlotter(QtInteractor):
         super().close()
 
     def update_app_icon(self) -> None:
-        """Update the app icon if the user is not trying to resize the window."""
-        if os.name == "nt" or not hasattr(
-            self, "_last_window_size"
-        ):  # pragma: no cover
+        """Update the app icon if the user is not trying to resize the
+        window."""
+        if os.name == 'nt' or not hasattr(self, '_last_window_size'):  # pragma: no cover
             # DO NOT EVEN ATTEMPT TO UPDATE ICON ON WINDOWS
             return
         cur_time = time.time()
@@ -677,16 +663,14 @@ class BackgroundPlotter(QtInteractor):
             and img.shape[-1] in (3, 4)
         ) and not isinstance(img, str):
             raise ValueError(
-                "img must be 3D uint8 ndarray with shape[1] == shape[2] and "
-                "shape[2] == 3 or 4, or str"
+                'img must be 3D uint8 ndarray with shape[1] == shape[2] and '
+                'shape[2] == 3 or 4, or str'
             )
         if isinstance(img, np.ndarray):
-            fmt_str = "Format_RGB"
-            fmt_str += ("A8" if img.shape[2] == 4 else "") + "888"
+            fmt_str = 'Format_RGB'
+            fmt_str += ('A8' if img.shape[2] == 4 else '') + '888'
             fmt = getattr(QtGui.QImage, fmt_str)
-            img = QtGui.QPixmap.fromImage(
-                QtGui.QImage(img.copy(), img.shape[1], img.shape[0], fmt)
-            )
+            img = QtGui.QPixmap.fromImage(QtGui.QImage(img.copy(), img.shape[1], img.shape[0], fmt))
         # Currently no way to check if str/path is actually correct (want to
         # allow resource paths and the like so os.path.isfile is no good)
         # and icon.isNull() returns False even if the path is bogus.
@@ -695,7 +679,7 @@ class BackgroundPlotter(QtInteractor):
     def _qt_screenshot(self, show: bool = True) -> FileDialog:
         return FileDialog(
             self.app_window,
-            filefilter=["Image File (*.png)", "JPEG (*.jpeg)"],
+            filefilter=['Image File (*.png)', 'JPEG (*.jpeg)'],
             show=show,
             directory=bool(os.getcwd()),
             callback=self.screenshot,
@@ -705,14 +689,14 @@ class BackgroundPlotter(QtInteractor):
         """Spawn an save file dialog to export a vtkjs file."""
         return FileDialog(
             self.app_window,
-            filefilter=["VTK JS File(*.vtkjs)"],
+            filefilter=['VTK JS File(*.vtkjs)'],
             show=show,
             directory=bool(os.getcwd()),
             callback=self.export_vtkjs,
         )
 
     def _toggle_edl(self) -> None:
-        if hasattr(self.renderer, "edl_pass"):
+        if hasattr(self.renderer, 'edl_pass'):
             return self.renderer.disable_eye_dome_lighting()
         return self.renderer.enable_eye_dome_lighting()
 
@@ -754,7 +738,6 @@ class BackgroundPlotter(QtInteractor):
         count :
             Number of times `func` will be called. If None,
             `func` will be called until the main window is closed.
-
         """
         self._callback_timer = QTimer(parent=self.app_window)
         self._callback_timer.timeout.connect(func)
@@ -776,19 +759,19 @@ class BackgroundPlotter(QtInteractor):
         if self.camera_position is not None:
             camera_position: Any = self.camera_position[:]  # py2.7 copy compatibility
 
-        if hasattr(self, "saved_cameras_tool_bar"):
+        if hasattr(self, 'saved_cameras_tool_bar'):
 
             def load_camera_position() -> None:
                 # pylint: disable=attribute-defined-outside-init
                 self.camera_position = camera_position
 
-            self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
+            self.saved_cameras_tool_bar.addAction(f'Cam {ncam}', load_camera_position)
             if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)
 
     def clear_camera_positions(self) -> None:
         """Clear all camera positions."""
-        if hasattr(self, "saved_cameras_tool_bar"):
+        if hasattr(self, 'saved_cameras_tool_bar'):
             for action in self.saved_cameras_tool_bar.actions():
                 if action.text() not in [SAVE_CAM_BUTTON_TEXT, CLEAR_CAMS_BUTTON_TEXT]:
                     self.saved_cameras_tool_bar.removeAction(action)
@@ -803,35 +786,29 @@ class BackgroundPlotter(QtInteractor):
     def add_toolbars(self) -> None:
         """Add the toolbars."""
         # Camera toolbar
-        self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
+        self.default_camera_tool_bar = self.app_window.addToolBar('Camera Position')
 
         def _view_vector(*args: Any) -> None:
             return self.view_vector(*args)
 
         cvec_setters = {
             # Viewing vector then view up vector
-            "Top (-Z)": lambda: _view_vector((0, 0, 1), (0, 1, 0)),
-            "Bottom (+Z)": lambda: _view_vector((0, 0, -1), (0, 1, 0)),
-            "Front (-Y)": lambda: _view_vector((0, 1, 0), (0, 0, 1)),
-            "Back (+Y)": lambda: _view_vector((0, -1, 0), (0, 0, 1)),
-            "Left (-X)": lambda: _view_vector((1, 0, 0), (0, 0, 1)),
-            "Right (+X)": lambda: _view_vector((-1, 0, 0), (0, 0, 1)),
-            "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
+            'Top (-Z)': lambda: _view_vector((0, 0, 1), (0, 1, 0)),
+            'Bottom (+Z)': lambda: _view_vector((0, 0, -1), (0, 1, 0)),
+            'Front (-Y)': lambda: _view_vector((0, 1, 0), (0, 0, 1)),
+            'Back (+Y)': lambda: _view_vector((0, -1, 0), (0, 0, 1)),
+            'Left (-X)': lambda: _view_vector((1, 0, 0), (0, 0, 1)),
+            'Right (+X)': lambda: _view_vector((-1, 0, 0), (0, 0, 1)),
+            'Isometric': lambda: _view_vector((1, 1, 1), (0, 0, 1)),
         }
         for key, method in cvec_setters.items():
-            self._view_action = self._add_action(
-                self.default_camera_tool_bar, key, method
-            )
+            self._view_action = self._add_action(self.default_camera_tool_bar, key, method)
         # pylint: disable=unnecessary-lambda
-        self._add_action(
-            self.default_camera_tool_bar, "Reset", lambda: self.reset_camera()
-        )
+        self._add_action(self.default_camera_tool_bar, 'Reset', lambda: self.reset_camera())
 
         # Saved camera locations toolbar
         self.saved_camera_positions = []
-        self.saved_cameras_tool_bar = self.app_window.addToolBar(
-            "Saved Camera Positions"
-        )
+        self.saved_cameras_tool_bar = self.app_window.addToolBar('Saved Camera Positions')
 
         self._add_action(
             self.saved_cameras_tool_bar, SAVE_CAM_BUTTON_TEXT, self.save_camera_position
@@ -847,45 +824,43 @@ class BackgroundPlotter(QtInteractor):
         self.main_menu = _create_menu_bar(parent=self.app_window)
         self.app_window.signal_close.connect(self.main_menu.clear)
 
-        file_menu = self.main_menu.addMenu("File")
-        file_menu.addAction("Take Screenshot", self._qt_screenshot)
-        file_menu.addAction("Export as VTKjs", self._qt_export_vtkjs)
+        file_menu = self.main_menu.addMenu('File')
+        file_menu.addAction('Take Screenshot', self._qt_screenshot)
+        file_menu.addAction('Export as VTKjs', self._qt_export_vtkjs)
         file_menu.addSeparator()
         # member variable for testing only
-        self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)
+        self._menu_close_action = file_menu.addAction('Exit', self.app_window.close)
 
-        view_menu = self.main_menu.addMenu("View")
-        self._edl_action = view_menu.addAction(
-            "Toggle Eye Dome Lighting", self._toggle_edl
-        )
-        view_menu.addAction("Scale Axes", self.scale_axes_dialog)
-        view_menu.addAction("Clear All", self.clear)
+        view_menu = self.main_menu.addMenu('View')
+        self._edl_action = view_menu.addAction('Toggle Eye Dome Lighting', self._toggle_edl)
+        view_menu.addAction('Scale Axes', self.scale_axes_dialog)
+        view_menu.addAction('Clear All', self.clear)
 
-        tool_menu = self.main_menu.addMenu("Tools")
-        tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
+        tool_menu = self.main_menu.addMenu('Tools')
+        tool_menu.addAction('Enable Cell Picking (through)', self.enable_cell_picking)
         tool_menu.addAction(
-            "Enable Cell Picking (visible)",
+            'Enable Cell Picking (visible)',
             lambda: self.enable_cell_picking(through=False),
         )
 
-        cam_menu = view_menu.addMenu("Camera")
+        cam_menu = view_menu.addMenu('Camera')
         self._parallel_projection_action = cam_menu.addAction(
-            "Toggle Parallel Projection", self._toggle_parallel_projection
+            'Toggle Parallel Projection', self._toggle_parallel_projection
         )
 
         view_menu.addSeparator()
         # Orientation marker
-        orien_menu = view_menu.addMenu("Orientation Marker")
-        orien_menu.addAction("Show All", self.show_axes_all)
-        orien_menu.addAction("Hide All", self.hide_axes_all)
+        orien_menu = view_menu.addMenu('Orientation Marker')
+        orien_menu.addAction('Show All', self.show_axes_all)
+        orien_menu.addAction('Hide All', self.hide_axes_all)
         # Bounds axes
-        axes_menu = view_menu.addMenu("Bounds Axes")
-        axes_menu.addAction("Add Bounds Axes (front)", self.show_bounds)
-        axes_menu.addAction("Add Bounds Grid (back)", self.show_grid)
-        axes_menu.addAction("Add Bounding Box", self.add_bounding_box)
+        axes_menu = view_menu.addMenu('Bounds Axes')
+        axes_menu.addAction('Add Bounds Axes (front)', self.show_bounds)
+        axes_menu.addAction('Add Bounds Grid (back)', self.show_grid)
+        axes_menu.addAction('Add Bounding Box', self.add_bounding_box)
         axes_menu.addSeparator()
-        axes_menu.addAction("Remove Bounding Box", self.remove_bounding_box)
-        axes_menu.addAction("Remove Bounds", self.remove_bounds_axes)
+        axes_menu.addAction('Remove Bounding Box', self.remove_bounding_box)
+        axes_menu.addAction('Remove Bounds', self.remove_bounds_axes)
 
         # A final separator to separate OS options
         view_menu.addSeparator()
@@ -893,7 +868,7 @@ class BackgroundPlotter(QtInteractor):
     def add_editor(self) -> None:
         """Add the editor."""
         self.editor = Editor(parent=self.app_window, renderers=self.renderers)
-        self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
+        self._editor_action = self.main_menu.addAction('Editor', self.editor.toggle)
         self.app_window.signal_close.connect(self.editor.close)
 
 
@@ -944,13 +919,13 @@ class MultiPlotter:
         **kwargs: Any,
     ) -> None:
         """Initialize the multi plotter."""
-        _check_type(app, "app", [QApplication, type(None)])
-        _check_type(nrows, "nrows", [int])
-        _check_type(ncols, "ncols", [int])
-        _check_type(show, "show", [bool])
-        _check_type(window_size, "window_size", [tuple, type(None)])
-        _check_type(title, "title", [str, type(None)])
-        _check_type(off_screen, "off_screen", [bool, type(None)])
+        _check_type(app, 'app', [QApplication, type(None)])
+        _check_type(nrows, 'nrows', [int])
+        _check_type(ncols, 'ncols', [int])
+        _check_type(show, 'show', [bool])
+        _check_type(window_size, 'window_size', [tuple, type(None)])
+        _check_type(title, 'title', [str, type(None)])
+        _check_type(off_screen, 'off_screen', [bool, type(None)])
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)

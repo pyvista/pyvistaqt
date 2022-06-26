@@ -67,3 +67,11 @@ docs/external_examples.rst
 
 # vim
 *.swp
+
+<<<<<<< Updated upstream
+# venv
+.venv
+=======
+# virtual environments
+.venv/
+>>>>>>> Stashed changes

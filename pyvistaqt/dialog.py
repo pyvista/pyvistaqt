@@ -6,14 +6,7 @@ import numpy as np  # type: ignore
 import pyvista as pv
 from qtpy import QtCore
 from qtpy.QtCore import Signal
-from qtpy.QtWidgets import (
-    QDialog,
-    QDoubleSpinBox,
-    QFileDialog,
-    QFormLayout,
-    QHBoxLayout,
-    QSlider,
-)
+from qtpy.QtWidgets import QDialog, QDoubleSpinBox, QFileDialog, QFormLayout, QHBoxLayout, QSlider
 
 from .window import MainWindow
 
@@ -21,8 +14,8 @@ from .window import MainWindow
 class FileDialog(QFileDialog):
     """Generic file query.
 
-    It emits a signal when a file is selected and
-    the dialog was property closed.
+    It emits a signal when a file is selected and the dialog was
+    property closed.
     """
 
     # pylint: disable=too-few-public-methods
@@ -66,7 +59,6 @@ class FileDialog(QFileDialog):
 
         Sends:
         filename
-
         """
         if self.result():
             filename = self.selectedFiles()[0]
@@ -79,7 +71,6 @@ class DoubleSlider(QSlider):
 
     Reference:
     https://gist.github.com/dennis-tra/994a65d6165a328d4eabaadbaedac2cc
-
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -101,20 +92,16 @@ class DoubleSlider(QSlider):
 
     def value(self) -> float:
         """Return the value of the slider."""
-        return (
-            float(super().value()) / self._max_int * self._value_range + self._min_value
-        )
+        return float(super().value()) / self._max_int * self._value_range + self._min_value
 
     def setValue(self, value: float) -> None:  # pylint: disable=invalid-name
         """Set the value of the slider."""
-        super().setValue(
-            int((value - self._min_value) / self._value_range * self._max_int)
-        )
+        super().setValue(int((value - self._min_value) / self._value_range * self._max_int))
 
     def setMinimum(self, value: float) -> None:  # pylint: disable=invalid-name
         """Set the minimum value of the slider."""
         if value > self._max_value:  # pragma: no cover
-            raise ValueError("Minimum limit cannot be higher than maximum")
+            raise ValueError('Minimum limit cannot be higher than maximum')
 
         self._min_value = value
         self.setValue(self.value())
@@ -122,7 +109,7 @@ class DoubleSlider(QSlider):
     def setMaximum(self, value: float) -> None:  # pylint: disable=invalid-name
         """Set the maximum value of the slider."""
         if value < self._min_value:  # pragma: no cover
-            raise ValueError("Minimum limit cannot be higher than maximum")
+            raise ValueError('Minimum limit cannot be higher than maximum')
 
         self._max_value = value
         self.setValue(self.value())
@@ -152,9 +139,7 @@ class RangeGroup(QHBoxLayout):
         self.minimum = minimum
         self.maximum = maximum
 
-        self.spinbox = QDoubleSpinBox(
-            value=value, minimum=minimum, maximum=maximum, decimals=4
-        )
+        self.spinbox = QDoubleSpinBox(value=value, minimum=minimum, maximum=maximum, decimals=4)
 
         self.addWidget(self.slider)
         self.addWidget(self.spinbox)
@@ -200,9 +185,7 @@ class ScaleAxesDialog(QDialog):
     accepted = Signal(float)
     signal_close = Signal()
 
-    def __init__(
-        self, parent: MainWindow, plotter: pv.Plotter, show: bool = True
-    ) -> None:
+    def __init__(self, parent: MainWindow, plotter: pv.Plotter, show: bool = True) -> None:
         """Initialize the scaling dialog."""
         super().__init__(parent)
         self.setGeometry(300, 300, 50, 50)
@@ -211,20 +194,14 @@ class ScaleAxesDialog(QDialog):
         self.plotter = plotter
         self.plotter.app_window.signal_close.connect(self.close)
 
-        self.x_slider_group = RangeGroup(
-            parent, self.update_scale, value=plotter.scale[0]
-        )
-        self.y_slider_group = RangeGroup(
-            parent, self.update_scale, value=plotter.scale[1]
-        )
-        self.z_slider_group = RangeGroup(
-            parent, self.update_scale, value=plotter.scale[2]
-        )
+        self.x_slider_group = RangeGroup(parent, self.update_scale, value=plotter.scale[0])
+        self.y_slider_group = RangeGroup(parent, self.update_scale, value=plotter.scale[1])
+        self.z_slider_group = RangeGroup(parent, self.update_scale, value=plotter.scale[2])
 
         form_layout = QFormLayout(self)
-        form_layout.addRow("X Scale", self.x_slider_group)
-        form_layout.addRow("Y Scale", self.y_slider_group)
-        form_layout.addRow("Z Scale", self.z_slider_group)
+        form_layout.addRow('X Scale', self.x_slider_group)
+        form_layout.addRow('Y Scale', self.y_slider_group)
+        form_layout.addRow('Z Scale', self.z_slider_group)
 
         self.setLayout(form_layout)
 

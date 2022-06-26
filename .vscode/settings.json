@@ -1,0 +1,141 @@
+{
+    "[markdown]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.markdownlint": true
+        },
+        "editor.defaultFormatter": null,
+        "editor.formatOnPaste": true,
+        "editor.formatOnSave": true,
+        "editor.wordWrap": "bounded",
+        "editor.wordWrapColumn": 90
+    },
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.defaultFormatter": "ms-python.python",
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true
+    },
+    "cSpell.allowCompoundWords": true,
+    "cSpell.dictionaries": [
+        "python"
+    ],
+    "cSpell.ignorePaths": [
+        "*.dll",
+        "*.html",
+        "*.css",
+        "*.json",
+        "*.git/**",
+        "**/build/**",
+        ".venv/",
+        "*.bat"
+    ],
+    "cSpell.words": [
+        "autocrlf",
+        "bdist",
+        "CICD",
+        "cobertura",
+        "deps",
+        "DICOM",
+        "docparams",
+        "docstrings",
+        "docutils",
+        "fspath",
+        "genindex",
+        "gitlabci",
+        "GLFM",
+        "guiqtbot",
+        "Hendry",
+        "ipynb",
+        "iscc",
+        "isort",
+        "Kaszynski",
+        "Kubernetes",
+        "modindex",
+        "mypy",
+        "NSIS",
+        "nsist",
+        "numfig",
+        "pwsh",
+        "pyinstaller",
+        "pylint",
+        "pylintrc",
+        "pynsist",
+        "pyproject",
+        "pyqt",
+        "pyside",
+        "pytest",
+        "pytestqt",
+        "PYTHONIOENCODING",
+        "pyvista",
+        "pyvistaqt",
+        "pyvistaqtdoc",
+        "qapp",
+        "qtbot",
+        "QTBUG",
+        "qtpy",
+        "rcfile",
+        "recommonmark",
+        "rgba",
+        "rsrc",
+        "sphinxcontrib",
+        "tada",
+        "tldr",
+        "toctree",
+        "todos",
+        "venv",
+        "virtualenv",
+        "vmtk"
+    ],
+    "editor.acceptSuggestionOnEnter": "off",
+    "editor.formatOnSave": false,
+    "editor.rulers": [
+        90
+    ],
+    "editor.tabCompletion": "on",
+    "esbonio.sphinx.buildDir": "${workspaceFolder}/docs/_build",
+    "esbonio.sphinx.confDir": "${workspaceFolder}/docs",
+    "esbonio.sphinx.forceFullBuild": false,
+    "explorer.compactFolders": false,
+    "files.exclude": {
+        "**/.git": false
+    },
+    "git-graph.referenceLabels.alignment": "Branches (aligned to the graph) & Tags (on the right)",
+    "grammarly.files.include": [
+        "**/README.rst",
+        "**/CODE_OF_CONDUCT.md",
+        "**/CONTRIBUTING.md"
+    ],
+    "markdownlint.config": {
+        "MD026": false, // Trailing punctuation okay in headers (e.g. emojis)
+        "MD033": false, // Some HTML is fine
+        "MD041": false, // Allow non-headings for first line in file
+        "MD046": false // Allow indented code blocks  (M029 errors otherwise)
+    },
+    "mypy.dmypyExecutable": "${workspaceFolder}/.venv/Scripts/dmypy.exe",
+    "powershell.integratedConsole.showOnStartup": false,
+    "powershell.powerShellDefaultVersion": "PowerShell Core 7 (x64)",
+    "python.formatting.provider": "black",
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Path": "${workspaceFolder}/.venv/Scripts/flake8.exe",
+    "python.linting.mypyArgs": [
+        "--config-file",
+        "mypy.ini"
+    ],
+    "python.linting.mypyEnabled": false,
+    "python.linting.mypyPath": "${workspaceFolder}/.venv/Scripts/mypy.exe",
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintPath": "${workspaceFolder}/.venv/Scripts/pylint.exe",
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.terminal.activateEnvironment": true,
+    "python.testing.pytestArgs": [
+        "${workspaceFolder}/tests"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestPath": "${workspaceFolder}/.venv/Scripts/pytest.exe",
+    "restructuredtext.linter.rstcheck.executablePath": "${workspaceFolder}/.venv/Scripts/rstcheck.exe",
+    "trailing-spaces.syntaxIgnore": [
+        "markdown"
+    ]
+}
