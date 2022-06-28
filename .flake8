@@ -14,6 +14,9 @@ exclude =
     dist,
     # This is adopted from VTK
     pyvistaqt/rwi.py,
+    # Only lint source files
+    tests/*.py,
+    docs/*.py
 max-complexity = 10
 doctests = true
 extend-ignore =
