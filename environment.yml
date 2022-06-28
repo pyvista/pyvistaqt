@@ -5,6 +5,7 @@ dependencies:
   - python<3.9
   - codecov
   - ipython
+  - mypy
   - numpy
   - pytest
   - pytest-cov
