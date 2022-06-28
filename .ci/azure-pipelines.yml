@@ -72,8 +72,6 @@ stages:
 
     strategy:
       matrix:
-        Python36:
-          python.version: '3.6'
         Python37:
           python.version: '3.7'
         Python38:
@@ -181,8 +179,6 @@ stages:
     strategy:
       maxParallel: 4
       matrix:
-        Python36-64bit:
-          PYTHON_VERSION: '3.6'
         Python37-64bit:
           PYTHON_VERSION: '3.7'
         Python38-64bit:
@@ -221,8 +217,6 @@ stages:
       python.architecture: 'x64'
     strategy:
       matrix:
-        Python36:
-          python.version: '3.6'
         Python37:
           python.version: '3.7'
         Python38:
