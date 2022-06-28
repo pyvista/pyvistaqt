@@ -2,8 +2,28 @@
 line-length = 88
 skip-string-normalization = true
 target-version = ["py39"]
-exclude='\.eggs|\.git|\.mypy_cache|\.tox|\.venv|_build|buck-out|build|dist|node_modules|rwi\.py'
+# `pre-comment` doesn't see skips; `force-exclude` forces it
+# to see these files
+#
+# See:
+#   - https://github.com/psf/black/issues/1584
+force-exclude = '''
+(
+    docs/conf\.py
+  | pyvistaqt/rwi\.py
+  | tests/.*\.py
+  | setup.py
+)
+'''
 check = true
 
 [tool.pydocstyle]
-match = '(?!(coverage|test_|rwi)).*[.]py'
+match = '''
+(?!
+    (
+      | tests/
+      | docs/
+      | rwi
+    ).*\.py
+)
+'''

@@ -20,12 +20,21 @@ repos:
   rev: v0.961
   hooks:
     - id: mypy
+      # `pass_filenames` is used to overcome the "duplicate module"
+      # error from occuring. We are explicitly passing a 'txt'
+      # file to search. This setting tells `pre-commit` to not do a
+      # search and pass files to check to mypy, like it normally does.
+      #
+      # See:
+      #   - https://github.com/python/mypy/issues/4008#issuecomment-708060733
+      #   - https://pre-commit.com/#hooks-pass_filenames
+      language: system
+      pass_filenames: false
       args: [
         "--config-file",
         "mypy.ini",
         "@mypy_checklist.txt"
       ]
-
 
 - repo: https://gitlab.com/PyCQA/flake8
   rev: 3.9.2
@@ -54,6 +63,12 @@ repos:
   hooks:
   - id: pydocstyle
     additional_dependencies: [toml==0.10.2]
+    # We use the 'match' and do not want pre-commit to pass
+    # globbed files
+    pass_filenames: false
+    args: [
+      "--config=pyproject.toml",
+    ]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.3.0
