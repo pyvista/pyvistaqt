@@ -33,14 +33,14 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
         'Operating System :: MacOS',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
 
     url='https://github.com/pyvista/pyvistaqt',
     keywords='vtk numpy plotting mesh qt',
-    python_requires='>=3.6.*',
+    python_requires='>=3.7.*',
     install_requires=[
         'pyvista>=0.32.0',
         'QtPy>=1.9.0',
