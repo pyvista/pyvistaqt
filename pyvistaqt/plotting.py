@@ -171,7 +171,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         If True, enable polygon smothing
 
     auto_update :
-        Automatic update rate in seconds.  Useful for automatically
+        Number of updates per second.  Useful for automatically
         updating the render window when actors are change without
         being automatically ``Modified``.
     """
