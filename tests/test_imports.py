@@ -34,4 +34,6 @@ window.setWindowTitle('window')
 
     stdout, _, _ = api.run(['-c', src])
 
-    assert '"MainWindow" has no attribute "setWindowTitle"' not in stdout
+    assert (
+        '"MainWindow" has no attribute "setWindowTitle"' not in stdout
+    )

@@ -35,7 +35,9 @@ pyvista.set_plot_theme('document')
 pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
 
 # Save figures in specified directory
-pyvista.FIGURE_PATH = os.path.join(os.path.abspath('./images/'), 'auto-generated/')
+pyvista.FIGURE_PATH = os.path.join(
+    os.path.abspath('./images/'), 'auto-generated/'
+)
 if not os.path.exists(pyvista.FIGURE_PATH):
     os.makedirs(pyvista.FIGURE_PATH)
 
@@ -82,10 +84,8 @@ master_doc = 'index'
 # General information about the project.
 project = 'PyVistaQt'
 year = datetime.date.today().year
-copyright = (
-    '2017-{}, The PyVista Developers'.format(  # pylint: disable=redefined-builtin,line-too-long
-        year
-    )
+copyright = '2017-{}, The PyVista Developers'.format(  # pylint: disable=redefined-builtin,line-too-long
+    year
 )
 author = 'Alex Kaszynski and Bane Sullivan'
 
@@ -214,32 +214,52 @@ class AutoAutoSummary(Autosummary):
         items = []
         for name in sorted(obj.__dict__.keys()):  # dir(obj):
             try:
-                documenter = get_documenter(AutoAutoSummary.app, safe_getattr(obj, name), obj)
+                documenter = get_documenter(
+                    AutoAutoSummary.app, safe_getattr(obj, name), obj
+                )
             except AttributeError:
                 continue
             if documenter.objtype in typ:
                 items.append(name)
-        public = [x for x in items if x in include_public or not x.startswith('_')]
+        public = [
+            x
+            for x in items
+            if x in include_public or not x.startswith('_')
+        ]
         return public, items
 
     def run(self):
         clazz = str(self.arguments[0])
         try:
             (module_name, class_name) = clazz.rsplit('.', 1)
-            m = __import__(module_name, globals(), locals(), [class_name])
+            m = __import__(
+                module_name, globals(), locals(), [class_name]
+            )
             c = getattr(m, class_name)
             if 'methods' in self.options:
-                _, methods = self.get_members(c, ['method'], ['__init__'])
+                _, methods = self.get_members(
+                    c, ['method'], ['__init__']
+                )
                 self.content = [
-                    '~%s.%s' % (clazz, method) for method in methods if not method.startswith('_')
+                    '~%s.%s' % (clazz, method)
+                    for method in methods
+                    if not method.startswith('_')
                 ]
             if 'attributes' in self.options:
-                _, attribs = self.get_members(c, ['attribute', 'property'])
+                _, attribs = self.get_members(
+                    c, ['attribute', 'property']
+                )
                 self.content = [
-                    '~%s.%s' % (clazz, attrib) for attrib in attribs if not attrib.startswith('_')
+                    '~%s.%s' % (clazz, attrib)
+                    for attrib in attribs
+                    if not attrib.startswith('_')
                 ]
         except Exception:  # pylint: disable=broad-except
-            print('Something went wrong when autodocumenting {}'.format(clazz))
+            print(
+                'Something went wrong when autodocumenting {}'.format(
+                    clazz
+                )
+            )
         finally:
             return super(
                 AutoAutoSummary, self  # pylint: disable=lost-exception

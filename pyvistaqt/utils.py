@@ -6,11 +6,14 @@ import scooby  # type: ignore
 from qtpy.QtWidgets import QApplication, QMenuBar
 
 
-def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:
+def _check_type(
+    var: Any, var_name: str, var_types: List[Type[Any]]
+) -> None:
     types = tuple(var_types)
     if not isinstance(var, types):
         raise TypeError(
-            f'Expected type for ``{var_name}`` is {str(types)}' f' but {type(var)} was given.'
+            f'Expected type for ``{var_name}`` is {str(types)}'
+            f' but {type(var)} was given.'
         )
 
 

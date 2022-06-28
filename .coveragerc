@@ -4,6 +4,7 @@ source = pyvistaqt
 omit =
     */setup.py
     */pyvistaqt/rwi.py
+    */py.typed
 
 [report]
 exclude_lines =

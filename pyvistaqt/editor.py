@@ -24,7 +24,9 @@ from .window import MainWindow
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent: MainWindow, renderers: List[Renderer]) -> None:
+    def __init__(
+        self, parent: MainWindow, renderers: List[Renderer]
+    ) -> None:
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
@@ -41,7 +43,9 @@ class Editor(QDialog):
                 widget_idx = item.data(0, Qt.ItemDataRole.UserRole)
                 self.stacked_widget.setCurrentIndex(widget_idx)
 
-        self.tree_widget.itemSelectionChanged.connect(_selection_callback)
+        self.tree_widget.itemSelectionChanged.connect(
+            _selection_callback
+        )
 
         self.setLayout(self.layout)
         self.setWindowTitle('Editor')
@@ -53,16 +57,26 @@ class Editor(QDialog):
         """Update the internal widget list."""
         self.tree_widget.clear()
         for idx, renderer in enumerate(self.renderers):
-            actors = renderer._actors  # pylint: disable=protected-access
-            widget_idx = self.stacked_widget.addWidget(_get_renderer_widget(renderer))
-            top_item = QTreeWidgetItem(self.tree_widget, [f'Renderer {idx}'])
+            actors = (
+                renderer._actors  # pylint: disable=protected-access
+            )
+            widget_idx = self.stacked_widget.addWidget(
+                _get_renderer_widget(renderer)
+            )
+            top_item = QTreeWidgetItem(
+                self.tree_widget, [f'Renderer {idx}']
+            )
             top_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
             self.tree_widget.addTopLevelItem(top_item)
             for name, actor in actors.items():
                 if actor is not None:
-                    widget_idx = self.stacked_widget.addWidget(_get_actor_widget(actor))
+                    widget_idx = self.stacked_widget.addWidget(
+                        _get_actor_widget(actor)
+                    )
                     child_item = QTreeWidgetItem(top_item, [name])
-                    child_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
+                    child_item.setData(
+                        0, Qt.ItemDataRole.UserRole, widget_idx
+                    )
                     top_item.addChild(child_item)
         self.tree_widget.expandAll()
 

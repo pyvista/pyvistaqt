@@ -111,51 +111,91 @@ if PyQtImpl is None:
 
                             PyQtImpl = 'PySide'
                         except ImportError:
-                            raise ImportError('Cannot load either PyQt or PySide')
+                            raise ImportError(
+                                'Cannot load either PyQt or PySide'
+                            )
 
 # Check the compatibility of PyQtImpl and QVTKRWIBase
 if QVTKRWIBase != 'QWidget':
-    if PyQtImpl in ['PyQt6', 'PySide6'] and QVTKRWIBase == 'QOpenGLWidget':
+    if (
+        PyQtImpl in ['PyQt6', 'PySide6']
+        and QVTKRWIBase == 'QOpenGLWidget'
+    ):
         pass  # compatible
-    elif PyQtImpl in ['PyQt5', 'PySide2', 'PyQt4', 'PySide'] and QVTKRWIBase == 'QGLWidget':
+    elif (
+        PyQtImpl in ['PyQt5', 'PySide2', 'PyQt4', 'PySide']
+        and QVTKRWIBase == 'QGLWidget'
+    ):
         pass  # compatible
     else:
-        raise ImportError('Cannot load ' + QVTKRWIBase + ' from ' + PyQtImpl)
+        raise ImportError(
+            'Cannot load ' + QVTKRWIBase + ' from ' + PyQtImpl
+        )
 
 if PyQtImpl == 'PyQt6':
     if QVTKRWIBase == 'QOpenGLWidget':
         from PyQt6.QtOpenGLWidgets import QOpenGLWidget
     from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer
     from PyQt6.QtGui import QCursor
-    from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QWidget
+    from PyQt6.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QSizePolicy,
+        QWidget,
+    )
 elif PyQtImpl == 'PySide6':
     if QVTKRWIBase == 'QOpenGLWidget':
         from PySide6.QtOpenGLWidgets import QOpenGLWidget
     from PySide6.QtCore import QEvent, QObject, QSize, Qt, QTimer
     from PySide6.QtGui import QCursor
-    from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QWidget
+    from PySide6.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QSizePolicy,
+        QWidget,
+    )
 elif PyQtImpl == 'PyQt5':
     if QVTKRWIBase == 'QGLWidget':
         from PyQt5.QtOpenGL import QGLWidget
     from PyQt5.QtCore import QEvent, QObject, QSize, Qt, QTimer
     from PyQt5.QtGui import QCursor
-    from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QWidget
+    from PyQt5.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QSizePolicy,
+        QWidget,
+    )
 elif PyQtImpl == 'PySide2':
     if QVTKRWIBase == 'QGLWidget':
         from PySide2.QtOpenGL import QGLWidget
     from PySide2.QtCore import QEvent, QObject, QSize, Qt, QTimer
     from PySide2.QtGui import QCursor
-    from PySide2.QtWidgets import QApplication, QMainWindow, QSizePolicy, QWidget
+    from PySide2.QtWidgets import (
+        QApplication,
+        QMainWindow,
+        QSizePolicy,
+        QWidget,
+    )
 elif PyQtImpl == 'PyQt4':
     if QVTKRWIBase == 'QGLWidget':
         from PyQt4.QtOpenGL import QGLWidget
     from PyQt4.QtCore import QEvent, QObject, QSize, Qt, QTimer
-    from PyQt4.QtGui import QApplication, QMainWindow, QSizePolicy, QWidget
+    from PyQt4.QtGui import (
+        QApplication,
+        QMainWindow,
+        QSizePolicy,
+        QWidget,
+    )
 elif PyQtImpl == 'PySide':
     if QVTKRWIBase == 'QGLWidget':
         from PySide.QtOpenGL import QGLWidget
     from PySide.QtCore import QEvent, QObject, QSize, Qt, QTimer
-    from PySide.QtGui import QApplication, QMainWindow, QSizePolicy, QWidget
+    from PySide.QtGui import (
+        QApplication,
+        QMainWindow,
+        QSizePolicy,
+        QWidget,
+    )
 else:
     raise ImportError('Unknown PyQt implementation ' + repr(PyQtImpl))
 
@@ -167,7 +207,10 @@ elif QVTKRWIBase == 'QGLWidget':
 elif QVTKRWIBase == 'QOpenGLWidget':
     QVTKRWIBaseClass = QOpenGLWidget
 else:
-    raise ImportError('Unknown base class for QVTKRenderWindowInteractor ' + QVTKRWIBase)
+    raise ImportError(
+        'Unknown base class for QVTKRenderWindowInteractor '
+        + QVTKRWIBase
+    )
 
 if PyQtImpl == 'PyQt6':
     CursorShape = Qt.CursorShape
@@ -183,7 +226,11 @@ if PyQtImpl == 'PyQt6':
 else:
     CursorShape = (
         MouseButton
-    ) = WindowType = WidgetAttribute = KeyboardModifier = FocusPolicy = ConnectionType = Key = Qt
+    ) = (
+        WindowType
+    ) = (
+        WidgetAttribute
+    ) = KeyboardModifier = FocusPolicy = ConnectionType = Key = Qt
     SizePolicy = QSizePolicy
     EventType = QEvent
 
@@ -314,7 +361,9 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
                 wflags = kw['wflags']
             else:
                 wflags = Qt.WindowType.Widget
-            QWidget.__init__(self, parent, wflags | WindowType.MSWindowsOwnDC)
+            QWidget.__init__(
+                self, parent, wflags | WindowType.MSWindowsOwnDC
+            )
         elif QVTKRWIBase == 'QGLWidget':
             QGLWidget.__init__(self, parent)
         elif QVTKRWIBase == 'QOpenGLWidget':
@@ -370,20 +419,26 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self.setAttribute(WidgetAttribute.WA_PaintOnScreen)
         self.setMouseTracking(True)  # get all mouse events
         self.setFocusPolicy(FocusPolicy.WheelFocus)
-        self.setSizePolicy(QSizePolicy(SizePolicy.Expanding, SizePolicy.Expanding))
+        self.setSizePolicy(
+            QSizePolicy(SizePolicy.Expanding, SizePolicy.Expanding)
+        )
 
         self._Timer = QTimer(self)
         self._Timer.timeout.connect(self.TimerEvent)
 
         self._Iren.AddObserver('CreateTimerEvent', self.CreateTimer)
         self._Iren.AddObserver('DestroyTimerEvent', self.DestroyTimer)
-        self._Iren.GetRenderWindow().AddObserver('CursorChangedEvent', self.CursorChangedEvent)
+        self._Iren.GetRenderWindow().AddObserver(
+            'CursorChangedEvent', self.CursorChangedEvent
+        )
 
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
         # slot for proper cleanup of VTK objects.
         if self.parent():
-            self.parent().destroyed.connect(self.close, ConnectionType.DirectConnection)
+            self.parent().destroyed.connect(
+                self.close, ConnectionType.DirectConnection
+            )
 
     def __getattr__(self, attr):
         """Makes the object behave like a vtkGenericRenderWindowInteractor"""
@@ -392,7 +447,11 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         elif hasattr(self._Iren, attr):
             return getattr(self._Iren, attr)
         else:
-            raise AttributeError(self.__class__.__name__ + ' has no attribute named ' + attr)
+            raise AttributeError(
+                self.__class__.__name__
+                + ' has no attribute named '
+                + attr
+            )
 
     def Finalize(self):
         """
@@ -508,7 +567,9 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             # pixel ratio.
             return 1.0
 
-    def _setEventInformation(self, x, y, ctrl, shift, key, repeat=0, keysum=None):
+    def _setEventInformation(
+        self, x, y, ctrl, shift, key, repeat=0, keysum=None
+    ):
         scale = self._getPixelRatio()
         self._Iren.SetEventInformation(
             int(round(x * scale)),
@@ -522,12 +583,16 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     def enterEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(
+            self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None
+        )
         self._Iren.EnterEvent()
 
     def leaveEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(
+            self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None
+        )
         self._Iren.LeaveEvent()
 
     def mousePressEvent(self, ev):
@@ -536,7 +601,9 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         repeat = 0
         if ev.type() == EventType.MouseButtonDblClick:
             repeat = 1
-        self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), repeat, None)
+        self._setEventInformation(
+            pos_x, pos_y, ctrl, shift, chr(0), repeat, None
+        )
 
         self._ActiveButton = ev.button()
 
@@ -550,7 +617,9 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
     def mouseReleaseEvent(self, ev):
         pos_x, pos_y = _get_event_pos(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(
+            pos_x, pos_y, ctrl, shift, chr(0), 0, None
+        )
 
         if self._ActiveButton == MouseButton.LeftButton:
             self._Iren.LeftButtonReleaseEvent()
@@ -567,20 +636,26 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self.__saveY = pos_y
 
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(
+            pos_x, pos_y, ctrl, shift, chr(0), 0, None
+        )
         self._Iren.MouseMoveEvent()
 
     def keyPressEvent(self, ev):
         key, keySym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym)
+        self._setEventInformation(
+            self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym
+        )
         self._Iren.KeyPressEvent()
         self._Iren.CharEvent()
 
     def keyReleaseEvent(self, ev):
         key, keySym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym)
+        self._setEventInformation(
+            self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym
+        )
         self._Iren.KeyReleaseEvent()
 
     def wheelEvent(self, ev):
@@ -611,7 +686,11 @@ def QVTKRenderWidgetConeExample(block=False):
     # load implementations for rendering and interaction factory classes
     import vtkmodules.vtkRenderingOpenGL2
     from vtkmodules.vtkFiltersSources import vtkConeSource
-    from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
+    from vtkmodules.vtkRenderingCore import (
+        vtkActor,
+        vtkPolyDataMapper,
+        vtkRenderer,
+    )
 
     # every QT app needs an app
     app = QApplication.instance()
