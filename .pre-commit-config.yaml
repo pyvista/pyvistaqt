@@ -59,6 +59,8 @@ repos:
       types: [python]
       args:
         [
+          "./pyvistaqt/",  # Files to lint
+          "--rcfile=.pylintrc", # Specify rc file
           "-rn", # Only display messages
           "-sn", # Don't display the score
         ]
