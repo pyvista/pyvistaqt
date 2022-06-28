@@ -22,7 +22,7 @@ def test_no_qt_binding(monkeypatch):
         monkeypatch.setenv('QT_API', 'bad_name')
         sys.modules.pop('qtpy')
         assert 'qtpy' not in sys.modules
-        with pytest.raises(RuntimeError, match="No Qt binding"):
+        with pytest.raises(RuntimeError, match='No Qt binding'):
             importlib.reload(pyvistaqt)
     monkeypatch.undo()
     if need_reload:

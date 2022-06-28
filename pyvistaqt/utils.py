@@ -6,12 +6,14 @@ import scooby  # type: ignore
 from qtpy.QtWidgets import QApplication, QMenuBar
 
 
-def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:
+def _check_type(
+    var: Any, var_name: str, var_types: List[Type[Any]]
+) -> None:
     types = tuple(var_types)
     if not isinstance(var, types):
         raise TypeError(
-            f"Expected type for ``{var_name}`` is {str(types)}"
-            f" but {type(var)} was given."
+            f'Expected type for ``{var_name}`` is {str(types)}'
+            f' but {type(var)} was given.'
         )
 
 
@@ -37,7 +39,7 @@ def _setup_ipython(ipython: Any = None) -> Any:
         from IPython import get_ipython
 
         ipython = get_ipython()
-        ipython.run_line_magic("gui", "qt")
+        ipython.run_line_magic('gui', 'qt')
 
         # pylint: disable=redefined-outer-name
         # pylint: disable=import-outside-toplevel
@@ -47,12 +49,14 @@ def _setup_ipython(ipython: Any = None) -> Any:
     return ipython
 
 
-def _setup_application(app: Optional[QApplication] = None) -> QApplication:
+def _setup_application(
+    app: Optional[QApplication] = None,
+) -> QApplication:
     # run within python
     if app is None:
         app = QApplication.instance()
         if not app:  # pragma: no cover
-            app = QApplication(["PyVista"])
+            app = QApplication(['PyVista'])
     return app
 
 

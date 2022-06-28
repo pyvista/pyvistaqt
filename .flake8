@@ -12,6 +12,8 @@ exclude =
     *.pyi,
     build,
     dist,
+    # This is adopted from VTK
+    pyvistaqt/rwi.py,
 max-complexity = 10
 doctests = true
 extend-ignore =

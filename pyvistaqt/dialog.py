@@ -102,27 +102,42 @@ class DoubleSlider(QSlider):
     def value(self) -> float:
         """Return the value of the slider."""
         return (
-            float(super().value()) / self._max_int * self._value_range + self._min_value
+            float(super().value()) / self._max_int * self._value_range
+            + self._min_value
         )
 
-    def setValue(self, value: float) -> None:  # pylint: disable=invalid-name
+    def setValue(
+        self, value: float
+    ) -> None:  # pylint: disable=invalid-name
         """Set the value of the slider."""
         super().setValue(
-            int((value - self._min_value) / self._value_range * self._max_int)
+            int(
+                (value - self._min_value)
+                / self._value_range
+                * self._max_int
+            )
         )
 
-    def setMinimum(self, value: float) -> None:  # pylint: disable=invalid-name
+    def setMinimum(
+        self, value: float
+    ) -> None:  # pylint: disable=invalid-name
         """Set the minimum value of the slider."""
         if value > self._max_value:  # pragma: no cover
-            raise ValueError("Minimum limit cannot be higher than maximum")
+            raise ValueError(
+                'Minimum limit cannot be higher than maximum'
+            )
 
         self._min_value = value
         self.setValue(self.value())
 
-    def setMaximum(self, value: float) -> None:  # pylint: disable=invalid-name
+    def setMaximum(
+        self, value: float
+    ) -> None:  # pylint: disable=invalid-name
         """Set the maximum value of the slider."""
         if value < self._min_value:  # pragma: no cover
-            raise ValueError("Minimum limit cannot be higher than maximum")
+            raise ValueError(
+                'Minimum limit cannot be higher than maximum'
+            )
 
         self._max_value = value
         self.setValue(self.value())
@@ -166,11 +181,15 @@ class RangeGroup(QHBoxLayout):
 
         return None
 
-    def update_spinbox(self, value: float) -> None:  # pylint: disable=unused-argument
+    def update_spinbox(
+        self, value: float
+    ) -> None:  # pylint: disable=unused-argument
         """Set the value of the internal spinbox."""
         self.spinbox.setValue(self.slider.value())
 
-    def update_value(self, value: float) -> None:  # pylint: disable=unused-argument
+    def update_value(
+        self, value: float
+    ) -> None:  # pylint: disable=unused-argument
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
         #     self.spinbox.setValue(self.minimum)
@@ -222,9 +241,9 @@ class ScaleAxesDialog(QDialog):
         )
 
         form_layout = QFormLayout(self)
-        form_layout.addRow("X Scale", self.x_slider_group)
-        form_layout.addRow("Y Scale", self.y_slider_group)
-        form_layout.addRow("Z Scale", self.z_slider_group)
+        form_layout.addRow('X Scale', self.x_slider_group)
+        form_layout.addRow('Y Scale', self.y_slider_group)
+        form_layout.addRow('Z Scale', self.z_slider_group)
 
         self.setLayout(form_layout)
 

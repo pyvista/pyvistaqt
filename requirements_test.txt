@@ -4,8 +4,8 @@ codespell==2.1.0
 flake8==4.0.1
 ipython==7.34.0
 isort==5.10.1
-mypy==0.950
-numpy==1.21.6
+mypy==0.961
+numpy==1.23.0
 pycodestyle==2.8.0
 pydocstyle==6.1.1
 pylint==2.13.0
@@ -16,3 +16,9 @@ pytest-qt==4.0.2
 pyvista==0.34.1
 QtPy==2.1.0
 scooby==0.5.12
+flake8-black==0.3.2
+flake8-isort==4.1.1
+flake8-quotes==3.3.1
+check-json-schema==0.16.2
+pre-commit==2.19.0
+pre-commit-hooks==4.3.0

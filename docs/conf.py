@@ -1,38 +1,45 @@
 import datetime
 import os
 import sys
+import warnings
+
+import numpy as np
+import pyvista
+import sphinx_rtd_theme
+from docutils.parsers.rst import directives
+from sphinx.ext.autosummary import Autosummary, get_documenter
+from sphinx.util.inspect import safe_getattr
+
+import pyvistaqt
 
 if sys.version_info >= (3, 0):
     import faulthandler
+
     faulthandler.enable()
 
 sys.path.insert(0, os.path.abspath('.'))
 
-
-import numpy as np
-# -- pyvista configuration ---------------------------------------------------
-import pyvista
-
-import pyvistaqt
-
 # Manage errors
 pyvista.set_error_output_file('errors.txt')
+
 # Ensure that offscreen rendering is used for docs generation
-pyvista.OFF_SCREEN = True # Not necessary - simply an insurance policy
+pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
 pyvista.BUILDING_GALLERY = True
+
 # Preferred plotting style for documentation
 pyvista.set_plot_theme('document')
 pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
+
 # Save figures in specified directory
-pyvista.FIGURE_PATH = os.path.join(os.path.abspath('./images/'), 'auto-generated/')
+pyvista.FIGURE_PATH = os.path.join(
+    os.path.abspath('./images/'), 'auto-generated/'
+)
 if not os.path.exists(pyvista.FIGURE_PATH):
     os.makedirs(pyvista.FIGURE_PATH)
 
-# SG warnings
-import warnings
 
 warnings.filterwarnings(
-    "ignore",
+    'ignore',
     category=UserWarning,
     message='Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.',
 )
@@ -45,16 +52,17 @@ html_logo = './_static/pyvista_logo.png'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.doctest',
-              'sphinx.ext.autosummary',
-              'notfound.extension',
-              'sphinx_copybutton',
-              'sphinx.ext.extlinks',
-              'sphinx.ext.coverage',
-              'sphinx.ext.intersphinx'
-              ]
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.doctest',
+    'sphinx.ext.autosummary',
+    'notfound.extension',
+    'sphinx_copybutton',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.coverage',
+    'sphinx.ext.intersphinx',
+]
 
 
 linkcheck_retries = 3
@@ -89,13 +97,18 @@ release = pyvistaqt.__version__
 # for a list of supported languages.
 #
 # This is also used if you do content translation via gettext catalogs.
-# Usually you set "language" from the command line for these cases.
+# Usually you set 'language' from the command line for these cases.
 language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = [
+    '_build',
+    'Thumbs.db',
+    '.DS_Store',
+    '**.ipynb_checkpoints',
+]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'friendly'
@@ -112,24 +125,35 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-import sphinx_rtd_theme
 
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_context = {
-    # Enable the "Edit in GitHub link within the header of each page.
+    # Enable the 'Edit in GitHub link within the header of each page.
     'display_github': False,
     # Set the following variables to generate the resulting github URL for each page.
-    # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
+    # Format Template: https://{{ github_host|default('github.com') }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
     'github_user': 'pyvista',
     'github_repo': 'pyvistaqt',
     'github_version': 'main/docs/',
     'menu_links_name': 'Getting Connected',
     'menu_links': [
-        ('<i class="fa fa-slack fa-fw"></i> Slack Community', 'http://slack.pyvista.org'),
-        ('<i class="fa fa-comment fa-fw"></i> Support', 'https://github.com/pyvista/pyvista-support'),
-        ('<i class="fa fa-github fa-fw"></i> Source Code', 'https://github.com/pyvista/pyvistaqt'),
-        ('<i class="fa fa-gavel fa-fw"></i> Contributing', 'https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md'),
+        (
+            '<i class="fa fa-slack fa-fw"></i> Slack Community',
+            'http://slack.pyvista.org',
+        ),
+        (
+            '<i class="fa fa-comment fa-fw"></i> Support',
+            'https://github.com/pyvista/pyvista-support',
+        ),
+        (
+            '<i class="fa fa-github fa-fw"></i> Source Code',
+            'https://github.com/pyvista/pyvistaqt',
+        ),
+        (
+            '<i class="fa fa-gavel fa-fw"></i> Contributing',
+            'https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md',
+        ),
     ],
 }
 
@@ -143,7 +167,7 @@ html_theme_options = {
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
+# so a file named 'default.css' will overwrite the builtin 'default.css'.
 html_static_path = ['_static']
 
 
@@ -154,23 +178,18 @@ htmlhelp_basename = 'pyvistaqtdoc'
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None,
-                       'https://docs.pyvista.org/': None,
+intersphinx_mapping = {
+    'https://docs.python.org/': None,
+    'https://docs.pyvista.org/': None,
 }
 
 
 # -- Custom 404 page
 
 notfound_context = {
-        'body': '<h1>Page not found.</h1>\n\nPerhaps try the <a href="http://docs.pyvista.org/examples/index.html">examples page</a>.',
+    'body': '<h1>Page not found.</h1>\n\nPerhaps try the <a href="http://docs.pyvista.org/examples/index.html">examples page</a>.',
 }
 notfound_no_urls_prefix = True
-
-
-from docutils.parsers.rst import directives
-# -- Autosummary options
-from sphinx.ext.autosummary import Autosummary, get_documenter
-from sphinx.util.inspect import safe_getattr
 
 
 class AutoAutoSummary(Autosummary):
@@ -188,35 +207,60 @@ class AutoAutoSummary(Autosummary):
         if not include_public:
             include_public = []
         items = []
-        for name in sorted(obj.__dict__.keys()):#dir(obj):
+        for name in sorted(obj.__dict__.keys()):  # dir(obj):
             try:
-                documenter = get_documenter(AutoAutoSummary.app, safe_getattr(obj, name), obj)
+                documenter = get_documenter(
+                    AutoAutoSummary.app, safe_getattr(obj, name), obj
+                )
             except AttributeError:
                 continue
             if documenter.objtype in typ:
                 items.append(name)
-        public = [x for x in items if x in include_public or not x.startswith('_')]
+        public = [
+            x
+            for x in items
+            if x in include_public or not x.startswith('_')
+        ]
         return public, items
 
     def run(self):
         clazz = str(self.arguments[0])
         try:
             (module_name, class_name) = clazz.rsplit('.', 1)
-            m = __import__(module_name, globals(), locals(), [class_name])
+            m = __import__(
+                module_name, globals(), locals(), [class_name]
+            )
             c = getattr(m, class_name)
             if 'methods' in self.options:
-                _, methods = self.get_members(c, ['method'], ['__init__'])
-                self.content = ["~%s.%s" % (clazz, method) for method in methods if not method.startswith('_')]
+                _, methods = self.get_members(
+                    c, ['method'], ['__init__']
+                )
+                self.content = [
+                    '~%s.%s' % (clazz, method)
+                    for method in methods
+                    if not method.startswith('_')
+                ]
             if 'attributes' in self.options:
-                _, attribs = self.get_members(c, ['attribute', 'property'])
-                self.content = ["~%s.%s" % (clazz, attrib) for attrib in attribs if not attrib.startswith('_')]
-        except:
-            print('Something went wrong when autodocumenting {}'.format(clazz))
+                _, attribs = self.get_members(
+                    c, ['attribute', 'property']
+                )
+                self.content = [
+                    '~%s.%s' % (clazz, attrib)
+                    for attrib in attribs
+                    if not attrib.startswith('_')
+                ]
+        except Exception:
+            print(
+                'Something went wrong when autodocumenting {}'.format(
+                    clazz
+                )
+            )
         finally:
             return super(AutoAutoSummary, self).run()
+
 
 def setup(app):
     AutoAutoSummary.app = app
     app.add_directive('autoautosummary', AutoAutoSummary)
-    app.add_css_file("style.css")
-    app.add_css_file("copybutton.css")
+    app.add_css_file('style.css')
+    app.add_css_file('copybutton.css')

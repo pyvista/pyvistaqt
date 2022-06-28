@@ -17,10 +17,10 @@ class Counter(QObject):
             self.count = count
         elif count > 0:
             raise TypeError(
-                f"Expected type of `count` to be `int` but got: {type(count)}"
+                f'Expected type of `count` to be `int` but got: {type(count)}'
             )
         else:
-            raise ValueError("count is not strictly positive.")
+            raise ValueError('count is not strictly positive.')
 
     @Slot()
     def decrease(self) -> None:
