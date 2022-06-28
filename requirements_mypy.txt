@@ -1,0 +1,5 @@
+pytest-mypy-plugins
+IceSpringPySideStubs-PySide6
+PyQt5-stubs
+PySide2-stubs
+types-setuptools

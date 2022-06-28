@@ -3,6 +3,7 @@ import sys
 
 import pytest
 from pyvista.plotting import system_supports_plotting
+
 import pyvistaqt
 
 NO_PLOTTING = not system_supports_plotting()
@@ -21,7 +22,9 @@ def _check_qt_installed():
 def plotting():
     """Require plotting."""
     if NO_PLOTTING:
-        pytest.skip(NO_PLOTTING, reason="Requires system to support plotting")
+        pytest.skip(
+            NO_PLOTTING, reason="Requires system to support plotting"
+        )
     yield
 
 

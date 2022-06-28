@@ -9,7 +9,9 @@ except Exception as exc:  # pragma: no cover # pylint: disable=broad-except
     # pylint: disable=too-few-public-methods
     class _QtBindingError:
         def __init__(self, *args, **kwargs):
-            raise RuntimeError(f"No Qt binding was found, got: {_exc_msg}")
+            raise RuntimeError(
+                f"No Qt binding was found, got: {_exc_msg}"
+            )
 
     # pylint: disable=too-few-public-methods
     class BackgroundPlotter(_QtBindingError):
@@ -28,7 +30,12 @@ except Exception as exc:  # pragma: no cover # pylint: disable=broad-except
         """Handle Qt binding error for QtInteractor."""
 
 else:
-    from .plotting import BackgroundPlotter, MainWindow, MultiPlotter, QtInteractor
+    from .plotting import (
+        BackgroundPlotter,
+        MainWindow,
+        MultiPlotter,
+        QtInteractor,
+    )
 
 
 __all__ = [
