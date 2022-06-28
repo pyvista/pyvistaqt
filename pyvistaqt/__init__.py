@@ -6,9 +6,7 @@ try:
 except Exception as exc:  # pragma: no cover # pylint: disable=broad-except
     _exc_msg = exc
 
-    raise RuntimeError(
-        f'No Qt binding was found, got: {_exc_msg}'
-    ) from exc
+    raise RuntimeError(f'No Qt binding was found, got: {_exc_msg}') from exc
 
 else:
     from .plotting import BackgroundPlotter as BackgroundPlotter
