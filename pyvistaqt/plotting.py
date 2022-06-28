@@ -135,7 +135,7 @@ def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
 @contextlib.contextmanager
 def _no_base_plotter_init() -> Generator[None, None, None]:
     init = BasePlotter.__init__
-    BasePlotter.__init__ = None
+    BasePlotter.__init__ = lambda: None
     try:
         yield
     finally:

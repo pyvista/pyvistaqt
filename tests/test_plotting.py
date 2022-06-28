@@ -81,7 +81,7 @@ class TstWindow(MainWindow):
 
 def test_base_plotter_noop(qtbot):
     with _no_base_plotter_init():
-        assert BasePlotter.__init__ is None
+        assert BasePlotter.__init__() is None
     assert BasePlotter.__init__ is not None
 
 
