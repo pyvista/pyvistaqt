@@ -5,7 +5,7 @@ NO_PLOTTING = not system_supports_plotting()
 
 
 @pytest.fixture()
-def plotting():
+def plotting() -> None:
     """Require plotting."""
     if NO_PLOTTING:
         pytest.skip(

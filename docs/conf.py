@@ -1,7 +1,11 @@
+"""Configuration file for sphinx documentation."""
+from __future__ import annotations
+
 import datetime
 import os
 import sys
 import warnings
+from typing import Optional
 
 import numpy as np
 import pyvista
@@ -78,10 +82,12 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyVistaQt'
+project = 'PyVistaQt'
 year = datetime.date.today().year
-copyright = u'2017-{}, The PyVista Developers'.format(year)
-author = u'Alex Kaszynski and Bane Sullivan'
+copyright = '2017-{}, The PyVista Developers'.format(  # pylint: disable=redefined-builtin,line-too-long
+    year
+)
+author = 'Alex Kaszynski and Bane Sullivan'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -98,7 +104,7 @@ release = pyvistaqt.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set 'language' from the command line for these cases.
-language = None
+language: Optional[str] = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -193,7 +199,6 @@ notfound_no_urls_prefix = True
 
 
 class AutoAutoSummary(Autosummary):
-
     option_spec = {
         'methods': directives.unchanged,
         'attributes': directives.unchanged,
@@ -249,14 +254,16 @@ class AutoAutoSummary(Autosummary):
                     for attrib in attribs
                     if not attrib.startswith('_')
                 ]
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             print(
                 'Something went wrong when autodocumenting {}'.format(
                     clazz
                 )
             )
         finally:
-            return super(AutoAutoSummary, self).run()
+            return super(
+                AutoAutoSummary, self  # pylint: disable=lost-exception
+            ).run()  # pylint: disable=lost-exception
 
 
 def setup(app):

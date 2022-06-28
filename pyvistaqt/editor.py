@@ -58,8 +58,8 @@ class Editor(QDialog):
         self.tree_widget.clear()
         for idx, renderer in enumerate(self.renderers):
             actors = (
-                renderer._actors
-            )  # pylint: disable=protected-access
+                renderer._actors  # pylint: disable=protected-access
+            )
             widget_idx = self.stacked_widget.addWidget(
                 _get_renderer_widget(renderer)
             )
