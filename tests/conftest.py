@@ -8,7 +8,5 @@ NO_PLOTTING = not system_supports_plotting()
 def plotting() -> None:
     """Require plotting."""
     if NO_PLOTTING:
-        pytest.skip(
-            NO_PLOTTING, reason='Requires system to support plotting'
-        )
+        pytest.skip(NO_PLOTTING, reason='Requires system to support plotting')
     yield

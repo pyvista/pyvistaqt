@@ -25,12 +25,7 @@ from qtpy.QtWidgets import (
 )
 
 import pyvistaqt
-from pyvistaqt import (
-    BackgroundPlotter,
-    MainWindow,
-    MultiPlotter,
-    QtInteractor,
-)
+from pyvistaqt import BackgroundPlotter, MainWindow, MultiPlotter, QtInteractor
 from pyvistaqt.dialog import FileDialog
 from pyvistaqt.editor import Editor
 from pyvistaqt.plotting import (
@@ -40,11 +35,7 @@ from pyvistaqt.plotting import (
     _no_base_plotter_init,
     global_theme,
 )
-from pyvistaqt.utils import (
-    _check_type,
-    _create_menu_bar,
-    _setup_application,
-)
+from pyvistaqt.utils import _check_type, _create_menu_bar, _setup_application
 
 
 class TstWindow(MainWindow):
@@ -152,8 +143,7 @@ def test_mouse_interactions(qtbot):
 
 
 @pytest.mark.skipif(
-    platform.system() == 'Windows'
-    and platform.python_version()[:-1] == '3.8.',
+    platform.system() == 'Windows' and platform.python_version()[:-1] == '3.8.',
     reason='#51',
 )
 def test_ipython(qapp):
@@ -267,9 +257,7 @@ def test_editor(qtbot, plotting):
     assert top_item is not None
 
     # simulate selection
-    with qtbot.wait_signals(
-        [tree_widget.itemSelectionChanged], timeout=2000
-    ):
+    with qtbot.wait_signals([tree_widget.itemSelectionChanged], timeout=2000):
         top_item.setSelected(True)
 
     # toggle all the renderer-associated checkboxes twice
@@ -322,9 +310,7 @@ def test_qt_interactor(qtbot, plotting):
     renderer = vtk_widget.renderer  # vtkRenderer
 
     # ensure that self.render is called by the timer
-    render_blocker = qtbot.wait_signals(
-        [render_timer.timeout], timeout=500
-    )
+    render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
     render_blocker.wait()
 
     window.add_sphere()
@@ -369,9 +355,7 @@ def test_qt_interactor(qtbot, plotting):
     ],
 )
 def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
-    plotter = BackgroundPlotter(
-        show=show_plotter, off_screen=False, title='Testing Window'
-    )
+    plotter = BackgroundPlotter(show=show_plotter, off_screen=False, title='Testing Window')
     assert_hasattr(plotter, 'app_window', MainWindow)
     window = plotter.app_window  # MainWindow
     qtbot.addWidget(window)  # register the window
@@ -415,9 +399,7 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
 
 
 def test_background_plotting_camera(qtbot, plotting):
-    plotter = BackgroundPlotter(
-        off_screen=False, title='Testing Window'
-    )
+    plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
 
     cpos = [(0.0, 0.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
@@ -445,19 +427,13 @@ def test_link_views_across_plotters(other_views):
     def _to_array(camera_position):
         return np.asarray([list(row) for row in camera_position])
 
-    plotter_one = BackgroundPlotter(
-        off_screen=True, title='Testing Window'
-    )
+    plotter_one = BackgroundPlotter(off_screen=True, title='Testing Window')
     plotter_one.add_mesh(pyvista.Sphere())
 
-    plotter_two = BackgroundPlotter(
-        off_screen=True, title='Testing Window'
-    )
+    plotter_two = BackgroundPlotter(off_screen=True, title='Testing Window')
     plotter_two.add_mesh(pyvista.Sphere())
 
-    plotter_one.link_views_across_plotters(
-        plotter_two, other_views=other_views
-    )
+    plotter_one.link_views_across_plotters(plotter_two, other_views=other_views)
 
     plotter_one.camera_position = [
         (0.0, 0.0, 1.0),
@@ -494,9 +470,7 @@ def test_link_views_across_plotters(other_views):
 
     match = 'Expected `other_views` type is int, or list or tuple of ints, but float64 is given'
     with pytest.raises(TypeError, match=match):
-        plotter_one.link_views_across_plotters(
-            plotter_two, other_views=[0.0]
-        )
+        plotter_one.link_views_across_plotters(plotter_two, other_views=[0.0])
 
 
 @pytest.mark.parametrize(
@@ -506,16 +480,12 @@ def test_link_views_across_plotters(other_views):
         False,
     ],
 )
-def test_background_plotter_export_files(
-    qtbot, tmpdir, show_plotter, plotting
-):
+def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir('tmpdir'))
     assert os.path.isdir(output_dir)
 
-    plotter = BackgroundPlotter(
-        show=show_plotter, off_screen=False, title='Testing Window'
-    )
+    plotter = BackgroundPlotter(show=show_plotter, off_screen=False, title='Testing Window')
     assert_hasattr(plotter, 'app_window', MainWindow)
     window = plotter.app_window  # MainWindow
     qtbot.addWidget(window)  # register the window
@@ -562,16 +532,12 @@ def test_background_plotter_export_files(
         False,
     ],
 )
-def test_background_plotter_export_vtkjs(
-    qtbot, tmpdir, show_plotter, plotting
-):
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir('tmpdir'))
     assert os.path.isdir(output_dir)
 
-    plotter = BackgroundPlotter(
-        show=show_plotter, off_screen=False, title='Testing Window'
-    )
+    plotter = BackgroundPlotter(show=show_plotter, off_screen=False, title='Testing Window')
     assert_hasattr(plotter, 'app_window', MainWindow)
     window = plotter.app_window  # MainWindow
     qtbot.addWidget(window)  # register the window
@@ -612,9 +578,7 @@ def test_background_plotter_export_vtkjs(
 
 
 def test_background_plotting_orbit(qtbot, plotting):
-    plotter = BackgroundPlotter(
-        off_screen=False, title='Testing Window'
-    )
+    plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
     # perform the orbit:
     plotter.orbit_on_path(threaded=True, step=0.0)
@@ -765,9 +729,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
         update_count[0] = update_count[0] + 1
         return orig_update_app_icon(slf)
 
-    monkeypatch.setattr(
-        BackgroundPlotter, 'update_app_icon', update_app_icon
-    )
+    monkeypatch.setattr(BackgroundPlotter, 'update_app_icon', update_app_icon)
     plotter = BackgroundPlotter(
         show=False,
         off_screen=False,
@@ -818,14 +780,10 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     counter = plotter.counters[-1]  # Counter
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals(
-        [callback_timer.timeout], timeout=2000
-    )
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=2000)
     callback_blocker.wait()
     # ensure that self.counters send a signal
-    counter_blocker = qtbot.wait_signals(
-        [counter.signal_finished], timeout=2000
-    )
+    counter_blocker = qtbot.wait_signals([counter.signal_finished], timeout=2000)
     counter_blocker.wait()
     assert not callback_timer.isActive()  # counter stops the callback
 
@@ -834,9 +792,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     assert callback_timer.isActive()
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals(
-        [callback_timer.timeout], timeout=2000
-    )
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=2000)
     callback_blocker.wait()
 
     plotter.close()
@@ -860,9 +816,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
         False,
     ],
 )
-def test_background_plotting_close(
-    qtbot, close_event, empty_scene, plotting
-):
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
 
     close_all()  # this is necessary to test _ALL_PLOTTERS
@@ -890,9 +844,7 @@ def test_background_plotting_close(
     qtbot.addWidget(window)  # register the main widget
 
     # ensure that self.render is called by the timer
-    render_blocker = qtbot.wait_signals(
-        [render_timer.timeout], timeout=500
-    )
+    render_blocker = qtbot.wait_signals([render_timer.timeout], timeout=500)
     render_blocker.wait()
 
     # ensure that the widgets are showed
