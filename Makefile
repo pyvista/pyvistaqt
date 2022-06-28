@@ -16,7 +16,7 @@ EXTRA_PYLINT_OPTIONS ?= --ignore=rwi.py
 EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
 EXTRA_MYPY_OPTIONS ?= --follow-imports=skip
 EXTRA_FLAKE8_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
-EXTRA_PYDOCSTYLE_OPTIONS = --match='(?!(test_|rwi)).*\.py'
+EXTRA_PYDOCSTYLE_OPTIONS = --match='(?!(coverage|test_|rwi)).*\.py'
 
 all: srcstyle doctest
 
