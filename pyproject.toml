@@ -1,0 +1,29 @@
+[tool.black]
+line-length = 88
+skip-string-normalization = true
+target-version = ["py39"]
+# `pre-comment` doesn't see skips; `force-exclude` forces it
+# to see these files
+#
+# See:
+#   - https://github.com/psf/black/issues/1584
+force-exclude = '''
+(
+    docs/conf\.py
+  | pyvistaqt/rwi\.py
+  | tests/.*\.py
+  | setup.py
+)
+'''
+check = true
+
+[tool.pydocstyle]
+match = '''
+(?!
+    (
+      | tests/
+      | docs/
+      | rwi
+    ).*\.py
+)
+'''

@@ -7,16 +7,19 @@ PYLINT_DIRS ?= ./pyvistaqt/
 MYPY_DIRS ?= "mypy_checklist.txt"
 FLAKE8_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
-CODESPELL_SKIP ?= "*.json,*.pyc,*.txt,*.gif,*.png,*.jpg,*.ply,*.vtk,*.vti,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./docs/_build/*,./docs/images/*,./dist/*,./.ci/*"
-CODESPELL_IGNORE ?= "ignore_words.txt"
+PYDOCSTYLE_DIRS ?= ./pyvistaqt/
+COVERAGE_DIRS ?= ./pyvistaqt/
+COVERAGE_HTML_DIRS ?= ./pyvistaqt/
+COVERAGE_XML_DIRS ?= ./pyvistaqt/
 
-EXTRA_BLACK_OPTIONS ?= --exclude rwi.py
-EXTRA_ISORT_OPTIONS ?= --skip=rwi.py
-EXTRA_PYLINT_OPTIONS ?= --ignore=rwi.py
-EXTRA_PYCODESTYLE_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
-EXTRA_MYPY_OPTIONS ?= --follow-imports=skip
-EXTRA_FLAKE8_OPTIONS ?= --ignore="E501,E203,W503" --exclude=rwi.py
-EXTRA_PYDOCSTYLE_OPTIONS = --match='(?!(test_|rwi)).*\.py'
+EXTRA_CODESPELL_OPTIONS ?= --config .codespellrc
+EXTRA_BLACK_OPTIONS ?= --config pyproject.toml
+EXTRA_ISORT_OPTIONS ?= --check --settings=.isort.cfg
+EXTRA_PYLINT_OPTIONS ?= -rn -sn --rcfile=.pylintrc
+EXTRA_PYCODESTYLE_OPTIONS ?= --config=.pycodestyle
+EXTRA_MYPY_OPTIONS ?= --config-file mypy.ini
+EXTRA_FLAKE8_OPTIONS ?= --config=.flake8
+EXTRA_PYDOCSTYLE_OPTIONS = --config=pyproject.toml
 
 all: srcstyle doctest
 
@@ -26,15 +29,15 @@ doctest: codespell pydocstyle
 
 black:
 	@echo "Running black"
-	@black --check $(BLACK_DIRS) $(EXTRA_BLACK_OPTIONS)
+	@black $(BLACK_DIRS) $(EXTRA_BLACK_OPTIONS)
 
 isort:
 	@echo "Running isort"
-	@isort --check $(ISORT_DIRS) $(EXTRA_ISORT_OPTIONS)
+	@isort $(ISORT_DIRS) $(EXTRA_ISORT_OPTIONS)
 
 pylint:
 	@echo "Running pylint"
-	@pylint $(PYLINT_DIRS) --rcfile=.pylintrc $(EXTRA_PYLINT_OPTIONS)
+	@pylint $(PYLINT_DIRS) $(EXTRA_PYLINT_OPTIONS)
 
 pycodestyle:
 	@echo "Running pycodestyle"
@@ -42,7 +45,7 @@ pycodestyle:
 
 mypy:
 	@echo "Running mypy"
-	@mypy --config-file mypy.ini @$(MYPY_DIRS) $(EXTRA_MYPY_OPTIONS)
+	@mypy @$(MYPY_DIRS) $(EXTRA_MYPY_OPTIONS)
 
 flake8:
 	@echo "Running flake8"
@@ -50,20 +53,20 @@ flake8:
 
 codespell:
 	@echo "Running codespell"
-	@codespell $(CODESPELL_DIRS) -S $(CODESPELL_SKIP) -I $(CODESPELL_IGNORE)
+	@codespell $(CODESPELL_DIRS) $(EXTRA_CODESPELL_OPTIONS)
 
 pydocstyle:
 	@echo "Running pydocstyle"
-	@pydocstyle pyvistaqt $(EXTRA_PYDOCSTYLE_OPTIONS)
+	@pydocstyle $(PYDOCSTYLE_DIRS) $(EXTRA_PYDOCSTYLE_OPTIONS)
 
 coverage:
 	@echo "Running coverage"
-	@pytest -v --cov pyvistaqt
+	@pytest -v --cov $(COVERAGE_DIRS)
 
 coverage-xml:
 	@echo "Reporting XML coverage"
-	@pytest -v --cov pyvistaqt --cov-report xml
+	@pytest -v --cov $(COVERAGE_XML_DIRS) --cov-report xml
 
 coverage-html:
 	@echo "Reporting HTML coverage"
-	@pytest -v --cov pyvistaqt --cov-report html
+	@pytest -v --cov $(COVERAGE_HTML_DIRS) --cov-report html

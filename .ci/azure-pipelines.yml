@@ -52,7 +52,7 @@ stages:
       inputs:
         versionSpec: '3.7'
     - script: |
-        pip install codespell pydocstyle
+        pip install codespell pydocstyle[toml]
         make doctest
       displayName: 'Run doctest'
 

@@ -5,12 +5,14 @@ dependencies:
   - python<3.9
   - codecov
   - ipython
+  - mypy
   - numpy
   - pytest
   - pytest-cov
   - pytest-qt
   - qtpy>=1.9.0
   - scooby>=0.5.1
+  - toml
   - pip
   - pip:
       - vtk
