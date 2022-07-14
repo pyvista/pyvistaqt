@@ -270,6 +270,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._first_time = False  # Crucial!
         LOG.debug("QtInteractor init stop")
 
+        window_ = QtGui.QWindow.fromWinId(self.winId())
+        self.createWindowContainer(window_, self)
+
     def _setup_interactor(self, off_screen: bool) -> None:
         if off_screen:
             self.iren: Any = None
