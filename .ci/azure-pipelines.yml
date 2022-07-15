@@ -275,7 +275,7 @@ stages:
         # https://github.com/pyvista/pyvistaqt/pull/61#issuecomment-709320826
         sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0    \
                                 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
-                                libxcb-xinerama0 libxcb-xfixes0
+                                libxcb-xinerama0 libxcb-xfixes0 libxcb-shape0
         pip install -r requirements_docs.txt
       displayName: 'Install dependencies'
 
