@@ -36,8 +36,8 @@ def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:
     types = tuple(var_types)
     if not isinstance(var, types):
         raise TypeError(
-            "Expected type for ``{}`` is {}"
-            " but {} was given.".format(var_name, str(types), type(var))
+            f"Expected type for ``{var_name}`` is {str(types)}"
+            f" but {type(var)} was given."
         )
 
 
@@ -63,7 +63,7 @@ def _setup_ipython(ipython: Any = None) -> Any:
         from IPython import get_ipython
 
         ipython = get_ipython()
-        ipython.magic("gui qt")
+        ipython.run_line_magic("gui", "qt")
 
         # pylint: disable=redefined-outer-name
         # pylint: disable=import-outside-toplevel

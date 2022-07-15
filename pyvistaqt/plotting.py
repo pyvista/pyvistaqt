@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 """
 This module contains the QtInteractor and BackgroundPlotter.
 
@@ -45,15 +46,16 @@ import platform
 import time
 import warnings
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 import vtk
 from PIL import Image
+from pyvista import global_theme
 from pyvista.plotting.plotting import BasePlotter
-from pyvista.plotting.theme import rcParams
+from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
@@ -68,11 +70,12 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog, ScaleAxesDialog
 from .editor import Editor
+from .rwi import QVTKRenderWindowInteractor
 from .utils import (
     _check_type,
     _create_menu_bar,
@@ -146,7 +149,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         If True, enable polygon smothing
 
     auto_update :
-        Automatic update rate in seconds.  Useful for automatically
+        Number of updates per second.  Useful for automatically
         updating the render window when actors are change without
         being automatically ``Modified``.
     """
@@ -156,7 +159,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     # Signals must be class attributes
     render_signal = Signal()
-    key_press_event_signal = Signal(vtk.vtkGenericRenderWindowInteractor, str)
+    key_press_event_signal = Signal(vtkGenericRenderWindowInteractor, str)
 
     # pylint: disable=too-many-arguments
     def __init__(
@@ -190,7 +193,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.interactor = self
 
         if multi_samples is None:
-            multi_samples = rcParams["multi_samples"]
+            multi_samples = global_theme.multi_samples
 
         self.setAcceptDrops(True)
 
@@ -211,7 +214,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.render_signal.connect(self._render)
         self.key_press_event_signal.connect(super().key_press_event)
 
-        self.background_color = rcParams["background"]
+        self.background_color = global_theme.background
         if self.title:
             self.setWindowTitle(title)
 
@@ -233,11 +236,11 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             # Modified() and upstream objects won't be updated.  This
             # ensures the render window stays updated without consuming too
             # many resources.
-            twait = (auto_update ** -1) * 1000.0
+            twait = int((auto_update**-1) * 1000.0)
             self.render_timer.timeout.connect(self.render)
             self.render_timer.start(twait)
 
-        if rcParams["depth_peeling"]["enabled"]:
+        if global_theme.depth_peeling["enabled"]:
             if self.enable_depth_peeling():
                 for renderer in self.renderers:
                     renderer.enable_depth_peeling()
@@ -249,33 +252,20 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen:
             self.iren: Any = None
         else:
-            try:
-                # pylint: disable=import-outside-toplevel
-                from pyvista.plotting.render_window_interactor import (
-                    RenderWindowInteractor,
-                )
-
-                self.iren = RenderWindowInteractor(
-                    self, interactor=self.ren_win.GetInteractor()
-                )
-                self.iren.interactor.RemoveObservers(
-                    "MouseMoveEvent"
-                )  # slows window update?
-                self.iren.initialize()
-            except ImportError:
-                self.iren = self.ren_win.GetInteractor()
-                self.iren.RemoveObservers("MouseMoveEvent")  # slows window update?
-                self.iren.Initialize()
+            self.iren = RenderWindowInteractor(
+                self, interactor=self.ren_win.GetInteractor()
+            )
+            self.iren.interactor.RemoveObservers(
+                "MouseMoveEvent"
+            )  # slows window update?
+            self.iren.initialize()
             self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
-        try:
-            self._observers: Dict[
-                None, None
-            ] = {}  # Map of events to observers of self.iren
-            self.iren.add_observer("KeyPressEvent", self.key_press_event)
-        except AttributeError:
-            self._add_observer("KeyPressEvent", self.key_press_event)
+        self._observers: Dict[
+            None, None
+        ] = {}  # Map of events to observers of self.iren
+        self.iren.add_observer("KeyPressEvent", self.key_press_event)
         self.reset_key_events()
 
     def gesture_event(self, event: QGestureEvent) -> bool:
@@ -284,6 +274,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if pinch:
             self.camera.Zoom(pinch.scaleFactor())
             event.accept()
+            self.update()
         return True
 
     def key_press_event(self, obj: Any, event: Any) -> None:
@@ -312,6 +303,45 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.setDisabled(True)
         return BasePlotter.disable(self)
 
+    def link_views_across_plotters(
+        self, other_plotter: Any, view: int = 0, other_views: Any = None
+    ) -> None:
+        """Link the views' cameras across two plotters.
+
+        Parameters
+        ----------
+        other_plotter: Plotter
+            The plotter whose views will be linked.
+        view: int
+            Link the views in `other_plotter` to the this view index.
+        other_views: int | list of ints
+            Link these views from `other_plotter` to the reference view. The default
+            is None, in which case all views from `other_plotter` will be linked to
+            the reference view.
+
+        Note
+        ----
+        For linking views belonging to a single plotter, please use
+        pyvista's `Plotter.link_views` method.
+
+        """
+        if other_views is None:
+            other_views = np.arange(len(other_plotter.renderers))
+        elif isinstance(other_views, int):
+            other_views = np.asarray([other_views])
+        else:
+            other_views = np.asarray(other_views)
+
+        if not np.issubdtype(other_views.dtype, int):
+            raise TypeError(
+                "Expected `other_views` type is int, or list or tuple of ints, "
+                f"but {other_views.dtype} is given"
+            )
+
+        renderer = self.renderers[view]
+        for view_index in other_views:
+            other_plotter.renderers[view_index].camera = renderer.camera
+
     # pylint: disable=invalid-name,no-self-use
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
@@ -320,26 +350,25 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         exist.  User can drop anything in this window and we only want
         to allow files.
         """
-        # pragma: no cover
         try:
             for url in event.mimeData().urls():
                 if os.path.isfile(url.path()):
                     # only call accept on files
                     event.accept()
         except IOError as exception:  # pragma: no cover
-            warnings.warn("Exception when dropping files: %s" % str(exception))
+            warnings.warn(f"Exception when dragging files: {str(exception)}")
 
     # pylint: disable=invalid-name,useless-return
     def dropEvent(self, event: QtCore.QEvent) -> None:
         """Event is called after dragEnterEvent."""
-        for url in event.mimeData().urls():  # pragma: no cover
-            self.url = url
-            filename = self.url.path()
-            if os.path.isfile(filename):
-                try:
+        try:
+            for url in event.mimeData().urls():
+                self.url = url
+                filename = self.url.path()
+                if os.path.isfile(filename):
                     self.add_mesh(pyvista.read(filename))
-                except IOError as exception:
-                    print(str(exception))
+        except IOError as exception:  # pragma: no cover
+            warnings.warn(f"Exception when dropping files: {str(exception)}")
 
     def close(self) -> None:
         """Quit application."""
@@ -415,6 +444,9 @@ class BackgroundPlotter(QtInteractor):
         being automatically ``Modified``.  If set to ``True``, update
         rate will be 1 second.
 
+    app_window_class : None, class, optional
+        A subclass of MainWindow to use when creating the app window.
+
     Examples
     --------
     >>> import pyvista as pv
@@ -442,6 +474,7 @@ class BackgroundPlotter(QtInteractor):
         menu_bar: bool = True,
         editor: bool = True,
         update_app_icon: Optional[bool] = None,
+        app_window_class: Optional[Type[MainWindow]] = None,
         **kwargs: Any,
     ) -> None:
         # pylint: disable=too-many-branches
@@ -480,7 +513,7 @@ class BackgroundPlotter(QtInteractor):
         self.allow_quit_keypress = allow_quit_keypress
 
         if window_size is None:
-            window_size = rcParams["window_size"]
+            window_size = global_theme.window_size
 
         # Remove notebook argument in case user passed it
         kwargs.pop("notebook", None)
@@ -488,8 +521,11 @@ class BackgroundPlotter(QtInteractor):
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
         self.off_screen = _setup_off_screen(off_screen)
-
-        self.app_window = MainWindow(title=kwargs.get("title", rcParams["title"]))
+        if app_window_class is None:
+            app_window_class = MainWindow
+        self.app_window = app_window_class(
+            title=kwargs.get("title", global_theme.title)
+        )
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
@@ -555,7 +591,16 @@ class BackgroundPlotter(QtInteractor):
 
         """
         if not self._closed:
-            self.app_window.close()
+            # Can get:
+            #
+            #     RuntimeError: wrapped C/C++ object of type MainWindow has
+            #     been deleted
+            #
+            # So let's be safe and try/except this in case of a problem.
+            try:
+                self.app_window.close()
+            except Exception:  # pragma: no cover # pylint: disable=broad-except
+                pass
 
     def _close(self) -> None:
         super().close()
@@ -715,9 +760,7 @@ class BackgroundPlotter(QtInteractor):
                 # pylint: disable=attribute-defined-outside-init
                 self.camera_position = camera_position
 
-            self.saved_cameras_tool_bar.addAction(
-                "Cam %2d" % ncam, load_camera_position
-            )
+            self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
             if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)
 
