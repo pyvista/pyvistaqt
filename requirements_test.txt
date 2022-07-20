@@ -5,7 +5,7 @@ flake8==4.0.1
 ipython==7.34.0
 isort==5.10.1
 mypy==0.971
-numpy==1.21.6
+numpy==1.23.1
 pycodestyle==2.8.0
 pydocstyle==6.1.1
 pylint==2.13.0
