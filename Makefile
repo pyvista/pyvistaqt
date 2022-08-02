@@ -27,10 +27,6 @@ srcstyle: black isort pylint pycodestyle mypy flake8
 
 doctest: codespell pydocstyle
 
-black:
-	@echo "Running black"
-	@black $(BLACK_DIRS) $(EXTRA_BLACK_OPTIONS)
-
 isort:
 	@echo "Running isort"
 	@isort $(ISORT_DIRS) $(EXTRA_ISORT_OPTIONS)
