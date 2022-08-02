@@ -23,8 +23,6 @@ jobs:
         python -m pip install --upgrade pip wheel
         pip install -r requirements_test.txt
       name: 'Install dependencies with pip'
-    - run: make black
-      name: 'Run black'
     - run: make isort
       name: 'Run isort'
     - run: make pylint
