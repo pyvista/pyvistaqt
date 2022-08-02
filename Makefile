@@ -1,11 +1,8 @@
 # Simple makefile to simplify repetitive build env management tasks under posix
 
-BLACK_DIRS ?= ./pyvistaqt/
 ISORT_DIRS ?= ./pyvistaqt/
 PYCODESTYLE_DIRS ?= ./pyvistaqt/
 PYLINT_DIRS ?= ./pyvistaqt/
-MYPY_DIRS ?= "mypy_checklist.txt"
-FLAKE8_DIRS ?= ./pyvistaqt/
 CODESPELL_DIRS ?= ./
 PYDOCSTYLE_DIRS ?= ./pyvistaqt/
 COVERAGE_DIRS ?= ./pyvistaqt/
@@ -13,12 +10,9 @@ COVERAGE_HTML_DIRS ?= ./pyvistaqt/
 COVERAGE_XML_DIRS ?= ./pyvistaqt/
 
 EXTRA_CODESPELL_OPTIONS ?= --config .codespellrc
-EXTRA_BLACK_OPTIONS ?= --config pyproject.toml
 EXTRA_ISORT_OPTIONS ?= --check --settings=.isort.cfg
 EXTRA_PYLINT_OPTIONS ?= -rn -sn --rcfile=.pylintrc
 EXTRA_PYCODESTYLE_OPTIONS ?= --config=.pycodestyle
-EXTRA_MYPY_OPTIONS ?= --config-file mypy.ini
-EXTRA_FLAKE8_OPTIONS ?= --config=.flake8
 EXTRA_PYDOCSTYLE_OPTIONS = --config=pyproject.toml
 
 all: srcstyle doctest
