@@ -39,10 +39,6 @@ pycodestyle:
 	@echo "Running pycodestyle"
 	@pycodestyle $(PYCODESTYLE_DIRS) $(EXTRA_PYCODESTYLE_OPTIONS)
 
-mypy:
-	@echo "Running mypy"
-	@mypy @$(MYPY_DIRS) $(EXTRA_MYPY_OPTIONS)
-
 flake8:
 	@echo "Running flake8"
 	@flake8 $(FLAKE8_DIRS) $(EXTRA_FLAKE8_OPTIONS)
