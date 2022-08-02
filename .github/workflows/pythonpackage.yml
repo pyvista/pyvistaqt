@@ -29,8 +29,6 @@ jobs:
       name: 'Run pylint'
     - run: make pycodestyle
       name: 'Run pycodestyle'
-    - run: make flake8
-      name: 'Run flake8'
     - run: make codespell
       name: 'Run codespell'
     - run: make pydocstyle
