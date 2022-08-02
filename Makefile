@@ -39,10 +39,6 @@ pycodestyle:
 	@echo "Running pycodestyle"
 	@pycodestyle $(PYCODESTYLE_DIRS) $(EXTRA_PYCODESTYLE_OPTIONS)
 
-flake8:
-	@echo "Running flake8"
-	@flake8 $(FLAKE8_DIRS) $(EXTRA_FLAKE8_OPTIONS)
-
 codespell:
 	@echo "Running codespell"
 	@codespell $(CODESPELL_DIRS) $(EXTRA_CODESPELL_OPTIONS)
