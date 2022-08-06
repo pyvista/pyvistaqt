@@ -87,16 +87,32 @@ repos:
 - repo: local
   hooks:
     - id: pylint
-      name: pylint
+      name: (pylint) Check for code smells
       entry: pylint
       language: system
       types: [python]
-      args:
-        [
-          "-rn", # Only display messages
-          "-sn", # Don't display the score
-          "--rcfile=.pylintrc", # Specify rc file
-        ]
+      require_serial: true
+      args: [
+        "-rn", # Only display messages
+        "-sn", # Don't display the score
+      ]
+
+    - id: pytest
+      name: (pytest, coverage) Run tests and coverage
+      stages: [push]
+      entry: coverage run -m pytest && coverage html
+      types: [python]
+      language: system
+      pass_filenames: false
+      always_run: true
+
+    - id: mypy
+      name: (mypy) Check static type hinting
+      entry: mypy
+      language: system
+      pass_filenames: false
+      types: [python]
+
     - id: pycodestyle
       name: pycodestyle
       entry: pycodestyle
