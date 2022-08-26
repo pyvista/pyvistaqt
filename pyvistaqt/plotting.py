@@ -254,7 +254,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.render_timer = QTimer(parent=parent)
         if float(auto_update) > 0.0:  # Can be False as well
             # Spawn a thread that updates the render window.
-            # Sometimes directly modifiying object data doesn't trigger
+            # Sometimes directly modifying object data doesn't trigger
             # Modified() and upstream objects won't be updated.  This
             # ensures the render window stays updated without consuming too
             # many resources.
