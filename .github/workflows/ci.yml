@@ -25,7 +25,7 @@ jobs:
       DISPLAY: ':99'
       PYTHON_VERSION: '3.9'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: .ci/setup_headless_display.sh
         name: 'Setup xvfb'
       - uses: actions/setup-python@v2
@@ -76,7 +76,7 @@ jobs:
       DISPLAY: ':99'
       PYTHON_VERSION: '3.9'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: .ci/setup_headless_display.sh
         name: 'Setup xvfb'
         if: matrix.os == 'ubuntu-latest'
@@ -125,7 +125,7 @@ jobs:
       CONDA_ENV: 'environment.yml'
       PYTHON_VERSION: '3.8'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: .ci/setup_headless_display.sh
         name: 'Setup xvfb'
         if: matrix.os == 'ubuntu-latest'
