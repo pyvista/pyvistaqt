@@ -1,7 +1,7 @@
 black==22.6.0
 codecov==2.1.12
 codespell==2.1.0
-flake8==4.0.1
+flake8==6.0.0
 ipython==7.34.0
 isort==5.10.1
 mypy==0.971
