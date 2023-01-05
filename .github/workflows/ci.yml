@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: .ci/setup_headless_display.sh
         name: 'Setup xvfb'
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
         name: 'Setup python'
@@ -58,7 +58,7 @@ jobs:
           pytest -v tests/test_qt.py
         name: 'Import without Qt'
         if: matrix.qt == 'None'
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'
 
@@ -99,7 +99,7 @@ jobs:
         shell: pwsh
         name: 'Setup opengl'
         if: matrix.os == 'windows-latest'
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
         name: 'Setup python'
@@ -117,7 +117,7 @@ jobs:
         name: 'Install pyvistaqt'
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'
 
@@ -165,6 +165,6 @@ jobs:
       - shell: bash -el {0}
         run: pytest -v --cov pyvistaqt --cov-report html
         name: 'Run Tests'
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'
