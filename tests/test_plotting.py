@@ -587,14 +587,14 @@ def test_background_plotting_menu_bar(qtbot, plotting):
     with pytest.raises(TypeError, match='menu_bar'):
         BackgroundPlotter(off_screen=False, menu_bar="foo")
 
-    plotter = BackgroundPlotter(off_screen=False, menu_bar=False)
-    with qtbot.wait_exposed(plotter.app_window):
-        plotter.app_window.show()
+    plotter = BackgroundPlotter(
+        off_screen=False, menu_bar=False, update_app_icon=False)
     assert plotter.main_menu is None
     assert plotter._menu_close_action is None
     plotter.close()
 
-    plotter = BackgroundPlotter(off_screen=False)  # menu_bar=True
+    # menu_bar=True
+    plotter = BackgroundPlotter(off_screen=False, update_app_icon=False)
 
     assert_hasattr(plotter, "app_window", MainWindow)
     assert_hasattr(plotter, "main_menu", QMenuBar)
