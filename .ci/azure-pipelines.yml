@@ -50,7 +50,7 @@ stages:
     steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.7'
+        versionSpec: '3.10'
     - script: |
         pip install codespell pydocstyle[toml]
         make doctest
@@ -72,10 +72,8 @@ stages:
 
     strategy:
       matrix:
-        Python37:
-          python.version: '3.7'
-        Python38:
-          python.version: '3.8'
+        Python310:
+          python.version: '3.10'
 
     steps:
     - task: UsePythonVersion@0
@@ -96,7 +94,7 @@ stages:
     - script: |
         sudo apt-get install python3-tk
         pip install -r requirements_test.txt
-        pip install PyQt5==5.11.3
+        pip install PyQt5==5.12.*
         python -c "import pyvista; print(pyvista.Report())"
         which python
         pip list
@@ -110,7 +108,6 @@ stages:
     - script: |  # this must be right after the core API
         bash <(curl -s https://codecov.io/bash)
       displayName: 'Upload coverage to codecov.io'
-      condition: eq(variables['python.version'], '3.7')
 
     - script: |
         pytest -v --doctest-modules pyvistaqt
@@ -121,7 +118,7 @@ stages:
         python setup.py sdist
         twine upload --skip-existing dist/pyvistaqt*
       displayName: 'Upload to PyPi'
-      condition: and(eq(variables['python.version'], '3.7'), contains(variables['Build.SourceBranch'], 'refs/tags/'))
+      condition: and(eq(variables['python.version'], '3.10'), contains(variables['Build.SourceBranch'], 'refs/tags/'))
       env:
         TWINE_USERNAME: $(twine.username)
         TWINE_PASSWORD: $(twine.password)
@@ -149,7 +146,7 @@ stages:
           conda config --add channels conda-forge
           conda env create --quiet -n pyvistaqt-env --file environment.yml
           conda activate pyvistaqt-env
-          pip install PyQt5==5.11.3
+          pip install PyQt5==5.12.*
           pip install -e .
           conda list
           which python
@@ -179,10 +176,8 @@ stages:
     strategy:
       maxParallel: 4
       matrix:
-        Python37-64bit:
-          PYTHON_VERSION: '3.7'
-        Python38-64bit:
-          PYTHON_VERSION: '3.8'
+        Python310-64bit:
+          PYTHON_VERSION: '3.10'
     steps:
     - task: UsePythonVersion@0
       inputs:
@@ -217,17 +212,15 @@ stages:
       python.architecture: 'x64'
     strategy:
       matrix:
-        Python37:
-          python.version: '3.7'
-        Python38:
-          python.version: '3.8'
+        Python310:
+          python.version: '3.10'
     pool:
       vmImage: 'macOS-10.15'
     steps:
-      - script: |
-          .ci/macos-install-python.sh '$(python.version)'
-          python -c "import sys; print(sys.version)"
-        displayName: Install Python
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+        displayName: 'Get Python'
 
       - script: |
           python -m pip install PyQt5>=5.11
@@ -257,8 +250,8 @@ stages:
     steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: 3.7
-      displayName: 'Use Python 3.7'
+        versionSpec: '3.10'
+      displayName: 'Use Python 3.10'
 
     - script: |
         git config --global user.name ${GH_NAME}
