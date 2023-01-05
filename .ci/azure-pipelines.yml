@@ -94,7 +94,7 @@ stages:
     - script: |
         sudo apt-get install python3-tk
         pip install -r requirements_test.txt
-        pip install PyQt5==5.11.3
+        pip install PyQt5==5.12.*
         python -c "import pyvista; print(pyvista.Report())"
         which python
         pip list
@@ -146,7 +146,7 @@ stages:
           conda config --add channels conda-forge
           conda env create --quiet -n pyvistaqt-env --file environment.yml
           conda activate pyvistaqt-env
-          pip install PyQt5==5.11.3
+          pip install PyQt5==5.12.*
           pip install -e .
           conda list
           which python
