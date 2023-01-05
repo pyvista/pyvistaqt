@@ -641,9 +641,7 @@ def test_drop_event(tmpdir, qtbot):
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
-    plotter = BackgroundPlotter(update_app_icon=False)
-    with qtbot.wait_exposed(plotter.app_window, timeout=10000):
-        plotter.show()
+    plotter = BackgroundPlotter(update_app_icon=False, show=True)
     point = QPointF(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
