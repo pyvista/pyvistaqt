@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/psf/black
-  rev: 22.6.0
+  rev: 22.10.0
   hooks:
   - id: black
     args: [
@@ -17,7 +17,7 @@ repos:
     ]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.971
+  rev: v0.990
   hooks:
     - id: mypy
       # `pass_filenames` is used to overcome the "duplicate module"
@@ -50,7 +50,7 @@ repos:
     ]
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.2.1
+  rev: v2.2.2
   hooks:
   - id: codespell
     args: [
@@ -80,7 +80,7 @@ repos:
 
 # this validates our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.17.1
+  rev: 0.19.1
   hooks:
     - id: check-github-workflows
 
