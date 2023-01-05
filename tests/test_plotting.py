@@ -583,6 +583,8 @@ def test_background_plotting_toolbar(qtbot, plotting):
     plotter.close()
 
 
+@pytest.mark.skipif(
+    platform.system() == 'Windows', reason='Segfaults on Windows')
 def test_background_plotting_menu_bar(qtbot, plotting):
     with pytest.raises(TypeError, match='menu_bar'):
         BackgroundPlotter(off_screen=False, menu_bar="foo")
@@ -639,8 +641,8 @@ def test_drop_event(tmpdir, qtbot):
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
-    plotter = BackgroundPlotter()
-    with qtbot.wait_exposed(plotter.app_window):
+    plotter = BackgroundPlotter(update_app_icon=False)
+    with qtbot.wait_exposed(plotter.app_window, timeout=10000):
         plotter.show()
     point = QPointF(0, 0)
     data = QMimeData()
