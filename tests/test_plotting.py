@@ -585,10 +585,11 @@ def test_background_plotting_toolbar(qtbot, plotting):
 
 def test_background_plotting_menu_bar(qtbot, plotting):
     with pytest.raises(TypeError, match='menu_bar'):
-        p = BackgroundPlotter(off_screen=False, menu_bar="foo")
-        p.close()
+        BackgroundPlotter(off_screen=False, menu_bar="foo")
 
     plotter = BackgroundPlotter(off_screen=False, menu_bar=False)
+    with qtbot.wait_exposed(plotter.app_window):
+        plotter.app_window.show()
     assert plotter.main_menu is None
     assert plotter._menu_close_action is None
     plotter.close()
@@ -632,13 +633,15 @@ def test_background_plotting_menu_bar(qtbot, plotting):
     assert plotter._last_update_time == -np.inf
 
 
-def test_drop_event(tmpdir):
+def test_drop_event(tmpdir, qtbot):
     output_dir = str(tmpdir.mkdir("tmpdir"))
     filename = str(os.path.join(output_dir, "tmp.vtk"))
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
     plotter = BackgroundPlotter()
+    with qtbot.wait_exposed(plotter.app_window):
+        plotter.show()
     point = QPointF(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])

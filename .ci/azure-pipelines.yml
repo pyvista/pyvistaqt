@@ -74,8 +74,6 @@ stages:
       matrix:
         Python37:
           python.version: '3.7'
-        Python38:
-          python.version: '3.8'
 
     steps:
     - task: UsePythonVersion@0
@@ -110,7 +108,6 @@ stages:
     - script: |  # this must be right after the core API
         bash <(curl -s https://codecov.io/bash)
       displayName: 'Upload coverage to codecov.io'
-      condition: eq(variables['python.version'], '3.7')
 
     - script: |
         pytest -v --doctest-modules pyvistaqt
@@ -181,8 +178,6 @@ stages:
       matrix:
         Python37-64bit:
           PYTHON_VERSION: '3.7'
-        Python38-64bit:
-          PYTHON_VERSION: '3.8'
     steps:
     - task: UsePythonVersion@0
       inputs:
@@ -219,8 +214,6 @@ stages:
       matrix:
         Python37:
           python.version: '3.7'
-        Python38:
-          python.version: '3.8'
     pool:
       vmImage: 'macOS-10.15'
     steps:
