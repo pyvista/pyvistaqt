@@ -318,8 +318,7 @@ def test_qt_interactor(qtbot, plotting):
         assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
 
-    # check that BasePlotter.__init__() is called only once
-    assert len(_ALL_PLOTTERS) == 1
+    assert len(_ALL_PLOTTERS) == 0
 
 
 @pytest.mark.parametrize('show_plotter', [
@@ -607,9 +606,13 @@ def test_background_plotting_menu_bar(qtbot, plotting):
         window.show()
 
     # EDL action
-    assert not hasattr(plotter.renderer, 'edl_pass')
+    if hasattr(plotter.renderer, '_render_passes'):
+        obj, attr = plotter.renderer._render_passes, '_edl_pass'
+    else:
+        obj, attr = plotter.renderer, 'edl_pass'
+    assert getattr(obj, attr, None) is None
     plotter._edl_action.trigger()
-    assert hasattr(plotter.renderer, 'edl_pass')
+    assert getattr(obj, attr, None) is not None
     # and now test reset
     plotter._edl_action.trigger()
 
@@ -668,7 +671,7 @@ def test_drag_event(tmpdir):
     plotter.close()
 
 
-def test_gesture_event():
+def test_gesture_event(qtbot):
     plotter = BackgroundPlotter()
     gestures = [QPinchGesture()]
     event = QGestureEvent(gestures)
@@ -834,8 +837,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
         assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
 
-    # check that BasePlotter.__init__() is called only once
-    assert len(_ALL_PLOTTERS) == 1
+    assert len(_ALL_PLOTTERS) == 0
 
 
 def test_multiplotter(qtbot, plotting):
