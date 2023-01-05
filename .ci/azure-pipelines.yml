@@ -72,7 +72,7 @@ stages:
 
     strategy:
       matrix:
-        Python37:
+        Python310:
           python.version: '3.10'
 
     steps:
@@ -176,7 +176,7 @@ stages:
     strategy:
       maxParallel: 4
       matrix:
-        Python37-64bit:
+        Python310-64bit:
           PYTHON_VERSION: '3.10'
     steps:
     - task: UsePythonVersion@0
@@ -212,15 +212,15 @@ stages:
       python.architecture: 'x64'
     strategy:
       matrix:
-        Python37:
+        Python310:
           python.version: '3.10'
     pool:
       vmImage: 'macOS-10.15'
     steps:
-      - script: |
-          .ci/macos-install-python.sh '$(python.version)'
-          python -c "import sys; print(sys.version)"
-        displayName: Install Python
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+        displayName: 'Get Python'
 
       - script: |
           python -m pip install PyQt5>=5.11
