@@ -364,7 +364,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         for view_index in other_views:
             other_plotter.renderers[view_index].camera = renderer.camera
 
-    # pylint: disable=invalid-name,no-self-use
+    # pylint: disable=invalid-name
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
 

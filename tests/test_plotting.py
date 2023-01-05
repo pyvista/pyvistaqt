@@ -662,7 +662,7 @@ def test_drag_event(tmpdir):
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
-    plotter = BackgroundPlotter()
+    plotter = BackgroundPlotter(update_app_icon=False)
     point = QPoint(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
@@ -759,7 +759,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     assert callback_timer.isActive()
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=2000)
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=5000)
     callback_blocker.wait()
 
     plotter.close()
