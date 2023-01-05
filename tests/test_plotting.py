@@ -23,6 +23,9 @@ from pyvistaqt.dialog import FileDialog
 from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
+WANT_AFTER = 0 if Version(pyvista.__version__) >= Version('0.37') else 1
+
+
 class TstWindow(MainWindow):
     def __init__(self, parent=None, show=True, off_screen=True):
         MainWindow.__init__(self, parent)
@@ -318,7 +321,7 @@ def test_qt_interactor(qtbot, plotting):
         assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
 
-    assert len(_ALL_PLOTTERS) == 0
+    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 @pytest.mark.parametrize('show_plotter', [
@@ -837,7 +840,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
         assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
 
-    assert len(_ALL_PLOTTERS) == 0
+    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 def test_multiplotter(qtbot, plotting):
