@@ -200,12 +200,12 @@ def test_counter(qtbot):
 
 # TODO: Fix gc on PySide6
 @pytest.mark.parametrize('border', (True, False))
-@pytest.mark.allow_bad_gc_pyside6
+@pytest.mark.allow_bad_gc_pyside
 def test_subplot_gc(border):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
 
 
-@pytest.mark.allow_bad_gc_pyside6
+@pytest.mark.allow_bad_gc_pyside
 def test_editor(qtbot, plotting):
     # test editor=False
     plotter = BackgroundPlotter(editor=False, off_screen=False)
@@ -596,7 +596,7 @@ def test_background_plotting_toolbar(qtbot, plotting):
 
 
 # TODO: _render_passes not GC'ed
-@pytest.mark.allow_bad_gc_pyside6
+@pytest.mark.allow_bad_gc_pyside
 @pytest.mark.skipif(
     platform.system() == 'Windows', reason='Segfaults on Windows')
 def test_background_plotting_menu_bar(qtbot, plotting):
@@ -784,7 +784,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
 # - the actors are not cleaned up in the non-empty scene case
 # - the q_key_press leaves a lingering vtkUnsignedCharArray referred to by
 #   a "managedbuffer" object
-@pytest.mark.allow_bad_gc_pyside6
+@pytest.mark.allow_bad_gc_pyside
 @pytest.mark.parametrize('close_event', [
     "plotter_close",
     "window_close",

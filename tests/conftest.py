@@ -17,7 +17,7 @@ def pytest_configure(config):
     for fixture in ('check_gc',):
         config.addinivalue_line('usefixtures', fixture)
     # Markers
-    for marker in ('allow_bad_gc', 'allow_bad_gc_pyside6'):
+    for marker in ('allow_bad_gc', 'allow_bad_gc_pyside'):
         config.addinivalue_line('markers', marker)
 
 
@@ -51,7 +51,7 @@ def check_gc(request):
     if 'allow_bad_gc' in request.node.iter_markers():
         yield
         return
-    if 'allow_bad_gc_pyside6' in request.node.iter_markers() and API_NAME == 'PySide6':
+    if 'allow_bad_gc_pyside' in request.node.iter_markers() and API_NAME.lower().startswith('pyside'):
         yield
         return
     gc.collect()
@@ -119,9 +119,3 @@ def no_qt(monkeypatch):
     if need_reload:
         importlib.reload(pyvistaqt)
         assert 'qtpy' in sys.modules
-
-
-@pytest.fixture
-def allow_bad_gc():
-    """Allow VTK objects not to be cleaned up."""
-    pass
