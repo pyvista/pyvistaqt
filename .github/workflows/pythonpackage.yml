@@ -3,24 +3,39 @@
 name: Python package
 on:
   push:
-    branches: [ master ]
+    branches:
+      - '*'
   pull_request:
-    branches: [ master ]
+    branches:
+      - '*'
 jobs:
   build:
     runs-on: ubuntu-20.04
+    env:
+      PYTHON_VERSION: '3.9'
     steps:
-    - uses: actions/checkout@v2
-    - name: Python Code Quality and Lint
-      uses: ricardochaves/python-lint@v1.1.0
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
-        python-root-list: pyvistaqt
-        use-pylint: true
-        extra-pylint-options: --disable=F0401
-        use-pycodestyle: true
-        use-flake8: true
-        use-black: true
-        use-mypy: true
-        use-isort: true
-        extra-pycodestyle-options: --ignore=E501,E203,W503
-        extra-flake8-options: --ignore=E501,E203,W503
+        python-version: ${{ env.PYTHON_VERSION }}
+      name: 'Setup python'
+    - run: |
+        python -m pip install --upgrade pip wheel
+        pip install -r requirements_test.txt
+      name: 'Install dependencies with pip'
+    - run: make black
+      name: 'Run black'
+    - run: make isort
+      name: 'Run isort'
+    - run: make pylint
+      name: 'Run pylint'
+    - run: make pycodestyle
+      name: 'Run pycodestyle'
+    - run: make mypy
+      name: 'Run mypy'
+    - run: make flake8
+      name: 'Run flake8'
+    - run: make codespell
+      name: 'Run codespell'
+    - run: make pydocstyle
+      name: 'Run pydocstyle'

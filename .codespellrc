@@ -1,0 +1,4 @@
+[codespell]
+skip = ./.ci/*,./.git/*,./.hypothesis/*,./dist/*,./doc/examples/*,./doc/images/*,./docs/_build/*,./docs/images/*,./tests/tinypages/_build/*,.hypothesis*,*.doctree,*.eot,*.gif,*.html,*.inv,*.ipynb,*.jpg,*.js,*.json,*.mp4,*.mypy_cache/*,*.pickle,*.ply,*.png,*.pyc,*.ttf,*.txt,*.vti,*.vtk,*.vtu,*.woff,*.woff2,*.yml,*/_autosummary/*,*~,*cover,doc/_build/*,flycheck*
+ignore-words-list = lod,byteorder,flem,parm,doubleclick,revered,PullRequest
+quiet-level = 3

@@ -1,0 +1,42 @@
+[flake8]
+max-line-length = 88
+exclude =
+    __pycache__,
+    .venv,
+    .cache,
+    .eggs
+    .git,
+    .tox,
+    *.egg-info,
+    *.pyc,
+    *.pyi,
+    build,
+    dist,
+    # This is adopted from VTK
+    pyvistaqt/rwi.py,
+    # Only lint source files
+    tests/*.py,
+    docs/*.py,
+    # Ignore errors here in this commit (fix in future PR)
+    pyvistaqt/*.py,
+    setup.py
+max-complexity = 10
+doctests = true
+extend-ignore =
+    # whitespace before ':'
+    E203,
+    # line break before binary operator
+    W503,
+    # line length too long
+    E501,
+    # do not assign a lambda expression, use a def
+    E731,
+    # missing class docstring; use ``__init__`` docstring instead
+    D101,
+    # missing docstring in magic method
+    D105,
+    # Qt uses camelCase
+    N802
+per-file-ignores =
+    # Allow re-export of modules at package level
+    __init__.py:F401

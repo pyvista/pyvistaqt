@@ -1,8 +1,10 @@
 """This module contains a Qt-compatible MainWindow class."""
 
+from typing import Optional, Tuple
+
 from qtpy import QtCore
 from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QMainWindow
+from qtpy.QtWidgets import QMainWindow, QWidget
 
 
 class MainWindow(QMainWindow):
@@ -10,6 +12,19 @@ class MainWindow(QMainWindow):
 
     signal_close = Signal()
     signal_gesture = Signal(QtCore.QEvent)
+
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        title: Optional[str] = None,
+        size: Optional[Tuple[int, int]] = None,
+    ) -> None:
+        """Initialize the main window."""
+        QMainWindow.__init__(self, parent=parent)
+        if title is not None:
+            self.setWindowTitle(title)
+        if size is not None:
+            self.resize(*size)
 
     def event(self, event: QtCore.QEvent) -> bool:
         """Manage window events and filter the gesture event."""

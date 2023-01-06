@@ -28,7 +28,7 @@ pyvista.FIGURE_PATH = os.path.join(os.path.abspath('./images/'), 'auto-generated
 if not os.path.exists(pyvista.FIGURE_PATH):
     os.makedirs(pyvista.FIGURE_PATH)
 
-# SG warnins
+# SG warnings
 import warnings
 
 warnings.filterwarnings(
@@ -123,13 +123,13 @@ html_context = {
     # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
     'github_user': 'pyvista',
     'github_repo': 'pyvistaqt',
-    'github_version': 'master/docs/',
+    'github_version': 'main/docs/',
     'menu_links_name': 'Getting Connected',
     'menu_links': [
         ('<i class="fa fa-slack fa-fw"></i> Slack Community', 'http://slack.pyvista.org'),
         ('<i class="fa fa-comment fa-fw"></i> Support', 'https://github.com/pyvista/pyvista-support'),
         ('<i class="fa fa-github fa-fw"></i> Source Code', 'https://github.com/pyvista/pyvistaqt'),
-        ('<i class="fa fa-gavel fa-fw"></i> Contributing', 'https://github.com/pyvista/pyvistaqt/blob/master/CONTRIBUTING.md'),
+        ('<i class="fa fa-gavel fa-fw"></i> Contributing', 'https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md'),
     ],
 }
 

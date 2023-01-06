@@ -1,12 +1,13 @@
 import gc
 import os
+from packaging.version import Version
 import pytest
 import pyvista
 from pyvista.plotting import system_supports_plotting
-
+import pyvistaqt
 
 NO_PLOTTING = not system_supports_plotting()
-GC_TEST = os.getenv('GC_TEST', '').lower() == 'true'
+GC_TEST = Version(pyvista.__version__) >= Version('0.35')
 
 
 def pytest_collection_finish(session):
@@ -26,6 +27,15 @@ def _is_vtk(obj):
         return obj.__class__.__name__.startswith('vtk')
     except Exception:  # old Python sometimes no __class__.__name__
         return False
+
+
+def _check_qt_installed():
+    try:
+        from qtpy import QtCore  # noqa
+    except Exception:
+        return False
+    else:
+        return True
 
 
 @pytest.fixture(autouse=True)
@@ -58,3 +68,20 @@ def plotting():
     if NO_PLOTTING:
         pytest.skip(NO_PLOTTING, reason="Requires system to support plotting")
     yield
+
+
+@pytest.fixture()
+def no_qt(monkeypatch):
+    """Require plotting."""
+    need_reload = False
+    if _check_qt_installed():
+        need_reload = True
+        monkeypatch.setenv('QT_API', 'bad_name')
+        sys.modules.pop('qtpy')
+        importlib.reload(pyvistaqt)
+        assert 'qtpy' not in sys.modules
+    yield
+    monkeypatch.undo()
+    if need_reload:
+        importlib.reload(pyvistaqt)
+        assert 'qtpy' in sys.modules

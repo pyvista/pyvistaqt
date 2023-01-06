@@ -10,6 +10,15 @@ of the ``Plotter`` class within a Qt application.
 This simplifies adding meshes, updating, and controlling them when using
 Qt.
 
+.. warning::
+   Please do keep in mind that the ``BackgroundPlotter`` **does not** create its
+   own event loop by default. By design, the plotter will look for an
+   active instance of ``QApplication`` instead. So in the end, it is up to the
+   user to manage this event loop and there are several ways to achieve this.
+   For example, it's possible to start Python interactively with ``python -i``,
+   use ``ipython`` or execute the Qt event loop by adding ``plotter.app.exec_()``
+   to the end of the following code.
+
 
 Background Plotting
 ~~~~~~~~~~~~~~~~~~~
@@ -17,7 +26,7 @@ Background Plotting
 Normal PyVista plotting windows exhibit blocking behavior, but it is possible
 to plot in the background and update the plotter in real-time using the
 ``BackgroundPlotter`` object.  This requires ``pyvistaqt``, but otherwise appears
-and functions like a normal PyVista ``Plotter`` instance.  For example:
+and functions like a normal PyVista ``Plotter`` instance. For example:
 
 .. code:: python
 
@@ -31,6 +40,24 @@ and functions like a normal PyVista ``Plotter`` instance.  For example:
 
     # can now operate on the sphere and have it updated in the background
     sphere.points *= 0.5
+
+
+Multiple Plotters
+~~~~~~~~~~~~~~~~~
+
+The following example shows how to use an interface with multiple plotters. Each
+plotter can be selected and functions like a normal PyVista ``Plotter`` instance:
+
+.. code:: python
+
+    import pyvista as pv
+    from pyvistaqt import MultiPlotter
+
+    mp = MultiPlotter(nrows=2, ncols=2)
+    mp[0, 0].add_mesh(pv.Sphere())
+    mp[0, 1].add_mesh(pv.Cylinder())
+    mp[1, 0].add_mesh(pv.Cube())
+    mp[1, 1].add_mesh(pv.Cone())
 
 
 Example PyQt5 PyVista QtInteractor
@@ -48,14 +75,13 @@ sphere to an empty plotting window.
     os.environ["QT_API"] = "pyqt5"
 
     from qtpy import QtWidgets
-    from qtpy.QtWidgets import QMainWindow
 
     import numpy as np
 
     import pyvista as pv
-    from pyvistaqt import QtInteractor
+    from pyvistaqt import QtInteractor, MainWindow
 
-    class MainWindow(QMainWindow):
+    class MyMainWindow(MainWindow):
 
         def __init__(self, parent=None, show=True):
             QtWidgets.QMainWindow.__init__(self, parent)
@@ -67,6 +93,7 @@ sphere to an empty plotting window.
             # add the pyvista interactor object
             self.plotter = QtInteractor(self.frame)
             vlayout.addWidget(self.plotter.interactor)
+            self.signal_close.connect(self.plotter.close)
 
             self.frame.setLayout(vlayout)
             self.setCentralWidget(self.frame)
@@ -97,7 +124,7 @@ sphere to an empty plotting window.
 
     if __name__ == '__main__':
         app = QtWidgets.QApplication(sys.argv)
-        window = MainWindow()
+        window = MyMainWindow()
         sys.exit(app.exec_())
 
 
