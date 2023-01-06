@@ -655,7 +655,9 @@ def test_drop_event(tmpdir, qtbot):
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
-    plotter = BackgroundPlotter(update_app_icon=False, show=True)
+    plotter = BackgroundPlotter(update_app_icon=False)
+    with qtbot.wait_exposed(plotter.app_window, timeout=10000):
+        plotter.app_window.show()
     point = QPointF(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
@@ -692,7 +694,9 @@ def test_drag_event(tmpdir):
 
 
 def test_gesture_event(qtbot):
-    plotter = BackgroundPlotter()
+    plotter = BackgroundPlotter(update_app_icon=False)
+    with qtbot.wait_exposed(plotter.app_window, timeout=10000):
+        plotter.app_window.show()
     gestures = [QPinchGesture()]
     event = QGestureEvent(gestures)
     plotter.gesture_event(event)
