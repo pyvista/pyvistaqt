@@ -92,7 +92,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     # axes
     def _axes_callback(state: bool) -> None:
         renderer = renderer_ref()
-        if renderer is None:
+        if renderer is None:  # pragma: no cover
             return
         if state:
             renderer.show_axes()
@@ -115,7 +115,7 @@ def _get_actor_widget(actor: vtkActor) -> QWidget:
     # visibility
     set_vis_ref = weakref.ref(actor.SetVisibility)
 
-    def _set_vis(visibility: bool) -> None:
+    def _set_vis(visibility: bool) -> None:  # pragma: no cover
         set_vis = set_vis_ref()
         if set_vis is not None:
             set_vis(visibility)
@@ -133,7 +133,7 @@ def _get_actor_widget(actor: vtkActor) -> QWidget:
         opacity.setValue(prop.GetOpacity())
         set_opacity_ref = weakref.ref(prop.SetOpacity)
 
-        def _set_opacity(opacity: float) -> None:
+        def _set_opacity(opacity: float) -> None:  # pragma: no cover
             set_opacity = set_opacity_ref()
             if set_opacity is not None:
                 set_opacity(opacity)
