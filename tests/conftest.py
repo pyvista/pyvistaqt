@@ -97,6 +97,13 @@ def check_gc(request):
     assert len(after) == 0, msg
 
 
+def pytest_collection_modifyitems(items):
+    for item in items:
+        if "test_background_plotting_close" in item.nodeid:
+            if Version(pyvista.__version__) < Version('0.37'):
+                item.add_marker(pytest.mark.allow_bad_gc)
+
+
 @pytest.fixture()
 def plotting():
     """Require plotting."""
