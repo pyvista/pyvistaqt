@@ -82,12 +82,6 @@ stages:
       displayName: 'Use Python $(python.version)'
 
     - script: |
-        pip install wheel --upgrade
-        python setup.py bdist_wheel
-        pip install dist/pyvistaqt*.whl
-      displayName: Build wheel and install pyvistaqt
-
-    - script: |
         .ci/setup_headless_display.sh
       displayName: Install headless display
 
