@@ -82,6 +82,12 @@ stages:
       displayName: 'Use Python $(python.version)'
 
     - script: |
+        pip install wheel --upgrade
+        python setup.py bdist_wheel
+        pip install dist/pyvistaqt*.whl
+      displayName: Build wheel and install pyvistaqt
+
+    - script: |
         .ci/setup_headless_display.sh
       displayName: Install headless display
 
@@ -120,12 +126,6 @@ stages:
 
     # don't run job on no-ci builds
     condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
-
-  - script: |
-      pip install wheel --upgrade
-      python setup.py bdist_wheel
-      pip install dist/pyvistaqt*.whl
-    displayName: Build wheel and install pyvistaqt
 
   # DESCRIPTION: Core API and doc string testing across VTK versions using conda
   - job: LinuxConda
