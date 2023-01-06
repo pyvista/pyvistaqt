@@ -3,8 +3,6 @@ import importlib
 import inspect
 import sys
 
-from packaging.version import Version
-
 import pytest
 import pyvista
 from pyvista.plotting import system_supports_plotting
