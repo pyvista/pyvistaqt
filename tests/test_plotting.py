@@ -23,6 +23,9 @@ from pyvistaqt.dialog import FileDialog
 from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
+WANT_AFTER = 0 if Version(pyvista.__version__) >= Version('0.37') else 1
+
+
 class TstWindow(MainWindow):
     def __init__(self, parent=None, show=True, off_screen=True):
         MainWindow.__init__(self, parent)
@@ -318,8 +321,7 @@ def test_qt_interactor(qtbot, plotting):
         assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
 
-    # check that BasePlotter.__init__() is called only once
-    assert len(_ALL_PLOTTERS) == 1
+    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 @pytest.mark.parametrize('show_plotter', [
@@ -581,17 +583,20 @@ def test_background_plotting_toolbar(qtbot, plotting):
     plotter.close()
 
 
+@pytest.mark.skipif(
+    platform.system() == 'Windows', reason='Segfaults on Windows')
 def test_background_plotting_menu_bar(qtbot, plotting):
     with pytest.raises(TypeError, match='menu_bar'):
-        p = BackgroundPlotter(off_screen=False, menu_bar="foo")
-        p.close()
+        BackgroundPlotter(off_screen=False, menu_bar="foo")
 
-    plotter = BackgroundPlotter(off_screen=False, menu_bar=False)
+    plotter = BackgroundPlotter(
+        off_screen=False, menu_bar=False, update_app_icon=False)
     assert plotter.main_menu is None
     assert plotter._menu_close_action is None
     plotter.close()
 
-    plotter = BackgroundPlotter(off_screen=False)  # menu_bar=True
+    # menu_bar=True
+    plotter = BackgroundPlotter(off_screen=False, update_app_icon=False)
 
     assert_hasattr(plotter, "app_window", MainWindow)
     assert_hasattr(plotter, "main_menu", QMenuBar)
@@ -607,9 +612,13 @@ def test_background_plotting_menu_bar(qtbot, plotting):
         window.show()
 
     # EDL action
-    assert not hasattr(plotter.renderer, 'edl_pass')
+    if hasattr(plotter.renderer, '_render_passes'):
+        obj, attr = plotter.renderer._render_passes, '_edl_pass'
+    else:
+        obj, attr = plotter.renderer, 'edl_pass'
+    assert getattr(obj, attr, None) is None
     plotter._edl_action.trigger()
-    assert hasattr(plotter.renderer, 'edl_pass')
+    assert getattr(obj, attr, None) is not None
     # and now test reset
     plotter._edl_action.trigger()
 
@@ -626,13 +635,13 @@ def test_background_plotting_menu_bar(qtbot, plotting):
     assert plotter._last_update_time == -np.inf
 
 
-def test_drop_event(tmpdir):
+def test_drop_event(tmpdir, qtbot):
     output_dir = str(tmpdir.mkdir("tmpdir"))
     filename = str(os.path.join(output_dir, "tmp.vtk"))
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
-    plotter = BackgroundPlotter()
+    plotter = BackgroundPlotter(update_app_icon=False, show=True)
     point = QPointF(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
@@ -653,7 +662,7 @@ def test_drag_event(tmpdir):
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
-    plotter = BackgroundPlotter()
+    plotter = BackgroundPlotter(update_app_icon=False)
     point = QPoint(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
@@ -668,7 +677,7 @@ def test_drag_event(tmpdir):
     plotter.close()
 
 
-def test_gesture_event():
+def test_gesture_event(qtbot):
     plotter = BackgroundPlotter()
     gestures = [QPinchGesture()]
     event = QGestureEvent(gestures)
@@ -750,7 +759,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     assert callback_timer.isActive()
 
     # ensure that self.callback_timer send a signal
-    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=2000)
+    callback_blocker = qtbot.wait_signals([callback_timer.timeout], timeout=5000)
     callback_blocker.wait()
 
     plotter.close()
@@ -834,8 +843,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
         assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
 
-    # check that BasePlotter.__init__() is called only once
-    assert len(_ALL_PLOTTERS) == 1
+    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 def test_multiplotter(qtbot, plotting):

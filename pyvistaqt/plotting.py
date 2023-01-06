@@ -254,7 +254,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.render_timer = QTimer(parent=parent)
         if float(auto_update) > 0.0:  # Can be False as well
             # Spawn a thread that updates the render window.
-            # Sometimes directly modifiying object data doesn't trigger
+            # Sometimes directly modifying object data doesn't trigger
             # Modified() and upstream objects won't be updated.  This
             # ensures the render window stays updated without consuming too
             # many resources.
@@ -364,7 +364,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         for view_index in other_views:
             other_plotter.renderers[view_index].camera = renderer.camera
 
-    # pylint: disable=invalid-name,no-self-use
+    # pylint: disable=invalid-name
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         """Event is called when something is dropped onto the vtk window.
 
@@ -737,8 +737,7 @@ class BackgroundPlotter(QtInteractor):
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
-        if not self._closed:
-            self.app_window.close()
+        self.close()
 
     def add_callback(
         self, func: Callable, interval: int = 1000, count: Optional[int] = None
