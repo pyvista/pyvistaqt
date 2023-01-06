@@ -200,11 +200,13 @@ def test_counter(qtbot):
 
 # TODO: Fix gc on PySide6
 @pytest.mark.parametrize('border', (True, False))
-def test_subplot_gc(border, allow_bad_gc):
+@pytest.mark.allow_bad_gc_pyside6
+def test_subplot_gc(border):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
 
 
-def test_editor(qtbot, plotting, allow_bad_gc):
+@pytest.mark.allow_bad_gc_pyside6
+def test_editor(qtbot, plotting):
     # test editor=False
     plotter = BackgroundPlotter(editor=False, off_screen=False)
     qtbot.addWidget(plotter.app_window)
@@ -594,9 +596,10 @@ def test_background_plotting_toolbar(qtbot, plotting):
 
 
 # TODO: _render_passes not GC'ed
+@pytest.mark.allow_bad_gc_pyside6
 @pytest.mark.skipif(
     platform.system() == 'Windows', reason='Segfaults on Windows')
-def test_background_plotting_menu_bar(qtbot, plotting, allow_bad_gc):
+def test_background_plotting_menu_bar(qtbot, plotting):
     with pytest.raises(TypeError, match='menu_bar'):
         BackgroundPlotter(off_screen=False, menu_bar="foo")
 
@@ -781,10 +784,11 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
 # - the actors are not cleaned up in the non-empty scene case
 # - the q_key_press leaves a lingering vtkUnsignedCharArray referred to by
 #   a "managedbuffer" object
+@pytest.mark.allow_bad_gc_pyside6
 @pytest.mark.parametrize('close_event', [
     "plotter_close",
     "window_close",
-    "q_key_press",
+    pytest.param("q_key_press", marks=pytest.mark.allow_bad_gc),
     "menu_exit",
     "del_finalizer",
     ])
@@ -792,8 +796,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     True,
     False,
     ])
-def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
-                                   allow_bad_gc):
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0

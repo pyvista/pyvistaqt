@@ -16,6 +16,9 @@ def pytest_configure(config):
     # Fixtures
     for fixture in ('check_gc',):
         config.addinivalue_line('usefixtures', fixture)
+    # Markers
+    for marker in ('allow_bad_gc', 'allow_bad_gc_pyside6'):
+        config.addinivalue_line('markers', marker)
 
 
 # Adapted from PyVista
@@ -45,7 +48,10 @@ def check_gc(request):
         from qtpy import API_NAME
     except Exception:
         API_NAME = ''
-    if 'allow_bad_gc' in request.fixturenames and API_NAME == 'PySide6':
+    if 'allow_bad_gc' in request.node.iter_markers():
+        yield
+        return
+    if 'allow_bad_gc_pyside6' in request.node.iter_markers() and API_NAME == 'PySide6':
         yield
         return
     gc.collect()
