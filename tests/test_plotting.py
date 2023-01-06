@@ -118,7 +118,7 @@ def test_check_type():
 
 
 def test_mouse_interactions(qtbot):
-    plotter = BackgroundPlotter(show=True)
+    plotter = BackgroundPlotter()
     window = plotter.app_window
     interactor = plotter.interactor
     qtbot.addWidget(window)
@@ -198,6 +198,7 @@ def test_counter(qtbot):
     assert counter.count == 0
 
 
+# TODO: Fix gc on PySide6
 @pytest.mark.parametrize('border', (True, False))
 def test_subplot_gc(border, allow_bad_gc):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)

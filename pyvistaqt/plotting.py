@@ -45,7 +45,6 @@ import os
 import platform
 import time
 import warnings
-import weakref
 from functools import wraps
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
