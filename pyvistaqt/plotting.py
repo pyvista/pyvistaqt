@@ -45,6 +45,7 @@ import os
 import platform
 import time
 import warnings
+import weakref
 from functools import wraps
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
@@ -400,6 +401,16 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.render_timer.stop()
         BasePlotter.close(self)
         QVTKRenderWindowInteractor.close(self)
+        # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
+        # to resolve the ref to vtkGenericRenderWindowInteractor
+        self._Iren = (  # pylint: disable=invalid-name,attribute-defined-outside-init
+            _FakeEventHandler()
+        )
+        for key in ("_RenderWindow", "renderer"):
+            try:
+                setattr(self, key, None)
+            except AttributeError:
+                pass
 
 
 class BackgroundPlotter(QtInteractor):
@@ -738,16 +749,6 @@ class BackgroundPlotter(QtInteractor):
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
         self.close()
-        # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
-        # to resolve the ref to vtkGenericRenderWindowInteractor
-        self._Iren = (  # pylint: disable=invalid-name,attribute-defined-outside-init
-            _FakeEventHandler()
-        )
-        for key in ("_RenderWindow", "renderer"):
-            try:
-                setattr(self, key, None)
-            except AttributeError:
-                pass
 
     def add_callback(
         self, func: Callable, interval: int = 1000, count: Optional[int] = None
@@ -1033,3 +1034,4 @@ class _FakeEventHandler:
 
     SetDPI = EnterEvent = MouseMoveEvent = LeaveEvent = SetSize = _noop
     SetEventInformation = ConfigureEvent = SetEventInformationFlipY = _noop
+    KeyReleaseEvent = CharEvent = _noop

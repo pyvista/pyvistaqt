@@ -123,8 +123,6 @@ stages:
         TWINE_USERNAME: $(twine.username)
         TWINE_PASSWORD: $(twine.password)
         TWINE_REPOSITORY_URL: "https://upload.pypi.org/legacy/"
-        GC_TEST: 'true'
-        PV_PRE: 'true'
 
     # don't run job on no-ci builds
     condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
@@ -132,9 +130,6 @@ stages:
   - script: |
       pip install wheel --upgrade
       python setup.py bdist_wheel
-      if [ $(PV_PRE) == "true" ]; then
-        pip install https://github.com/pyvista/pyvista/zipball/master
-      fi
       pip install dist/pyvistaqt*.whl
     displayName: Build wheel and install pyvistaqt
 

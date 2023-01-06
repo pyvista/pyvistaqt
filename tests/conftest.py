@@ -1,24 +1,21 @@
 import gc
-import os
-from packaging.version import Version
+import sys
+import importlib
+import inspect
+
 import pytest
 import pyvista
 from pyvista.plotting import system_supports_plotting
 import pyvistaqt
 
 NO_PLOTTING = not system_supports_plotting()
-GC_TEST = Version(pyvista.__version__) >= Version('0.35')
 
 
-def pytest_collection_finish(session):
-    from py.io import TerminalWriter
-    writer = TerminalWriter()
-    writer.line(
-        f'{"Excluding" if NO_PLOTTING else "Including"} plotting tests '
-        f'(ALLOW_PLOTTING={os.getenv("ALLOW_PLOTTING", "")})')
-    writer.line(
-        f'{"Including" if GC_TEST else "Excluding"} garbage collection tests '
-        f'(GC_TEST={os.getenv("GC_TEST", "")})')
+def pytest_configure(config):
+    """Configure pytest options."""
+    # Fixtures
+    for fixture in ('check_gc',):
+        config.addinivalue_line('usefixtures', fixture)
 
 
 # Adapted from PyVista
@@ -44,22 +41,53 @@ def check_gc(request):
     if 'test_ipython' in request.node.name:  # XXX this keeps a ref
         yield
         return
-    # We need https://github.com/pyvista/pyvista/pull/958 to actually run
-    # this test. Eventually we should use LooseVersion, but as of 2020/10/22
-    # 0.26.1 is the latest PyPi version and on master the version is weirdly
-    # 0.26.0 (as opposed to 0.26.2.dev0 or 0.27.dev0) so we can't. So for now
-    # let's use an env var (GC_TEST) instead of:
-    # if LooseVersion(pyvista.__version__) < LooseVersion('0.26.2'):
-    if os.getenv('GC_TEST', '').lower() != 'true':
+    try:
+        from qtpy import API_NAME
+    except Exception:
+        API_NAME = ''
+    if 'allow_bad_gc' in request.fixturenames and API_NAME == 'PySide6':
         yield
         return
+    gc.collect()
     before = set(id(o) for o in gc.get_objects() if _is_vtk(o))
     yield
     pyvista.close_all()
     gc.collect()
-    after = [o for o in gc.get_objects() if _is_vtk(o) and id(o) not in before]
-    after = sorted(o.__class__.__name__ for o in after)
-    assert len(after) == 0, 'Not all objects GCed:\n' + '\n'.join(after)
+    after = [
+        o
+        for o in gc.get_objects()
+        if _is_vtk(o) and id(o) not in before
+    ]
+    msg = 'Not all objects GCed:\n'
+    for obj in after:
+        cn = obj.__class__.__name__
+        cf = inspect.currentframe()
+        referrers = [
+            v for v in gc.get_referrers(obj)
+            if v is not after and v is not cf
+        ]
+        del cf
+        for ri, referrer in enumerate(referrers):
+            if isinstance(referrer, dict):
+                for k, v in referrer.items():
+                    if k is obj:
+                        referrers[ri] = f'dict: d key'
+                        del k, v
+                        break
+                    elif v is obj:
+                        referrers[ri] = f'dict: d[{k!r}]'
+                        #raise RuntimeError(referrers[ri])
+                        del k, v
+                        break
+                    del k, v
+                else:
+                    referrers[ri] = f'dict: len={len(referrer)}'
+            else:
+                referrers[ri] = repr(referrer)
+            del ri, referrer
+        msg += f'{cn}: {referrers}\n'
+        del cn, referrers
+    assert len(after) == 0, msg
 
 
 @pytest.fixture()
@@ -85,3 +113,9 @@ def no_qt(monkeypatch):
     if need_reload:
         importlib.reload(pyvistaqt)
         assert 'qtpy' in sys.modules
+
+
+@pytest.fixture
+def allow_bad_gc():
+    """Allow VTK objects not to be cleaned up."""
+    pass

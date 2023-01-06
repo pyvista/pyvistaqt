@@ -29,6 +29,7 @@ class Editor(QDialog):
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
+        del renderers
 
         self.tree_widget = QTreeWidget()
         self.tree_widget.setHeaderHidden(True)
@@ -79,19 +80,25 @@ class Editor(QDialog):
 def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
-
-    # axes
-    def _axes_callback(state: bool) -> None:
-        if state:
-            renderer.show_axes()
-        else:
-            renderer.hide_axes()
-
     axes = QCheckBox("Axes")
     if hasattr(renderer, "axes_widget"):
         axes.setChecked(renderer.axes_widget.GetEnabled())
     else:
         axes.setChecked(False)
+
+    renderer_ref = weakref.ref(renderer)
+    del renderer
+
+    # axes
+    def _axes_callback(state: bool) -> None:
+        renderer = renderer_ref()
+        if renderer is None:
+            return
+        if state:
+            renderer.show_axes()
+        else:
+            renderer.hide_axes()
+
     axes.toggled.connect(_axes_callback)
     layout.addWidget(axes)
 
