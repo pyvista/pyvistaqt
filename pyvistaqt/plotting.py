@@ -311,7 +311,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     @conditional_decorator(threaded, platform.system() == "Darwin")
     def render(self) -> None:
         """Override the ``render`` method to handle threading issues."""
-        return self.render_signal.emit()
+        try:
+            return self.render_signal.emit()
+        except RuntimeError:  #  wrapped C/C++ object has been deleted
+            return None
 
     @wraps(BasePlotter.enable)
     def enable(self) -> None:
