@@ -48,10 +48,11 @@ def check_gc(request):
         from qtpy import API_NAME
     except Exception:
         API_NAME = ''
-    if 'allow_bad_gc' in request.node.iter_markers():
+    marks = set(mark.name for mark in request.node.iter_markers())
+    if 'allow_bad_gc' in marks:
         yield
         return
-    if 'allow_bad_gc_pyside' in request.node.iter_markers() and API_NAME.lower().startswith('pyside'):
+    if 'allow_bad_gc_pyside' in marks and API_NAME.lower().startswith('pyside'):
         yield
         return
     gc.collect()
