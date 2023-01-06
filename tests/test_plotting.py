@@ -119,12 +119,12 @@ def test_check_type():
 
 def test_mouse_interactions(qtbot):
     plotter = BackgroundPlotter(show=True)
-    #window = plotter.app_window
-    #interactor = plotter.interactor
-    #qtbot.addWidget(window)
-    #point = QPoint(0, 0)
-    #qtbot.mouseMove(interactor, point)
-    #qtbot.mouseClick(interactor, QtCore.Qt.LeftButton)
+    window = plotter.app_window
+    interactor = plotter.interactor
+    qtbot.addWidget(window)
+    point = QPoint(0, 0)
+    qtbot.mouseMove(interactor, point)
+    qtbot.mouseClick(interactor, QtCore.Qt.LeftButton)
     plotter.close()
 
 
@@ -201,7 +201,6 @@ def test_counter(qtbot):
 @pytest.mark.parametrize('border', (True, False))
 def test_subplot_gc(border, allow_bad_gc):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
-
 
 
 def test_editor(qtbot, plotting, allow_bad_gc):
