@@ -1,7 +1,7 @@
 import gc
-import sys
 import importlib
 import inspect
+import sys
 
 import pytest
 import pyvista
