@@ -311,7 +311,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     @conditional_decorator(threaded, platform.system() == "Darwin")
     def render(self) -> None:
         """Override the ``render`` method to handle threading issues."""
-        return self.render_signal.emit()
+        try:
+            return self.render_signal.emit()
+        except RuntimeError:  #  wrapped C/C++ object has been deleted
+            return None
 
     @wraps(BasePlotter.enable)
     def enable(self) -> None:
@@ -400,6 +403,16 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.render_timer.stop()
         BasePlotter.close(self)
         QVTKRenderWindowInteractor.close(self)
+        # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
+        # to resolve the ref to vtkGenericRenderWindowInteractor
+        self._Iren = (  # pylint: disable=invalid-name,attribute-defined-outside-init
+            _FakeEventHandler()
+        )
+        for key in ("_RenderWindow", "renderer"):
+            try:
+                setattr(self, key, None)
+            except AttributeError:
+                pass
 
 
 class BackgroundPlotter(QtInteractor):
@@ -1013,3 +1026,14 @@ class MultiPlotter:
         row, col = idx
         self._plotter = self._plotters[row * self._ncols + col]
         return self._plotter
+
+
+class _FakeEventHandler:
+    # pylint: disable=too-few-public-methods
+
+    def _noop(self, *args: tuple, **kwargs: dict) -> None:
+        pass
+
+    SetDPI = EnterEvent = MouseMoveEvent = LeaveEvent = SetSize = _noop
+    SetEventInformation = ConfigureEvent = SetEventInformationFlipY = _noop
+    KeyReleaseEvent = CharEvent = _noop

@@ -1,5 +1,6 @@
 """This module contains the Qt scene editor."""
 
+import weakref
 from typing import List
 
 from pyvista import Renderer
@@ -28,6 +29,7 @@ class Editor(QDialog):
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
+        del renderers
 
         self.tree_widget = QTreeWidget()
         self.tree_widget.setHeaderHidden(True)
@@ -78,19 +80,25 @@ class Editor(QDialog):
 def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
-
-    # axes
-    def _axes_callback(state: bool) -> None:
-        if state:
-            renderer.show_axes()
-        else:
-            renderer.hide_axes()
-
     axes = QCheckBox("Axes")
     if hasattr(renderer, "axes_widget"):
         axes.setChecked(renderer.axes_widget.GetEnabled())
     else:
         axes.setChecked(False)
+
+    renderer_ref = weakref.ref(renderer)
+    del renderer
+
+    # axes
+    def _axes_callback(state: bool) -> None:
+        renderer = renderer_ref()
+        if renderer is None:  # pragma: no cover
+            return
+        if state:
+            renderer.show_axes()
+        else:
+            renderer.hide_axes()
+
     axes.toggled.connect(_axes_callback)
     layout.addWidget(axes)
 
@@ -105,9 +113,16 @@ def _get_actor_widget(actor: vtkActor) -> QWidget:
     prop = actor.GetProperty()
 
     # visibility
+    set_vis_ref = weakref.ref(actor.SetVisibility)
+
+    def _set_vis(visibility: bool) -> None:  # pragma: no cover
+        set_vis = set_vis_ref()
+        if set_vis is not None:
+            set_vis(visibility)
+
     visibility = QCheckBox("Visibility")
     visibility.setChecked(actor.GetVisibility())
-    visibility.toggled.connect(actor.SetVisibility)
+    visibility.toggled.connect(_set_vis)
     layout.addWidget(visibility)
 
     if prop is not None:
@@ -116,7 +131,14 @@ def _get_actor_widget(actor: vtkActor) -> QWidget:
         opacity = QDoubleSpinBox()
         opacity.setMaximum(1.0)
         opacity.setValue(prop.GetOpacity())
-        opacity.valueChanged.connect(prop.SetOpacity)
+        set_opacity_ref = weakref.ref(prop.SetOpacity)
+
+        def _set_opacity(opacity: float) -> None:  # pragma: no cover
+            set_opacity = set_opacity_ref()
+            if set_opacity is not None:
+                set_opacity(opacity)
+
+        opacity.valueChanged.connect(_set_opacity)
         tmp_layout.addWidget(QLabel("Opacity"))
         tmp_layout.addWidget(opacity)
         layout.addLayout(tmp_layout)
