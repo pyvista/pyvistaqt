@@ -1,5 +1,5 @@
 cmocean==2.0
-colorcet==3.0.0
+colorcet==3.0.1
 imageio==2.24.0
 imageio-ffmpeg==0.4.7
 lxml==4.9.2
