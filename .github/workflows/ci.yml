@@ -81,9 +81,11 @@ jobs:
             pyvista: '0.35'
           - os: 'ubuntu-latest'
             pyvista: '0.36'
+          - os: 'ubuntu-latest'
+            pyvista: '0.37'
     defaults:
       run:
-        shell: bash
+        shell: bash -e {0}
     env:
       ALLOW_PLOTTING: 'true'
       DISPLAY: ':99'
@@ -109,7 +111,11 @@ jobs:
         name: 'Install dependencies with pip'
       - run: pip install PyQt5
         name: 'Install Qt binding'
-      - run: pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
+      - run: |
+          pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
+          if [[ "${{ matrix.pyvista }}" == "0.32" ]] || [[ "${{ matrix.pyvista }}" == "0.33" ]]; then
+            pip install "vtk<9.2.5"
+          fi
         name: 'Install PyVista'
       - run: |
           pip install -e .
