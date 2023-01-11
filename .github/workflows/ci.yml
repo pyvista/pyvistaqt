@@ -114,7 +114,7 @@ jobs:
       - run: |
           pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
           if [[ "${{ matrix.pyvista }}" == "0.32" ]] || [[ "${{ matrix.pyvista }}" == "0.33" ]]; then
-            pip install "vtk<9.2.4"
+            pip install "vtk<9.2"
           fi
         name: 'Install PyVista'
       - run: |
