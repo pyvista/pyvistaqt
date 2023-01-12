@@ -14,7 +14,7 @@ pytest-cov==4.0.0
 pytest-memprof==0.2.0
 pytest-qt==4.2.0
 pyvista==0.37.0
-QtPy==2.1.0
+QtPy==2.3.0
 scooby==0.6.0
 flake8-black==0.3.6
 flake8-isort==6.0.0
