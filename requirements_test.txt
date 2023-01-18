@@ -7,7 +7,7 @@ isort==5.11.4
 mypy==0.991
 numpy==1.24.1
 pycodestyle==2.10.0
-pydocstyle==6.2.3
+pydocstyle==6.3.0
 pylint==2.15.10
 pytest==7.2.1
 pytest-cov==4.0.0
