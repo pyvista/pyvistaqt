@@ -553,6 +553,8 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     assert os.path.isfile(filename + '.vtkjs')
 
 
+# vtkWeakReference and vtkFloatArray, only sometimes
+@pytest.mark.allow_bad_gc_pyside
 def test_background_plotting_orbit(qtbot, plotting):
     plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
