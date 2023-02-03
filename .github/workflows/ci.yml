@@ -83,6 +83,9 @@ jobs:
             pyvista: '0.36'
           - os: 'ubuntu-latest'
             pyvista: '0.37'
+          - os: 'ubuntu-latest'
+            pyvista: '0.38'
+
     defaults:
       run:
         shell: bash -e {0}
