@@ -204,7 +204,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
         # because they use **kwargs in their constructor...
-        qvtk_kwargs = dict(parent=parent)
+        qvtk_kwargs = {"parent": parent}
         for key in ("stereo", "iren", "rw", "wflags"):
             if key in kwargs:
                 qvtk_kwargs[key] = kwargs.pop(key)
