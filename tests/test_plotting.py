@@ -1,6 +1,7 @@
 import os
 from packaging.version import Version
 import platform
+import weakref
 
 import numpy as np
 import pytest
@@ -197,6 +198,14 @@ def test_counter(qtbot):
     assert counter.count == 0
 
 
+# TODO: Fix gc on PySide6
+@pytest.mark.parametrize('border', (True, False))
+@pytest.mark.allow_bad_gc_pyside
+def test_subplot_gc(border):
+    BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
+
+
+@pytest.mark.allow_bad_gc_pyside
 def test_editor(qtbot, plotting):
     # test editor=False
     plotter = BackgroundPlotter(editor=False, off_screen=False)
@@ -226,7 +235,8 @@ def test_editor(qtbot, plotting):
 
     # add at least an actor
     plotter.subplot(0, 0)
-    plotter.add_mesh(pyvista.Sphere())
+    pd = pyvista.Sphere()
+    actor = plotter.add_mesh(pd)
     plotter.subplot(1, 0)
     plotter.show_axes()
 
@@ -258,6 +268,7 @@ def test_editor(qtbot, plotting):
 
     # hide the editor for coverage
     editor.toggle()
+    plotter.remove_actor(actor)
     plotter.close()
 
 
@@ -435,6 +446,7 @@ def test_link_views_across_plotters(other_views):
     with pytest.raises(TypeError, match=match):
         plotter_one.link_views_across_plotters(plotter_two, other_views=[0.0])
 
+
 @pytest.mark.parametrize('show_plotter', [
     True,
     False,
@@ -541,6 +553,9 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     assert os.path.isfile(filename + '.vtkjs')
 
 
+# vtkWeakReference and vtkFloatArray, only sometimes -- usually PySide2
+# but also sometimes macOS
+@pytest.mark.allow_bad_gc
 def test_background_plotting_orbit(qtbot, plotting):
     plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
     plotter.add_mesh(pyvista.Sphere())
@@ -583,6 +598,8 @@ def test_background_plotting_toolbar(qtbot, plotting):
     plotter.close()
 
 
+# TODO: _render_passes not GC'ed
+@pytest.mark.allow_bad_gc_pyside
 @pytest.mark.skipif(
     platform.system() == 'Windows', reason='Segfaults on Windows')
 def test_background_plotting_menu_bar(qtbot, plotting):
@@ -641,7 +658,9 @@ def test_drop_event(tmpdir, qtbot):
     mesh = pyvista.Cone()
     mesh.save(filename)
     assert os.path.isfile(filename)
-    plotter = BackgroundPlotter(update_app_icon=False, show=True)
+    plotter = BackgroundPlotter(update_app_icon=False)
+    with qtbot.wait_exposed(plotter.app_window, timeout=10000):
+        plotter.app_window.show()
     point = QPointF(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
@@ -678,7 +697,9 @@ def test_drag_event(tmpdir):
 
 
 def test_gesture_event(qtbot):
-    plotter = BackgroundPlotter()
+    plotter = BackgroundPlotter(update_app_icon=False)
+    with qtbot.wait_exposed(plotter.app_window, timeout=10000):
+        plotter.app_window.show()
     gestures = [QPinchGesture()]
     event = QGestureEvent(gestures)
     plotter.gesture_event(event)
@@ -688,10 +709,10 @@ def test_gesture_event(qtbot):
 def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     class CallBack(object):
         def __init__(self, sphere):
-            self.sphere = sphere
+            self.sphere = weakref.ref(sphere)
 
         def __call__(self):
-            self.sphere.points *= 0.5
+            self.sphere().points[:] = self.sphere().points * 0.5
 
     update_count = [0]
     orig_update_app_icon = BackgroundPlotter.update_app_icon
@@ -766,10 +787,23 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     assert not callback_timer.isActive()  # window stops the callback
 
 
+def allow_bad_gc_old_pyvista(func):
+    if Version(pyvista.__version__) < Version('0.37'):
+        return pytest.mark.allow_bad_gc(func)
+    else:
+        return func
+
+
+# TODO: Need to fix this allow_bad_gc:
+# - the actors are not cleaned up in the non-empty scene case
+# - the q_key_press leaves a lingering vtkUnsignedCharArray referred to by
+#   a "managedbuffer" object
+@allow_bad_gc_old_pyvista
+@pytest.mark.allow_bad_gc_pyside
 @pytest.mark.parametrize('close_event', [
     "plotter_close",
     "window_close",
-    "q_key_press",
+    pytest.param("q_key_press", marks=pytest.mark.allow_bad_gc),
     "menu_exit",
     "del_finalizer",
     ])
