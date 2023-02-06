@@ -1,4 +1,5 @@
 import os
+import os.path as op
 from packaging.version import Version
 import platform
 import weakref
@@ -15,6 +16,7 @@ from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
                             QGestureEvent, QPinchGesture)
 from pyvistaqt.plotting import global_theme
 from pyvista.plotting import Renderer
+from pyvista.utilities import Scraper
 
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
@@ -130,7 +132,7 @@ def test_mouse_interactions(qtbot):
 
 @pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
 def test_ipython(qapp):
-    import IPython
+    IPython = pytest.importorskip('IPython')
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
           "p = Plotter(show=False, off_screen=False); p.close(); exit()"
     IPython.start_ipython(argv=["-c", cmd])
@@ -954,3 +956,30 @@ def assert_hasattr(variable, attribute_name, variable_type):
     __tracebackhide__ = True
     assert hasattr(variable, attribute_name)
     assert isinstance(getattr(variable, attribute_name), variable_type)
+
+
+def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir):
+    pytest.importorskip('sphinx_gallery')
+    monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
+
+    plotter = BackgroundPlotter(off_screen=False, editor=False, show=True)
+
+    # Adapted from pyvista/tests/test_scraper.py
+    scraper = Scraper()
+    src_dir = str(tmpdir)
+    out_dir = op.join(str(tmpdir), '_build', 'html')
+    img_fname = op.join(src_dir, 'auto_examples', 'images', 'sg_img.png')
+    gallery_conf = {"src_dir": src_dir, "builder_name": "html"}
+    target_file = op.join(src_dir, 'auto_examples', 'sg.py')
+    block = None
+    block_vars = dict(
+        image_path_iterator=(img for img in [img_fname]),
+        example_globals=dict(a=1),
+        target_file=target_file,
+    )
+    os.makedirs(op.dirname(img_fname))
+    assert not os.path.isfile(img_fname)
+    os.makedirs(out_dir)
+    scraper(block, block_vars, gallery_conf)
+    assert os.path.isfile(img_fname)
+    plotter.close()
