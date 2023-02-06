@@ -958,7 +958,6 @@ def assert_hasattr(variable, attribute_name, variable_type):
     assert isinstance(getattr(variable, attribute_name), variable_type)
 
 
-@pytest.mark.xfail(reason='New failure in pyvista 0.38.0')
 def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir):
     pytest.importorskip('sphinx_gallery')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)

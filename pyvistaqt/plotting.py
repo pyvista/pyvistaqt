@@ -267,7 +267,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                 for renderer in self.renderers:
                     renderer.enable_depth_peeling()
 
+        # Set some private attributes that let BasePlotter know
+        #   that this is safely rendering
         self._first_time = False  # Crucial!
+        # self._rendered = True  # this is handled in render() - subclasses need to set this appropriately
         LOG.debug("QtInteractor init stop")
 
     def _setup_interactor(self, off_screen: bool) -> None:
@@ -311,6 +314,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     @conditional_decorator(threaded, platform.system() == "Darwin")
     def render(self) -> None:
         """Override the ``render`` method to handle threading issues."""
+        self._rendered = True  # Crucial for BasePlotter to know this has rendered
         try:
             return self.render_signal.emit()
         except RuntimeError:  #  wrapped C/C++ object has been deleted
