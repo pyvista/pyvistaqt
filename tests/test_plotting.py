@@ -132,7 +132,7 @@ def test_mouse_interactions(qtbot):
 
 @pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
 def test_ipython(qapp):
-    import IPython
+    IPython = pytest.importorskip('IPython')
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
           "p = Plotter(show=False, off_screen=False); p.close(); exit()"
     IPython.start_ipython(argv=["-c", cmd])
