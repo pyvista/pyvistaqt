@@ -423,9 +423,6 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         elif hasattr(self._Iren, attr):
             return getattr(self._Iren, attr)
         else:
-            if attr == 'image':
-                from pyvista import BasePlotter
-                return BasePlotter.image.fget(self)
             raise AttributeError(self.__class__.__name__ +
                   " has no attribute named " + attr)
 
