@@ -270,7 +270,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         # Set some private attributes that let BasePlotter know
         #   that this is safely rendering
         self._first_time = False  # Crucial!
-        # self._rendered = True  # this is handled in render() - subclasses need to set this appropriately
+        # self._rendered = True  # this is handled in render()
         LOG.debug("QtInteractor init stop")
 
     def _setup_interactor(self, off_screen: bool) -> None:
