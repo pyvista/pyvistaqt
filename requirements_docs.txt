@@ -3,7 +3,7 @@ colorcet==3.0.1
 imageio==2.26.0
 imageio-ffmpeg==0.4.8
 lxml==4.9.2
-matplotlib==3.7.0
+matplotlib==3.7.1
 meshio==5.3.4
 pytest-sphinx==0.5.0
 QtPy==2.3.0
