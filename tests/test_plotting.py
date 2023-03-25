@@ -26,7 +26,8 @@ from pyvistaqt.dialog import FileDialog
 from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
-WANT_AFTER = 0 if Version(pyvista.__version__) >= Version('0.37') else 1
+PV_VERSION = Version(pyvista.__version__)
+WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
 
 
 class TstWindow(MainWindow):
@@ -961,6 +962,8 @@ def assert_hasattr(variable, attribute_name, variable_type):
 @pytest.mark.parametrize('n_win', [1, 2])
 def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     pytest.importorskip('sphinx_gallery')
+    if Version('0.38.0') <= PV_VERSION <= Version('0.38.5'):
+        pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.5')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
 
     plotters = [
