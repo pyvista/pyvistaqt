@@ -1,4 +1,4 @@
-black==23.1.0
+black==23.3.0
 codecov==2.1.12
 codespell==2.2.4
 flake8==6.0.0
