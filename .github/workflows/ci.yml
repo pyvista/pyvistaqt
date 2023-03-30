@@ -31,6 +31,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@v2
         with:
           qt: true
+          pyvista: false
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
