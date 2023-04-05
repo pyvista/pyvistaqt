@@ -28,7 +28,7 @@ jobs:
       PYTHON_VERSION: '3.9'
     steps:
       - uses: actions/checkout@v3
-      - uses: pyvista/setup-headless-display-action@v2
+      - uses: pyvista/setup-headless-display-action@main
         with:
           qt: true
           pyvista: false
