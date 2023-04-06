@@ -1,4 +1,3 @@
-pyvistaqt/_version.py
 pyvistaqt/counter.py
 pyvistaqt/dialog.py
 pyvistaqt/editor.py

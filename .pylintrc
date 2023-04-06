@@ -17,6 +17,7 @@ fail-under=10
 ignore=rwi.py,
        conf.py,
        conftest.py,
+       _version.py,
        setup.py  # ignore and fix in future PR
 
 # Add files or directories matching the regex patterns to the blacklist. The
@@ -527,5 +528,5 @@ preferred-modules=
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "BaseException, Exception".
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
