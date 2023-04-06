@@ -3,7 +3,7 @@
 try:
     from importlib.metadata import version
 
-    __version__ = version("mne")
+    __version__ = version("pyvistaqt")
 except Exception:  # pragma: no cover # pylint: disable=broad-exception-caught
     try:
         from ._version import __version__
