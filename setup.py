@@ -2,26 +2,19 @@
 Installation file for python pyvistaqt module
 """
 import os
+from pathlib import Path
 from io import open as io_open
 
 from setuptools import setup
 
 package_name = 'pyvistaqt'
-
-__version__ = None
-filepath = os.path.dirname(__file__)
-version_file = os.path.join(filepath, package_name, '_version.py')
-with io_open(version_file, mode='r') as fd:
-    exec(fd.read())
-
-readme_file = os.path.join(filepath, 'README.rst')
+readme_file = Path(__file__).parent / 'README.rst'
 
 setup(
     name=package_name,
     packages=[package_name, package_name],
-    version=__version__,
     description='pyvista qt plotter',
-    long_description=io_open(readme_file, encoding="utf-8").read(),
+    long_description=readme_file.read_text(),
     long_description_content_type='text/x-rst',
     author='PyVista Developers',
     author_email='info@pyvista.org',
@@ -42,9 +35,15 @@ setup(
     url='https://github.com/pyvista/pyvistaqt',
     keywords='vtk numpy plotting mesh qt',
     python_requires='>=3.7',
+    setup_requires=["setuptools>=45", "setuptools_scm>=6.2"],
+    use_scm_version={
+        "write_to": "pyvistaqt/_version.py",
+        "version_scheme": "release-branch-semver",
+    },
     install_requires=[
         'pyvista>=0.32.0',
         'QtPy>=1.9.0',
+        "importlib_resources>=5.10.2; python_version<'3.9'",
     ],
     package_data={'pyvistaqt': [
         os.path.join('data', '*.png'),

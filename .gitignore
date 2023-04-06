@@ -67,3 +67,5 @@ docs/external_examples.rst
 
 # vim
 *.swp
+
+pyvistaqt/_version.py
