@@ -18,3 +18,4 @@ dependencies:
       - vtk
       - pyvista>=0.32.0
       - pytest-memprof
+      - sphinx-gallery

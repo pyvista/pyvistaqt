@@ -1,5 +1,14 @@
 """PyVista package for 3D plotting and mesh analysis."""
-from ._version import __version__
+
+try:
+    from importlib.metadata import version
+
+    __version__ = version("pyvistaqt")
+except Exception:  # pragma: no cover # pylint: disable=broad-exception-caught
+    try:
+        from ._version import __version__
+    except ImportError:
+        __version__ = '0.0.0'
 
 try:
     from qtpy import QtCore  # noqa

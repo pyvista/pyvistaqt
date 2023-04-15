@@ -1,4 +1,5 @@
 import os
+import os.path as op
 from packaging.version import Version
 import platform
 import weakref
@@ -15,6 +16,7 @@ from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
                             QGestureEvent, QPinchGesture)
 from pyvistaqt.plotting import global_theme
 from pyvista.plotting import Renderer
+from pyvista.utilities import Scraper
 
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
@@ -24,7 +26,8 @@ from pyvistaqt.dialog import FileDialog
 from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
-WANT_AFTER = 0 if Version(pyvista.__version__) >= Version('0.37') else 1
+PV_VERSION = Version(pyvista.__version__)
+WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
 
 
 class TstWindow(MainWindow):
@@ -130,7 +133,7 @@ def test_mouse_interactions(qtbot):
 
 @pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
 def test_ipython(qapp):
-    import IPython
+    IPython = pytest.importorskip('IPython')
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
           "p = Plotter(show=False, off_screen=False); p.close(); exit()"
     IPython.start_ipython(argv=["-c", cmd])
@@ -954,3 +957,42 @@ def assert_hasattr(variable, attribute_name, variable_type):
     __tracebackhide__ = True
     assert hasattr(variable, attribute_name)
     assert isinstance(getattr(variable, attribute_name), variable_type)
+
+
+@pytest.mark.parametrize('n_win', [1, 2])
+def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
+    pytest.importorskip('sphinx_gallery')
+    if Version('0.38.0') <= PV_VERSION <= Version('0.38.5'):
+        pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.5')
+    monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
+
+    plotters = [
+        BackgroundPlotter(off_screen=False, editor=False, show=True)
+        for _ in range(n_win)
+    ]
+
+    # Adapted from pyvista/tests/test_scraper.py
+    scraper = Scraper()
+    src_dir = str(tmpdir)
+    out_dir = op.join(str(tmpdir), '_build', 'html')
+    img_fnames = [
+        op.join(src_dir, 'auto_examples', 'images', f'sg_img_{n}.png')
+        for n in range(n_win)
+    ]
+    gallery_conf = {"src_dir": src_dir, "builder_name": "html"}
+    target_file = op.join(src_dir, 'auto_examples', 'sg.py')
+    block = None
+    block_vars = dict(
+        image_path_iterator=(img for img in img_fnames),
+        example_globals=dict(a=1),
+        target_file=target_file,
+    )
+    os.makedirs(op.dirname(img_fnames[0]))
+    for img_fname in img_fnames:
+        assert not os.path.isfile(img_fname)
+    os.makedirs(out_dir)
+    scraper(block, block_vars, gallery_conf)
+    for img_fname in img_fnames:
+        assert os.path.isfile(img_fname)
+    for plotter in plotters:
+        plotter.close()
