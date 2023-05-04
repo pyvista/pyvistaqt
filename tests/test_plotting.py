@@ -962,8 +962,8 @@ def assert_hasattr(variable, attribute_name, variable_type):
 @pytest.mark.parametrize('n_win', [1, 2])
 def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     pytest.importorskip('sphinx_gallery')
-    if Version('0.38.0') <= PV_VERSION <= Version('0.38.5'):
-        pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.5')
+    if Version('0.38.0') <= PV_VERSION <= Version('0.38.6'):
+        pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.6')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
 
     plotters = [
