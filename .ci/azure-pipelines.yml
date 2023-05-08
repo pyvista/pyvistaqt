@@ -159,6 +159,10 @@ stages:
           pytest -v --cov pyvistaqt --cov-report html
         displayName: 'Test Core API against VTK'
 
+      - script: |  # this must be right after the core API
+          bash <(curl -s https://codecov.io/bash)
+        displayName: 'Upload coverage to codecov.io'
+
       - script: |
           source /usr/share/miniconda/etc/profile.d/conda.sh
           conda activate pyvistaqt-env
@@ -202,6 +206,10 @@ stages:
         pytest -v --cov pyvistaqt --cov-report html
       displayName: 'Run Tests'
 
+    - script: |  # this must be right after the core API
+        bash <(curl -s https://codecov.io/bash)
+      displayName: 'Upload coverage to codecov.io'
+
     # don't run job on no-ci builds
     condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
@@ -215,7 +223,7 @@ stages:
         Python310:
           python.version: '3.10'
     pool:
-      vmImage: 'macOS-10.15'
+      vmImage: 'macOS-11'
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -233,6 +241,10 @@ stages:
           python -m pip install pytest-azurepipelines
           python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
         displayName: 'Run Tests'
+
+    - script: |  # this must be right after the core API
+        bash <(curl -s https://codecov.io/bash)
+      displayName: 'Upload coverage to codecov.io'
 
     # don't run job on no-ci builds
     condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
