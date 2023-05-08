@@ -242,9 +242,9 @@ stages:
           python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
         displayName: 'Run Tests'
 
-    - script: |  # this must be right after the core API
-        bash <(curl -s https://codecov.io/bash)
-      displayName: 'Upload coverage to codecov.io'
+      - script: |  # this must be right after the core API
+          bash <(curl -s https://codecov.io/bash)
+        displayName: 'Upload coverage to codecov.io'
 
     # don't run job on no-ci builds
     condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
