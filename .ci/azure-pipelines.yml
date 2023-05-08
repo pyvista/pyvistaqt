@@ -171,8 +171,6 @@ stages:
   - job: Windows
     pool:
       vmIMage: 'windows-2019'
-    variables:
-      AZURE_CI_WINDOWS: 'true'
     strategy:
       maxParallel: 4
       matrix:
@@ -202,7 +200,7 @@ stages:
         pytest -v --cov pyvistaqt --cov-report html
       displayName: 'Run Tests'
 
-    - script: |  # this must be right after the core API
+    - bash: |
         bash <(curl -s https://codecov.io/bash)
       displayName: 'Upload coverage to codecov.io'
 
@@ -235,7 +233,7 @@ stages:
           python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
         displayName: 'Run Tests'
 
-      - script: |  # this must be right after the core API
+      - script: |
           bash <(curl -s https://codecov.io/bash)
         displayName: 'Upload coverage to codecov.io'
 
