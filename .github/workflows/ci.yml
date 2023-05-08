@@ -85,6 +85,8 @@ jobs:
             pyvista: '0.37'
           - os: 'ubuntu-latest'
             pyvista: '0.38'
+          - os: 'ubuntu-latest'
+            pyvista: '0.39'
 
     defaults:
       run:
