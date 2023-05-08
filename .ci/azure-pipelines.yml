@@ -124,9 +124,6 @@ stages:
         TWINE_PASSWORD: $(twine.password)
         TWINE_REPOSITORY_URL: "https://upload.pypi.org/legacy/"
 
-    # don't run job on no-ci builds
-    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
-
 
   # DESCRIPTION: Core API and doc string testing across VTK versions using conda
   - job: LinuxConda
@@ -168,7 +165,6 @@ stages:
           conda activate pyvistaqt-env
           pytest -v --doctest-modules pyvistaqt
         displayName: 'Test Package Docstrings against VTK'
-    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
 
   # DESCRIPTION: Core API testing for Windows
@@ -210,9 +206,6 @@ stages:
         bash <(curl -s https://codecov.io/bash)
       displayName: 'Upload coverage to codecov.io'
 
-    # don't run job on no-ci builds
-    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
-
 
   # DESCRIPTION: Core API testing for MacOS
   - job: MacOS
@@ -245,9 +238,6 @@ stages:
       - script: |  # this must be right after the core API
           bash <(curl -s https://codecov.io/bash)
         displayName: 'Upload coverage to codecov.io'
-
-    # don't run job on no-ci builds
-    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
 
 
   # Builds the documentation
@@ -326,6 +316,3 @@ stages:
       env:
         GH_TOKEN: $(gh.token)
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-
-    # don't run job on no-ci builds
-    condition: not(contains(variables['System.PullRequest.SourceBranch'], 'no-ci'))
