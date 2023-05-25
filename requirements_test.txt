@@ -9,7 +9,7 @@ pycodestyle==2.10.0
 pydocstyle==6.3.0
 pylint==2.17.4
 pytest==7.3.1
-pytest-cov==4.0.0
+pytest-cov==4.1.0
 pytest-memprof==0.2.0
 pytest-qt==4.2.0
 pyvista==0.39.1
