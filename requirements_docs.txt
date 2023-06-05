@@ -1,6 +1,6 @@
 cmocean==3.0.3
 colorcet==3.0.1
-imageio==2.29.0
+imageio==2.31.0
 imageio-ffmpeg==0.4.8
 lxml==4.9.2
 matplotlib==3.7.1
@@ -11,7 +11,7 @@ Sphinx==7.0.1
 sphinx-autobuild==2021.3.14
 sphinx-copybutton==0.5.2
 sphinx-notfound-page==0.8.3
-sphinx-rtd-theme==1.2.1
+pydata-sphinx-theme==0.13.3
 sphinxcontrib-napoleon==0.7
 sphinxcontrib-websupport==1.2.4
 toml==0.10.2
