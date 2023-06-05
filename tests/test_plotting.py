@@ -16,7 +16,10 @@ from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
                             QGestureEvent, QPinchGesture)
 from pyvistaqt.plotting import global_theme
 from pyvista.plotting import Renderer
-from pyvista.utilities import Scraper
+try:
+    from pyvista.plotting.utilities import Scraper
+except ImportError:  # PV < 0.40
+    from pyvista.utilities import Scraper
 
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
@@ -27,7 +30,6 @@ from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
 PV_VERSION = Version(pyvista.__version__)
-WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
 
 
 class TstWindow(MainWindow):
@@ -275,11 +277,22 @@ def test_editor(qtbot, plotting):
     plotter.close()
 
 
-def test_qt_interactor(qtbot, plotting):
-    from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
+@pytest.fixture()
+def ensure_closed():
+    """Ensure all plotters are closed."""
+    try:
+        from pyvista.plotting import close_all
+        from pyvista.plotting.plotter import _ALL_PLOTTERS
+    except ImportError:  # PV < 0.40
+        from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
+    yield
+    WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
+    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
+
+def test_qt_interactor(qtbot, plotting, ensure_closed):
     window = TstWindow(show=False, off_screen=False)
     qtbot.addWidget(window)  # register the main widget
 
@@ -334,8 +347,6 @@ def test_qt_interactor(qtbot, plotting):
     if Version(pyvista.__version__) < Version('0.27.0'):
         assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
-
-    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 @pytest.mark.parametrize('show_plotter', [
@@ -814,11 +825,8 @@ def allow_bad_gc_old_pyvista(func):
     True,
     False,
     ])
-def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
-    from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
-    close_all()  # this is necessary to test _ALL_PLOTTERS
-    assert len(_ALL_PLOTTERS) == 0
-
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
+                                   ensure_closed):
     plotter = _create_testing_scene(empty_scene)
 
     # check that BackgroundPlotter.__init__() is called
@@ -879,8 +887,6 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     if Version(pyvista.__version__) < Version('0.27.0'):
         assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
-
-    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 def test_multiplotter(qtbot, plotting):
