@@ -1,4 +1,4 @@
-name: docs
+name: Documentation
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docs_build:
+  build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
