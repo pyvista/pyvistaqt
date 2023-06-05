@@ -39,7 +39,12 @@ class Editor(QDialog):
         self.layout.addWidget(self.stacked_widget)
 
         def _selection_callback() -> None:
-            for item in self.tree_widget.selectedItems():
+            try:
+                items = self.tree_widget.selectedItems()
+            # Already deleted
+            except RuntimeError:  # pragma: no cover
+                return
+            for item in items:
                 widget_idx = item.data(0, Qt.ItemDataRole.UserRole)
                 self.stacked_widget.setCurrentIndex(widget_idx)
 
@@ -92,7 +97,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     # axes
     def _axes_callback(state: bool) -> None:
         renderer = renderer_ref()
-        if renderer is None:  # pragma: no cover
+        if renderer is None or renderer.parent.iren is None:  # pragma: no cover
             return
         if state:
             renderer.show_axes()
