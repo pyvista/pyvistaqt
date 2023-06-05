@@ -347,11 +347,11 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         Parameters
         ----------
-        other_plotter: Plotter
+        other_plotter: BackgroundPlotter
             The plotter whose views will be linked.
         view: int
             Link the views in `other_plotter` to the this view index.
-        other_views: int | list of ints
+        other_views: int | list of int
             Link these views from `other_plotter` to the reference view. The default
             is None, in which case all views from `other_plotter` will be linked to
             the reference view.
@@ -684,7 +684,7 @@ class BackgroundPlotter(QtInteractor):
 
         Parameters
         ----------
-        img : ndarray, shape (w, h, c) | str
+        img : numpy.ndarray, shape (w, h, c) | str
             The image. Should be uint8 and square (w == h).
             Can have 3 or 4 color/alpha channels (``c``).
             Can also be a string path that QIcon can load.
