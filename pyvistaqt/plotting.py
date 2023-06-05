@@ -52,11 +52,13 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 from pyvista import global_theme
+
 try:
     from pyvista.plotting import BasePlotter
 except ImportError:  # PV < 0.40
     from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
+
 try:
     from pyvista.core.utilities import conditional_decorator, threaded
 except ImportError:  # PV < 0.40

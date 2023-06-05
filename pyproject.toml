@@ -15,7 +15,6 @@ force-exclude = '''
   | setup.py
 )
 '''
-check = true
 
 [tool.pydocstyle]
 match = '''
