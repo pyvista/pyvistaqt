@@ -53,7 +53,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx_copybutton',
               'sphinx.ext.extlinks',
               'sphinx.ext.coverage',
-              'sphinx.ext.intersphinx'
+              'sphinx.ext.intersphinx',
               ]
 
 
@@ -189,11 +189,29 @@ htmlhelp_basename = 'pyvistaqtdoc'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/", None),
+    "python": ("https://docs.python.org/3/", None),
     "pyvista": ('https://docs.pyvista.org/', None),
     "PySide6": ("https://doc.qt.io/qtforpython-6/", None),
+    "PyQt6": ("https://www.riverbankcomputing.com/static/Docs/PyQt6/", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
 }
 
+# Nitpick ignores
+nitpicky = True
+nitpick_ignore = [
+    ("py:class", "pyvistaqt.window.MainWindow"),
+    ("py:class", "pyvistaqt.counter.Counter"),
+    ("py:class", "pyvistaqt.editor.Editor"),
+    ("py:class", "pyvista.plotting.plotter.BasePlotter"),
+    ("py:class", "pyvistaqt.rwi.QVTKRenderWindowInteractor"),
+    ("py:class", "pyvistaqt.dialog.ScaleAxesDialog"),
+    ("py:class", "str = "),
+]
+nitpick_ignore_regex = [
+    ("py:class", "Py(Side|Qt).*"),  # PySide and PyQt don't link properly
+    ("py:class", "Q[A-Z]+.*"),  # QPoint etc.
+    ("py:class", r"(optional|class|revision|w|h|c|shape)"),
+]
 
 # -- Custom 404 page
 
