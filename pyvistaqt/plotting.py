@@ -52,9 +52,17 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 from pyvista import global_theme
-from pyvista.plotting.plotting import BasePlotter
+
+try:
+    from pyvista.plotting import BasePlotter
+except ImportError:  # PV < 0.40
+    from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
-from pyvista.utilities import conditional_decorator, threaded
+
+try:
+    from pyvista.core.utilities import conditional_decorator, threaded
+except ImportError:  # PV < 0.40
+    from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
 from qtpy.QtWidgets import (
