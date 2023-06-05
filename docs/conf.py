@@ -90,7 +90,7 @@ release = pyvistaqt.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -112,10 +112,23 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-import sphinx_rtd_theme
+import pydata_sphinx_theme
 
-html_theme = 'sphinx_rtd_theme'
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = "pydata_sphinx_theme"
+html_context = {
+    "github_user": "pyvista",
+    "github_repo": "pyvista",
+    "github_version": "main",
+    "doc_path": "doc/source",
+    "examples_path": "examples",
+}
+html_show_sourcelink = False
+html_copy_source = False
+
+# If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
+html_show_sphinx = False
+
+html_theme = 'pydata_sphinx_theme'
 html_context = {
     # Enable the "Edit in GitHub link within the header of each page.
     'display_github': False,
@@ -138,7 +151,28 @@ html_context = {
 # documentation.
 #
 html_theme_options = {
-    'logo_only': True,
+    "show_prev_next": False,
+    "github_url": "https://github.com/pyvista/pyvistaqt",
+    "collapse_navigation": True,
+    "use_edit_page_button": True,
+    "icon_links": [
+        {
+            "name": "Slack Community",
+            "url": "http://slack.pyvista.org",
+            "icon": "fab fa-slack",
+        },
+        {
+            "name": "Support",
+            "url": "https://github.com/pyvista/pyvista/discussions",
+            "icon": "fa fa-comment fa-fw",
+        },
+        {
+            "name": "Contributing",
+            "url": "https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst",
+            "icon": "fa fa-gavel fa-fw",
+        },
+    ],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -154,8 +188,10 @@ htmlhelp_basename = 'pyvistaqtdoc'
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None,
-                       'https://docs.pyvista.org/': None,
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/", None),
+    "pyvista": ('https://docs.pyvista.org/', None),
+    "PySide6": ("https://doc.qt.io/qtforpython-6/", None),
 }
 
 
