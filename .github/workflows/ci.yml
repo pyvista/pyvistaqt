@@ -93,13 +93,13 @@ jobs:
         shell: bash -e {0}
     env:
       ALLOW_PLOTTING: 'true'
-      DISPLAY: ':99'
       PYTHON_VERSION: '3.9'
     steps:
       - uses: actions/checkout@v3
-      - run: .ci/setup_headless_display.sh
-        name: 'Setup xvfb'
-        if: matrix.os == 'ubuntu-latest'
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
       - run: |
           git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
           ./gl-ci-helpers/appveyor/install_opengl.ps1
@@ -145,14 +145,14 @@ jobs:
         shell: bash
     env:
       ALLOW_PLOTTING: 'true'
-      DISPLAY: ':99'
       CONDA_ENV: 'environment.yml'
       PYTHON_VERSION: '3.8'
     steps:
       - uses: actions/checkout@v3
-      - run: .ci/setup_headless_display.sh
-        name: 'Setup xvfb'
-        if: matrix.os == 'ubuntu-latest'
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
       - run: |
           git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
           ./gl-ci-helpers/appveyor/install_opengl.ps1
