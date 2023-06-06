@@ -1,0 +1,41 @@
+name: Documentation
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            **/requirements_docs.txt
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+      - run: pip install . -r requirements_docs.txt "PySide6!=6.5.1"
+      - run: make -C docs doctest html
+      - uses: peaceiris/actions-gh-pages@v3
+        # Not a PR:
+        if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads')
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          external_repository: pyvista/pyvistaqt-docs
+          publish_branch: master
+          publish_dir: ./docs/_build/html
+          cname: qtdocs.pyvista.org
