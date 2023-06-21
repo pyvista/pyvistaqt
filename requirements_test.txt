@@ -3,7 +3,7 @@ codespell==2.2.5
 flake8==6.0.0
 ipython==8.14.0
 isort==5.12.0
-mypy==1.3.0
+mypy==1.4.0
 numpy==1.25.0
 pycodestyle==2.10.0
 pydocstyle==6.3.0
