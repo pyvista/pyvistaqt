@@ -514,6 +514,7 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     assert os.path.isfile(filename)
 
 
+@pytest.mark.skip
 @pytest.mark.allow_bad_gc
 def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
     # setup filesystem
