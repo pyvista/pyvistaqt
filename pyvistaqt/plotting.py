@@ -727,13 +727,25 @@ class BackgroundPlotter(QtInteractor):
         )
 
     def _qt_export_vtkjs(self, show: bool = True) -> FileDialog:
-        """Spawn an save file dialog to export a vtkjs file."""
+        """Spawn an save file dialog to export a vtksz file.
+
+        The exported file can be viewed with the OfflineLocalView viewer
+        available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
+
+        """
+        try:
+            callback = self.export_vtksz
+            ext = 'vtksz'
+        except AttributeError:
+            callback = self.export_vtkjs  # pre-v0.40
+            ext = 'vtkjs'
+
         return FileDialog(
             self.app_window,
-            filefilter=["VTK JS File(*.vtkjs)"],
+            filefilter=[f"VTK.js File(*.{ext})"],
             show=show,
             directory=bool(os.getcwd()),
-            callback=self.export_vtkjs,
+            callback=callback,
         )
 
     def _toggle_edl(self) -> None:
@@ -873,7 +885,7 @@ class BackgroundPlotter(QtInteractor):
 
         file_menu = self.main_menu.addMenu("File")
         file_menu.addAction("Take Screenshot", self._qt_screenshot)
-        file_menu.addAction("Export as VTKjs", self._qt_export_vtkjs)
+        file_menu.addAction("Export as VTKjs scene", self._qt_export_vtkjs)
         file_menu.addSeparator()
         # member variable for testing only
         self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)

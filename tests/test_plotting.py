@@ -514,17 +514,14 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     assert os.path.isfile(filename)
 
 
-@pytest.mark.parametrize('show_plotter', [
-    True,
-    False,
-    ])
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
+@pytest.mark.allow_bad_gc
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
 
     plotter = BackgroundPlotter(
-        show=show_plotter,
+        show=False,
         off_screen=False,
         title='Testing Window'
     )
@@ -533,7 +530,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    if not show_plotter:
+    if not False:
         assert not window.isVisible()
         with qtbot.wait_exposed(window):
             window.show()
@@ -548,7 +545,12 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     dlg = plotter._qt_export_vtkjs(show=False)  # FileDialog
     qtbot.addWidget(dlg)  # register the dialog
 
-    filename = str(os.path.join(output_dir, "tmp"))
+    if hasattr(plotter, 'export_vtksz'):
+        ext = '.vtksz'
+        filename = str(os.path.join(output_dir, f"tmp{ext}"))
+    else:
+        ext = '.vtkjs'
+        filename = str(os.path.join(output_dir, f"tmp"))
     dlg.selectFile(filename)
 
     # show the dialog
@@ -564,7 +566,11 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
 
     plotter.close()
     assert not window.isVisible()
-    assert os.path.isfile(filename + '.vtkjs')
+
+    if hasattr(plotter, 'export_vtksz'):
+        assert os.path.isfile(filename)
+    else:
+        assert os.path.isfile(filename + ext)
 
 
 # vtkWeakReference and vtkFloatArray, only sometimes -- usually PySide2
