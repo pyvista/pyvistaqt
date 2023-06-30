@@ -113,17 +113,6 @@ stages:
         pytest -v --doctest-modules pyvistaqt
       displayName: 'Test Package Docstrings'
 
-    - script: |
-        pip install twine
-        python setup.py sdist
-        twine upload --skip-existing dist/pyvistaqt*
-      displayName: 'Upload to PyPi'
-      condition: and(eq(variables['python.version'], '3.10'), contains(variables['Build.SourceBranch'], 'refs/tags/'))
-      env:
-        TWINE_USERNAME: $(twine.username)
-        TWINE_PASSWORD: $(twine.password)
-        TWINE_REPOSITORY_URL: "https://upload.pypi.org/legacy/"
-
 
   # DESCRIPTION: Core API and doc string testing across VTK versions using conda
   - job: LinuxConda
