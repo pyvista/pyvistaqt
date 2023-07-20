@@ -23,7 +23,7 @@ pyvista.BUILDING_GALLERY = True
 # Preferred plotting style for documentation
 pyvista.set_plot_theme('document')
 try:
-    rc = pyvista.themes._rcParams
+    rc = pyvista.global_theme
 except AttributeError:
     rc = pyvista.rcParams
 rc['window_size'] = np.array([1024, 768]) * 2
