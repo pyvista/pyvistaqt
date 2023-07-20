@@ -28,7 +28,6 @@ repos:
       # See:
       #   - https://github.com/python/mypy/issues/4008#issuecomment-708060733
       #   - https://pre-commit.com/#hooks-pass_filenames
-      language: system
       pass_filenames: false
       args: [
         "--config-file",
