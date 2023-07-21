@@ -12,7 +12,7 @@ pytest==7.4.0
 pytest-cov==4.1.0
 pytest-memprof==0.2.0
 pytest-qt==4.2.0
-pyvista==0.40.1
+pyvista==0.41.0
 QtPy==2.3.1
 scooby==0.7.2
 flake8-black==0.3.6
@@ -25,6 +25,6 @@ toml==0.10.2
 sphinx_gallery==0.13.0
 nest_asyncio==1.5.6
 trame==2.5.2
-trame-client==2.9.4
-trame-server==2.11.5
-trame-vtk==2.5.4
+trame-client==2.10.0
+trame-server==2.11.7
+trame-vtk==2.5.7
