@@ -36,7 +36,7 @@ repos:
       ]
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 3.9.2
+  rev: 6.0.0
   hooks:
   - id: flake8
     additional_dependencies: [
@@ -49,7 +49,7 @@ repos:
     ]
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.2.2
+  rev: v2.2.5
   hooks:
   - id: codespell
     args: [
@@ -58,7 +58,7 @@ repos:
     ]
 
 - repo: https://github.com/pycqa/pydocstyle
-  rev: 6.1.1
+  rev: 6.3.0
   hooks:
   - id: pydocstyle
     additional_dependencies: [toml==0.10.2]
@@ -70,7 +70,7 @@ repos:
     ]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.3.0
+  rev: v4.4.0
   hooks:
   - id: check-merge-conflict
   - id: debug-statements
@@ -79,7 +79,7 @@ repos:
 
 # this validates our github workflow files
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.19.1
+  rev: 0.23.3
   hooks:
     - id: check-github-workflows
 
