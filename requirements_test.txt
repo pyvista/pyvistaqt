@@ -23,7 +23,7 @@ pre-commit==3.3.3
 pre-commit-hooks==4.4.0
 toml==0.10.2
 sphinx_gallery==0.13.0
-nest_asyncio==1.5.6
+nest_asyncio==1.5.7
 trame==3.0.2
 trame-client==2.10.0
 trame-server==2.11.7
