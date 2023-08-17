@@ -1022,7 +1022,7 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
 ])
 def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
     plotter = BackgroundPlotter(
-        show=True,
+        show=False,
         off_screen=False,
         shape=(2, 2),
         border=False,
