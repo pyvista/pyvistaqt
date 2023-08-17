@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 import os
 import os.path as op
 from packaging.version import Version
@@ -1056,7 +1057,11 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
             if aa:
                 for renderer in plotter.renderers:
                     renderer.enable_anti_aliasing(aa_type=aa)
-    with qtbot.wait_exposed(plotter):
+    if platform.system() != "macOS":
+        ctx = qtbot.wait_exposed(plotter)
+    else:
+        ctx = nullcontext()
+    with ctx:
         plotter.window().show()
     img = np.array(plotter.image)
     non_black = img.any(-1).astype(bool).mean()
