@@ -2,6 +2,7 @@ import os
 import os.path as op
 from packaging.version import Version
 import platform
+import re
 import weakref
 
 import numpy as np
@@ -1021,16 +1022,30 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
 ])
 def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
     plotter = BackgroundPlotter(
-        show=False,
+        show=True,
         off_screen=False,
         shape=(2, 2),
-        multi_samples=2,
         border=False,
         auto_update=False,
         menu_bar=False,
         toolbar=False,
         update_app_icon=False,
     )
+    skip_reason = None
+    if aa == "fxaa":  # Breaks on Windows and mesa
+        if platform.system()=="Windows":
+            skip_reason = "FXAA segfaults Windows"
+        else:
+            # Check if Mesa
+            gpu_info_full = plotter.ren_win.ReportCapabilities()
+            gpu_info = re.findall("OpenGL version string:(.+)\n", gpu_info_full)
+            gpu_info = " ".join(gpu_info).lower()
+            is_mesa = "mesa" in gpu_info.split()
+            if is_mesa:
+                skip_reason = "FXAA broken on Mesa"
+    if skip_reason:
+        plotter.close()
+        pytest.skip(skip_reason)
     plotter.set_background("black")
     cone = pyvista.Cone(resolution=4)
     for ri in range(2):
@@ -1043,7 +1058,8 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
                     renderer.enable_anti_aliasing(aa_type=aa)
     with qtbot.wait_exposed(plotter):
         plotter.window().show()
-    img = plotter.image
+    img = np.array(plotter.image)
     non_black = img.any(-1).astype(bool).mean()
+    del img
     assert 0.9 < non_black < 1.
     plotter.close()
