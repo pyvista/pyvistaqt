@@ -1009,3 +1009,41 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
         assert os.path.isfile(img_fname)
     for plotter in plotters:
         plotter.close()
+
+
+@pytest.mark.parametrize("aa", [
+    False,
+    "fxaa",
+    pytest.param(
+        "ssaa",
+        marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=True),
+    ),
+])
+def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
+    plotter = BackgroundPlotter(
+        show=False,
+        off_screen=False,
+        shape=(2, 2),
+        multi_samples=2,
+        border=False,
+        auto_update=False,
+        menu_bar=False,
+        toolbar=False,
+        update_app_icon=False,
+    )
+    plotter.set_background("black")
+    cone = pyvista.Cone(resolution=4)
+    for ri in range(2):
+        for ci in range(2):
+            plotter.subplot(ri, ci)
+            plotter.add_mesh(cone)
+            plotter.camera.zoom(5)  # fill it
+            if aa:
+                for renderer in plotter.renderers:
+                    renderer.enable_anti_aliasing(aa_type=aa)
+    with qtbot.wait_exposed(plotter):
+        plotter.window().show()
+    img = plotter.image
+    non_black = img.any(-1).astype(bool).mean()
+    assert 0.9 < non_black < 1.
+    plotter.close()
