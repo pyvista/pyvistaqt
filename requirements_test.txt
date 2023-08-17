@@ -24,7 +24,7 @@ pre-commit-hooks==4.4.0
 toml==0.10.2
 sphinx_gallery==0.13.0
 nest_asyncio==1.5.7
-trame==3.2.1
+trame==3.2.2
 trame-client==2.11.2
 trame-server==2.11.7
 trame-vtk==2.5.8
