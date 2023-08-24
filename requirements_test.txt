@@ -22,7 +22,7 @@ check-jsonschema==0.24.1
 pre-commit==3.3.3
 pre-commit-hooks==4.4.0
 toml==0.10.2
-sphinx_gallery==0.13.0
+sphinx_gallery==0.14.0
 nest_asyncio==1.5.7
 trame==3.2.2
 trame-client==2.11.2
