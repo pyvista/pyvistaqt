@@ -1056,8 +1056,7 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
             plotter.add_mesh(cone)
             plotter.camera.zoom(5)  # fill it
             if aa:
-                for renderer in plotter.renderers:
-                    renderer.enable_anti_aliasing(aa_type=aa)
+                plotter.enable_anti_aliasing(aa_type=aa)
     if platform.system() != "macOS":
         ctx = qtbot.wait_exposed(plotter)
     else:
