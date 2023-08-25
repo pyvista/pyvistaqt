@@ -1019,7 +1019,11 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     "msaa",
     pytest.param(
         "ssaa",
-        marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=True),
+        marks=pytest.mark.xfail(
+            condition=sys.platform != "darwin",
+            reason="SSAA broken on multiple plots",
+            strict=True
+        ),
     ),
 ])
 def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
@@ -1045,6 +1049,8 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
             is_mesa = "mesa" in gpu_info.split()
             if is_mesa:
                 skip_reason = "FXAA broken on Mesa"
+    if aa == "msaa":
+        pytest.importorskip("pyvista", minversion="0.37")
     if skip_reason:
         plotter.close()
         pytest.skip(skip_reason)
