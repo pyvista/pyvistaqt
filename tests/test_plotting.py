@@ -1,7 +1,10 @@
+from contextlib import nullcontext
 import os
 import os.path as op
 from packaging.version import Version
 import platform
+import re
+import sys
 import weakref
 
 import numpy as np
@@ -1009,3 +1012,68 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
         assert os.path.isfile(img_fname)
     for plotter in plotters:
         plotter.close()
+
+
+@pytest.mark.parametrize("aa", [
+    False,
+    "fxaa",
+    "msaa",
+    pytest.param(
+        "ssaa",
+        marks=pytest.mark.xfail(
+            reason="SSAA broken on multiple plots",
+            strict=True
+        ),
+    ),
+])
+def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
+    plotter = BackgroundPlotter(
+        show=True,
+        off_screen=False,
+        shape=(2, 2),
+        border=False,
+        auto_update=False,
+        menu_bar=False,
+        toolbar=False,
+        update_app_icon=False,
+    )
+    skip_reason = None
+    if aa == "fxaa":  # Breaks on Windows and mesa
+        if platform.system()=="Windows":
+            skip_reason = "FXAA segfaults Windows"
+        else:
+            # Check if Mesa
+            gpu_info_full = plotter.ren_win.ReportCapabilities()
+            gpu_info = re.findall("OpenGL version string:(.+)\n", gpu_info_full)
+            gpu_info = " ".join(gpu_info).lower()
+            is_mesa = "mesa" in gpu_info.split()
+            if is_mesa:
+                skip_reason = "FXAA broken on Mesa"
+    elif aa == "msaa":
+        pytest.importorskip("pyvista", minversion="0.37")
+    elif aa == "ssaa":
+        if sys.platform == "darwin":
+            pytest.skip("Works sometimes on Darwin")
+    if skip_reason:
+        plotter.close()
+        pytest.skip(skip_reason)
+    plotter.set_background("black")
+    cone = pyvista.Cone(resolution=4)
+    for ri in range(2):
+        for ci in range(2):
+            plotter.subplot(ri, ci)
+            plotter.add_mesh(cone)
+            plotter.camera.zoom(5)  # fill it
+            if aa:
+                plotter.enable_anti_aliasing(aa_type=aa)
+    if platform.system() != "macOS":
+        ctx = qtbot.wait_exposed(plotter)
+    else:
+        ctx = nullcontext()
+    with ctx:
+        plotter.window().show()
+    img = np.array(plotter.image)
+    non_black = img.any(-1).astype(bool).mean()
+    del img
+    assert 0.9 < non_black < 1.
+    plotter.close()
