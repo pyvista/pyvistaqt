@@ -613,7 +613,8 @@ class BackgroundPlotter(QtInteractor):
 
         # Keypress events
         if self.iren is not None:
-            self.add_key_event("S", self._qt_screenshot)  # shift + s
+            # pylint: disable=unnecessary-lambda
+            self.add_key_event("S", lambda: self._qt_screenshot())  # shift + s
         LOG.debug("BackgroundPlotter init stop")
 
     def reset_key_events(self) -> None:
