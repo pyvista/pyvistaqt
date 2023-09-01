@@ -6,7 +6,7 @@ lxml==4.9.3
 matplotlib==3.7.2
 meshio==5.3.4
 pytest-sphinx==0.5.0
-QtPy==2.3.1
+QtPy==2.4.0
 Sphinx==7.2.3
 sphinx-autobuild==2021.3.14
 sphinx-copybutton==0.5.2
