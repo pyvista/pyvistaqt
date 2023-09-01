@@ -10,7 +10,7 @@ QtPy==2.3.1
 Sphinx==7.2.3
 sphinx-autobuild==2021.3.14
 sphinx-copybutton==0.5.2
-sphinx-notfound-page==1.0.0rc1
+sphinx-notfound-page==1.0.0
 pydata-sphinx-theme==0.13.3
 sphinxcontrib-napoleon==0.7
 sphinxcontrib-websupport==1.2.6
