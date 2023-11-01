@@ -20,7 +20,7 @@ flake8-isort==6.1.0
 flake8-quotes==3.3.2
 check-jsonschema==0.26.3
 pre-commit==3.3.3
-pre-commit-hooks==4.4.0
+pre-commit-hooks==4.5.0
 toml==0.10.2
 sphinx_gallery==0.14.0
 nest_asyncio==1.5.7
