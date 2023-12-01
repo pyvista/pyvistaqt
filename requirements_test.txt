@@ -27,4 +27,4 @@ nest_asyncio==1.5.7
 trame==3.2.4
 trame-client==2.11.2
 trame-server==2.12.0
-trame-vtk==2.5.8
+trame-vtk==2.6.2
