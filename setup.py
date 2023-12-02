@@ -43,7 +43,6 @@ setup(
     install_requires=[
         'pyvista>=0.32.0',
         'QtPy>=1.9.0',
-        'PyQt6-Qt6!=6.6.1',
     ],
     package_data={'pyvistaqt': [
         os.path.join('data', '*.png'),
