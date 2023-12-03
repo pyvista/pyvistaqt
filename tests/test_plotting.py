@@ -588,6 +588,7 @@ def test_background_plotting_orbit(qtbot, plotting):
     plotter.close()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
 def test_background_plotting_toolbar(qtbot, plotting):
     with pytest.raises(TypeError, match='toolbar'):
         p = BackgroundPlotter(off_screen=False, toolbar="foo")
@@ -1014,6 +1015,7 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
         plotter.close()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
 @pytest.mark.parametrize("aa", [
     False,
     "fxaa",
