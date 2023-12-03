@@ -11,7 +11,7 @@ Sphinx==7.2.6
 sphinx-autobuild==2021.3.14
 sphinx-copybutton==0.5.2
 sphinx-notfound-page==1.0.0
-pydata-sphinx-theme==0.13.3
+pydata-sphinx-theme==0.14.4
 sphinxcontrib-napoleon==0.7
 sphinxcontrib-websupport==1.2.6
 toml==0.10.2
