@@ -162,7 +162,7 @@ jobs:
         shell: pwsh
         name: 'Setup opengl'
         if: matrix.os == 'windows-latest'
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: 'pyvistaqt-env'
           python-version: ${{ env.PYTHON_VERSION }}
