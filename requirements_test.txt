@@ -1,13 +1,6 @@
-black==23.7.0
-codespell==2.2.5
-flake8==6.1.0
 ipython==8.14.0
 isort==5.12.0
-mypy==1.5.1
 numpy==1.26.1
-pycodestyle==2.11.0
-pydocstyle==6.3.0
-pylint==3.0.2
 pytest==7.4.0
 pytest-cov==4.1.0
 pytest-memprof==0.2.0
@@ -15,12 +8,7 @@ pytest-qt==4.2.0
 pyvista==0.42.2
 QtPy==2.4.0
 scooby==0.7.2
-flake8-black==0.3.6
-flake8-isort==6.1.0
-flake8-quotes==3.3.2
 check-jsonschema==0.27.0
-pre-commit==3.3.3
-pre-commit-hooks==4.5.0
 toml==0.10.2
 sphinx_gallery==0.14.0
 nest_asyncio==1.5.7
