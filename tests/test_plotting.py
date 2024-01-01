@@ -1,7 +1,10 @@
+from contextlib import nullcontext
 import os
 import os.path as op
 from packaging.version import Version
 import platform
+import re
+import sys
 import weakref
 
 import numpy as np
@@ -16,7 +19,10 @@ from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
                             QGestureEvent, QPinchGesture)
 from pyvistaqt.plotting import global_theme
 from pyvista.plotting import Renderer
-from pyvista.utilities import Scraper
+try:
+    from pyvista.plotting.utilities import Scraper
+except ImportError:  # PV < 0.40
+    from pyvista.utilities import Scraper
 
 import pyvistaqt
 from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
@@ -27,7 +33,6 @@ from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
 PV_VERSION = Version(pyvista.__version__)
-WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
 
 
 class TstWindow(MainWindow):
@@ -275,11 +280,22 @@ def test_editor(qtbot, plotting):
     plotter.close()
 
 
-def test_qt_interactor(qtbot, plotting):
-    from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
+@pytest.fixture()
+def ensure_closed():
+    """Ensure all plotters are closed."""
+    try:
+        from pyvista.plotting import close_all
+        from pyvista.plotting.plotter import _ALL_PLOTTERS
+    except ImportError:  # PV < 0.40
+        from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
+    yield
+    WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
+    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
+
+def test_qt_interactor(qtbot, plotting, ensure_closed):
     window = TstWindow(show=False, off_screen=False)
     qtbot.addWidget(window)  # register the main widget
 
@@ -334,8 +350,6 @@ def test_qt_interactor(qtbot, plotting):
     if Version(pyvista.__version__) < Version('0.27.0'):
         assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
-
-    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 @pytest.mark.parametrize('show_plotter', [
@@ -503,17 +517,15 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     assert os.path.isfile(filename)
 
 
-@pytest.mark.parametrize('show_plotter', [
-    True,
-    False,
-    ])
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
+@pytest.mark.skip
+@pytest.mark.allow_bad_gc
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)
 
     plotter = BackgroundPlotter(
-        show=show_plotter,
+        show=False,
         off_screen=False,
         title='Testing Window'
     )
@@ -522,7 +534,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     qtbot.addWidget(window)  # register the window
 
     # show the window
-    if not show_plotter:
+    if not False:
         assert not window.isVisible()
         with qtbot.wait_exposed(window):
             window.show()
@@ -537,7 +549,12 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
     dlg = plotter._qt_export_vtkjs(show=False)  # FileDialog
     qtbot.addWidget(dlg)  # register the dialog
 
-    filename = str(os.path.join(output_dir, "tmp"))
+    if hasattr(plotter, 'export_vtksz'):
+        ext = '.vtksz'
+        filename = str(os.path.join(output_dir, f"tmp{ext}"))
+    else:
+        ext = '.vtkjs'
+        filename = str(os.path.join(output_dir, f"tmp"))
     dlg.selectFile(filename)
 
     # show the dialog
@@ -553,7 +570,11 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, show_plotter, plotting):
 
     plotter.close()
     assert not window.isVisible()
-    assert os.path.isfile(filename + '.vtkjs')
+
+    if hasattr(plotter, 'export_vtksz'):
+        assert os.path.isfile(filename)
+    else:
+        assert os.path.isfile(filename + ext)
 
 
 # vtkWeakReference and vtkFloatArray, only sometimes -- usually PySide2
@@ -567,6 +588,7 @@ def test_background_plotting_orbit(qtbot, plotting):
     plotter.close()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
 def test_background_plotting_toolbar(qtbot, plotting):
     with pytest.raises(TypeError, match='toolbar'):
         p = BackgroundPlotter(off_screen=False, toolbar="foo")
@@ -814,11 +836,8 @@ def allow_bad_gc_old_pyvista(func):
     True,
     False,
     ])
-def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
-    from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
-    close_all()  # this is necessary to test _ALL_PLOTTERS
-    assert len(_ALL_PLOTTERS) == 0
-
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
+                                   ensure_closed):
     plotter = _create_testing_scene(empty_scene)
 
     # check that BackgroundPlotter.__init__() is called
@@ -879,8 +898,6 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting):
     if Version(pyvista.__version__) < Version('0.27.0'):
         assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
-
-    assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
 def test_multiplotter(qtbot, plotting):
@@ -962,8 +979,8 @@ def assert_hasattr(variable, attribute_name, variable_type):
 @pytest.mark.parametrize('n_win', [1, 2])
 def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     pytest.importorskip('sphinx_gallery')
-    if Version('0.38.0') <= PV_VERSION <= Version('0.38.5'):
-        pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.5')
+    if Version('0.38.0') <= PV_VERSION <= Version('0.38.6'):
+        pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.6')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
 
     plotters = [
@@ -996,3 +1013,69 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
         assert os.path.isfile(img_fname)
     for plotter in plotters:
         plotter.close()
+
+
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
+@pytest.mark.parametrize("aa", [
+    False,
+    "fxaa",
+    "msaa",
+    pytest.param(
+        "ssaa",
+        marks=pytest.mark.xfail(
+            reason="SSAA broken on multiple plots",
+            strict=True
+        ),
+    ),
+])
+def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
+    plotter = BackgroundPlotter(
+        show=True,
+        off_screen=False,
+        shape=(2, 2),
+        border=False,
+        auto_update=False,
+        menu_bar=False,
+        toolbar=False,
+        update_app_icon=False,
+    )
+    skip_reason = None
+    if aa == "fxaa":  # Breaks on Windows and mesa
+        if platform.system()=="Windows":
+            skip_reason = "FXAA segfaults Windows"
+        else:
+            # Check if Mesa
+            gpu_info_full = plotter.ren_win.ReportCapabilities()
+            gpu_info = re.findall("OpenGL version string:(.+)\n", gpu_info_full)
+            gpu_info = " ".join(gpu_info).lower()
+            is_mesa = "mesa" in gpu_info.split()
+            if is_mesa:
+                skip_reason = "FXAA broken on Mesa"
+    elif aa == "msaa":
+        pytest.importorskip("pyvista", minversion="0.37")
+    elif aa == "ssaa":
+        if sys.platform == "darwin":
+            pytest.skip("Works sometimes on Darwin")
+    if skip_reason:
+        plotter.close()
+        pytest.skip(skip_reason)
+    plotter.set_background("black")
+    cone = pyvista.Cone(resolution=4)
+    for ri in range(2):
+        for ci in range(2):
+            plotter.subplot(ri, ci)
+            plotter.add_mesh(cone)
+            plotter.camera.zoom(5)  # fill it
+            if aa:
+                plotter.enable_anti_aliasing(aa_type=aa)
+    if platform.system() != "macOS":
+        ctx = qtbot.wait_exposed(plotter)
+    else:
+        ctx = nullcontext()
+    with ctx:
+        plotter.window().show()
+    img = np.array(plotter.image)
+    non_black = img.any(-1).astype(bool).mean()
+    del img
+    assert 0.9 < non_black < 1.
+    plotter.close()

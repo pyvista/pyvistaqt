@@ -12,10 +12,6 @@ Overview
    :target: https://anaconda.org/conda-forge/pyvistaqt
    :alt: conda-forge
 
-.. image:: https://dev.azure.com/pyvista/PyVista/_apis/build/status/pyvista.pyvistaqt?branchName=master
-   :target: https://dev.azure.com/pyvista/PyVista/_build/latest?definitionId=9&branchName=master
-   :alt: Azure Pipelines
-
 .. image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
    :alt: MIT License

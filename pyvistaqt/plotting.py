@@ -52,9 +52,17 @@ import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
 from pyvista import global_theme
-from pyvista.plotting.plotting import BasePlotter
+
+try:
+    from pyvista.plotting import BasePlotter
+except ImportError:  # PV < 0.40
+    from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
-from pyvista.utilities import conditional_decorator, threaded
+
+try:
+    from pyvista.core.utilities import conditional_decorator, threaded
+except ImportError:  # PV < 0.40
+    from pyvista.utilities import conditional_decorator, threaded
 from qtpy import QtCore
 from qtpy.QtCore import QSize, QTimer, Signal
 from qtpy.QtWidgets import (
@@ -339,11 +347,11 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
         Parameters
         ----------
-        other_plotter: Plotter
+        other_plotter: BackgroundPlotter
             The plotter whose views will be linked.
         view: int
             Link the views in `other_plotter` to the this view index.
-        other_views: int | list of ints
+        other_views: int | list of int
             Link these views from `other_plotter` to the reference view. The default
             is None, in which case all views from `other_plotter` will be linked to
             the reference view.
@@ -676,7 +684,7 @@ class BackgroundPlotter(QtInteractor):
 
         Parameters
         ----------
-        img : ndarray, shape (w, h, c) | str
+        img : numpy.ndarray, shape (w, h, c) | str
             The image. Should be uint8 and square (w == h).
             Can have 3 or 4 color/alpha channels (``c``).
             Can also be a string path that QIcon can load.
@@ -719,13 +727,25 @@ class BackgroundPlotter(QtInteractor):
         )
 
     def _qt_export_vtkjs(self, show: bool = True) -> FileDialog:
-        """Spawn an save file dialog to export a vtkjs file."""
+        """Spawn an save file dialog to export a vtksz file.
+
+        The exported file can be viewed with the OfflineLocalView viewer
+        available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
+
+        """
+        try:
+            callback = self.export_vtksz
+            ext = 'vtksz'
+        except AttributeError:
+            callback = self.export_vtkjs  # pre-v0.40
+            ext = 'vtkjs'
+
         return FileDialog(
             self.app_window,
-            filefilter=["VTK JS File(*.vtkjs)"],
+            filefilter=[f"VTK.js File(*.{ext})"],
             show=show,
             directory=bool(os.getcwd()),
-            callback=self.export_vtkjs,
+            callback=callback,
         )
 
     def _toggle_edl(self) -> None:
@@ -865,7 +885,7 @@ class BackgroundPlotter(QtInteractor):
 
         file_menu = self.main_menu.addMenu("File")
         file_menu.addAction("Take Screenshot", self._qt_screenshot)
-        file_menu.addAction("Export as VTKjs", self._qt_export_vtkjs)
+        file_menu.addAction("Export as VTKjs scene", self._qt_export_vtkjs)
         file_menu.addSeparator()
         # member variable for testing only
         self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)
