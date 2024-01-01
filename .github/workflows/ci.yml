@@ -25,7 +25,7 @@ jobs:
         shell: bash
     env:
       ALLOW_PLOTTING: 'true'
-      PYTHON_VERSION: '3.9'
+      PYTHON_VERSION: '3.12'
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
@@ -90,13 +90,21 @@ jobs:
             pyvista: '0.38'
           - os: 'ubuntu-latest'
             pyvista: '0.39'
+          - os: 'ubuntu-latest'
+            pyvista: '0.40'
+          - os: 'ubuntu-latest'
+            pyvista: '0.41'
+          - os: 'ubuntu-latest'
+            pyvista: '0.42'
+          - os: 'ubuntu-latest'
+            pyvista: '0.43'
 
     defaults:
       run:
         shell: bash -e {0}
     env:
       ALLOW_PLOTTING: 'true'
-      PYTHON_VERSION: '3.9'
+      PYTHON_VERSION: '3.12'
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
@@ -149,7 +157,7 @@ jobs:
     env:
       ALLOW_PLOTTING: 'true'
       CONDA_ENV: 'environment.yml'
-      PYTHON_VERSION: '3.8'
+      PYTHON_VERSION: '3.12'
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
