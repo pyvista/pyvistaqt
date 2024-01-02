@@ -157,7 +157,7 @@ jobs:
     env:
       ALLOW_PLOTTING: 'true'
       CONDA_ENV: 'environment.yml'
-      PYTHON_VERSION: '3.9'
+      PYTHON_VERSION: '3.8'
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
