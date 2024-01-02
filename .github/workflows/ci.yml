@@ -90,6 +90,14 @@ jobs:
             pyvista: '0.38'
           - os: 'ubuntu-latest'
             pyvista: '0.39'
+          - os: 'ubuntu-latest'
+            pyvista: '0.40'
+          - os: 'ubuntu-latest'
+            pyvista: '0.41'
+          - os: 'ubuntu-latest'
+            pyvista: '0.42'
+          - os: 'ubuntu-latest'
+            pyvista: '0.43'
 
     defaults:
       run:
