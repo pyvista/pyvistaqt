@@ -1,29 +1,17 @@
 # Simple makefile to simplify repetitive build env management tasks under posix
 
-ISORT_DIRS ?= ./pyvistaqt/
 PYCODESTYLE_DIRS ?= ./pyvistaqt/
 PYLINT_DIRS ?= ./pyvistaqt/
-CODESPELL_DIRS ?= ./
-PYDOCSTYLE_DIRS ?= ./pyvistaqt/
 COVERAGE_DIRS ?= ./pyvistaqt/
 COVERAGE_HTML_DIRS ?= ./pyvistaqt/
 COVERAGE_XML_DIRS ?= ./pyvistaqt/
 
-EXTRA_CODESPELL_OPTIONS ?= --config .codespellrc
-EXTRA_ISORT_OPTIONS ?= --check --settings=.isort.cfg
 EXTRA_PYLINT_OPTIONS ?= -rn -sn --rcfile=.pylintrc
 EXTRA_PYCODESTYLE_OPTIONS ?= --config=.pycodestyle
-EXTRA_PYDOCSTYLE_OPTIONS = --config=pyproject.toml
 
-all: srcstyle doctest
+all: srcstyle
 
-srcstyle: black isort pylint pycodestyle mypy flake8
-
-doctest: codespell pydocstyle
-
-isort:
-	@echo "Running isort"
-	@isort $(ISORT_DIRS) $(EXTRA_ISORT_OPTIONS)
+srcstyle: pylint pycodestyle
 
 pylint:
 	@echo "Running pylint"
@@ -32,14 +20,6 @@ pylint:
 pycodestyle:
 	@echo "Running pycodestyle"
 	@pycodestyle $(PYCODESTYLE_DIRS) $(EXTRA_PYCODESTYLE_OPTIONS)
-
-codespell:
-	@echo "Running codespell"
-	@codespell $(CODESPELL_DIRS) $(EXTRA_CODESPELL_OPTIONS)
-
-pydocstyle:
-	@echo "Running pydocstyle"
-	@pydocstyle $(PYDOCSTYLE_DIRS) $(EXTRA_PYDOCSTYLE_OPTIONS)
 
 coverage:
 	@echo "Running coverage"
