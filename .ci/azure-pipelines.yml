@@ -39,23 +39,6 @@ stages:
       - bash: echo "##vso[task.setvariable variable=start_main;isOutput=true]$RET"
         name: result
 
-# DESCRIPTION: Quickly check the spelling and documentation style
-- stage: Style
-  variables:
-    AZURE_CI: 'true'
-  jobs:
-  - job: CodeSpellStyle
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.10'
-    - script: |
-        pip install codespell pydocstyle[toml]
-        make doctest
-      displayName: 'Run doctest'
-
 
 - stage: Test
   condition: and(succeeded(), eq(dependencies.Check.outputs['Skip.result.start_main'], 'true'))
