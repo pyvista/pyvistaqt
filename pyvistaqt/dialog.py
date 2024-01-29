@@ -1,4 +1,5 @@
 """This module contains Qt dialog widgets."""
+
 import os
 from typing import Any, List
 

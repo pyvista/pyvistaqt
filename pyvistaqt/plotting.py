@@ -295,9 +295,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
-        self._observers: Dict[
-            None, None
-        ] = {}  # Map of events to observers of self.iren
+        self._observers: Dict[None, None] = (
+            {}
+        )  # Map of events to observers of self.iren
         self.iren.add_observer("KeyPressEvent", self.key_press_event)
         self.reset_key_events()
 
