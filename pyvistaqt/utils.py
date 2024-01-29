@@ -1,4 +1,5 @@
 """This module contains utilities routines."""
+
 from typing import Any, List, Optional, Type
 
 import pyvista
