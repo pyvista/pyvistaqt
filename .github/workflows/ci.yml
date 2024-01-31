@@ -24,8 +24,8 @@ jobs:
       run:
         shell: bash
     env:
-      ALLOW_PLOTTING: 'true'
-      PYTHON_VERSION: '3.10'
+      ALLOW_PLOTTING: "true"
+      PYTHON_VERSION: "3.10"
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
@@ -103,8 +103,8 @@ jobs:
       run:
         shell: bash -e {0}
     env:
-      ALLOW_PLOTTING: 'true'
-      PYTHON_VERSION: '3.10'
+      ALLOW_PLOTTING: "true"
+      PYTHON_VERSION: "3.10"
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
