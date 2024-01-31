@@ -14,7 +14,7 @@ on:
 
 jobs:
   pip-pre:
-    name: ubuntu-latest / Python3.9 / ${{ matrix.qt }} / pyvista-main / qtpy-master
+    name: ubuntu-latest / Python3.10 / ${{ matrix.qt }} / pyvista-main / qtpy-master
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -25,7 +25,7 @@ jobs:
         shell: bash
     env:
       ALLOW_PLOTTING: 'true'
-      PYTHON_VERSION: '3.9'
+      PYTHON_VERSION: '3.10'
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
@@ -104,7 +104,7 @@ jobs:
         shell: bash -e {0}
     env:
       ALLOW_PLOTTING: 'true'
-      PYTHON_VERSION: '3.9'
+      PYTHON_VERSION: '3.10'
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
