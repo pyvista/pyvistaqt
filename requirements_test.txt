@@ -6,7 +6,7 @@ pytest-memprof==0.2.0
 pytest-qt==4.2.0
 pyvista==0.42.2
 QtPy==2.4.0
-scooby==0.7.2
+scooby==0.9.2
 check-jsonschema==0.27.0
 toml==0.10.2
 sphinx_gallery==0.14.0
