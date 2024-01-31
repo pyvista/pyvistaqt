@@ -8,4 +8,3 @@ support user questions and develop new features to make this software
 a useful tool for all users.
 
 Please reference the contributing guide at [pyvista/CONTRIBUTING.rst](https://github.com/pyvista/pyvista/blob/master/CONTRIBUTING.rst) for contributing to this repository.
-

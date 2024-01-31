@@ -1,5 +1,5 @@
 comment: false
-github_checks:  # too noisy, even though "a" interactively disables them
+github_checks: # too noisy, even though "a" interactively disables them
   annotations: false
 
 codecov:
