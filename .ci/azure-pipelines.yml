@@ -1,210 +1,204 @@
 variables:
   ALLOW_PLOTTING: true
-  SHELLOPTS: 'errexit:pipefail'
+  SHELLOPTS: "errexit:pipefail"
 
 trigger:
   branches:
     include:
-    - '*'
+      - "*"
     exclude:
-    - '*no-ci*'
+      - "*no-ci*"
   tags:
     include:
-    - '*'
+      - "*"
 
 pr:
   branches:
     include:
-    - '*'
+      - "*"
     exclude:
-    - '*no-ci*'
+      - "*no-ci*"
 
 stages:
+  - stage: Check
+    jobs:
+      - job: Skip
+        pool:
+          vmImage: "ubuntu-latest"
+        variables:
+          DECODE_PERCENTS: "false"
+          RET: "true"
+          BUILD_REASON: $(Build.Reason)
+        steps:
+          - bash: |
+              git_log=`git log --format=oneline -n 1 --skip=1`
+              echo "##vso[task.setvariable variable=log]$git_log"
+          - bash: echo "##vso[task.setvariable variable=RET]false"
+            condition: and(eq(variables.BUILD_REASON, 'PullRequest'), or(contains(variables.log, '[skip azp]'), contains(variables.log, '[azp skip]'), contains(variables.log, '[skip ci]'), contains(variables.log, '[ci skip]')))
+          - bash: echo "##vso[task.setvariable variable=start_main;isOutput=true]$RET"
+            name: result
 
-- stage: Check
-  jobs:
-    - job: Skip
-      pool:
-        vmImage: 'ubuntu-latest'
-      variables:
-        DECODE_PERCENTS: 'false'
-        RET: 'true'
-        BUILD_REASON: $(Build.Reason)
-      steps:
-      - bash: |
-          git_log=`git log --format=oneline -n 1 --skip=1`
-          echo "##vso[task.setvariable variable=log]$git_log"
-      - bash: echo "##vso[task.setvariable variable=RET]false"
-        condition: and(eq(variables.BUILD_REASON, 'PullRequest'), or(contains(variables.log, '[skip azp]'), contains(variables.log, '[azp skip]'), contains(variables.log, '[skip ci]'), contains(variables.log, '[ci skip]')))
-      - bash: echo "##vso[task.setvariable variable=start_main;isOutput=true]$RET"
-        name: result
+  - stage: Test
+    condition: and(succeeded(), eq(dependencies.Check.outputs['Skip.result.start_main'], 'true'))
+    dependsOn: Check
+    jobs:
+      # DESCRIPTION: Core API and doc string testing for Linux
+      - job: Linux
+        pool:
+          vmImage: "ubuntu-latest"
+        variables:
+          DISPLAY: ":99.0"
+          PYVISTA_OFF_SCREEN: "True"
 
+        strategy:
+          matrix:
+            Python310:
+              python.version: "3.10"
 
-- stage: Test
-  condition: and(succeeded(), eq(dependencies.Check.outputs['Skip.result.start_main'], 'true'))
-  dependsOn: Check
-  jobs:
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(python.version)"
+            displayName: "Use Python $(python.version)"
 
-  # DESCRIPTION: Core API and doc string testing for Linux
-  - job: Linux
-    pool:
-      vmImage: 'ubuntu-latest'
-    variables:
-      DISPLAY: ':99.0'
-      PYVISTA_OFF_SCREEN: 'True'
+          - script: |
+              pip install wheel --upgrade
+              python setup.py bdist_wheel
+              pip install dist/pyvistaqt*.whl
+            displayName: Build wheel and install pyvistaqt
 
-    strategy:
-      matrix:
-        Python310:
-          python.version: '3.10'
+          - script: |
+              .ci/setup_headless_display.sh
+            displayName: Install headless display
 
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-      displayName: 'Use Python $(python.version)'
+          - script: |
+              sudo apt-get install python3-tk
+              pip install -r requirements_test.txt
+              pip install PyQt5==5.12.*
+              python -c "import pyvista; print(pyvista.Report())"
+              which python
+              pip list
+            displayName: "Install dependencies"
 
-    - script: |
-        pip install wheel --upgrade
-        python setup.py bdist_wheel
-        pip install dist/pyvistaqt*.whl
-      displayName: Build wheel and install pyvistaqt
+          - script: |
+              pip install pytest-azurepipelines
+              pytest -v --cov pyvistaqt --cov-report xml
+            displayName: "Test Core API"
 
-    - script: |
-        .ci/setup_headless_display.sh
-      displayName: Install headless display
+          - script: | # this must be right after the core API
+              bash <(curl -s https://codecov.io/bash)
+            displayName: "Upload coverage to codecov.io"
 
-    - script: |
-        sudo apt-get install python3-tk
-        pip install -r requirements_test.txt
-        pip install PyQt5==5.12.*
-        python -c "import pyvista; print(pyvista.Report())"
-        which python
-        pip list
-      displayName: 'Install dependencies'
+          - script: |
+              pytest -v --doctest-modules pyvistaqt
+            displayName: "Test Package Docstrings"
 
-    - script: |
-        pip install pytest-azurepipelines
-        pytest -v --cov pyvistaqt --cov-report xml
-      displayName: 'Test Core API'
+      # DESCRIPTION: Core API and doc string testing across VTK versions using conda
+      - job: LinuxConda
+        pool:
+          vmImage: "ubuntu-latest"
+        variables:
+          DISPLAY: ":99.0"
+          PYVISTA_OFF_SCREEN: "True"
+        steps:
+          - script: |
+              .ci/setup_headless_display.sh
+            displayName: Install headless display
 
-    - script: |  # this must be right after the core API
-        bash <(curl -s https://codecov.io/bash)
-      displayName: 'Upload coverage to codecov.io'
+          - script: |
+              export CONDA_ALWAYS_YES=1
+              source /usr/share/miniconda/etc/profile.d/conda.sh
+              conda config --add channels conda-forge
+              conda env create --quiet -n pyvistaqt-env --file environment.yml
+              conda activate pyvistaqt-env
+              pip install PyQt5==5.12.*
+              pip install -e .
+              conda list
+              which python
+              python -c "import pyvista; print(pyvista.Report())"
+            displayName: Create Anaconda environment
 
-    - script: |
-        pytest -v --doctest-modules pyvistaqt
-      displayName: 'Test Package Docstrings'
+          - script: |
+              source /usr/share/miniconda/etc/profile.d/conda.sh
+              conda activate pyvistaqt-env
+              pytest -v --cov pyvistaqt --cov-report html
+            displayName: "Test Core API against VTK"
 
+          - script: | # this must be right after the core API
+              bash <(curl -s https://codecov.io/bash)
+            displayName: "Upload coverage to codecov.io"
 
-  # DESCRIPTION: Core API and doc string testing across VTK versions using conda
-  - job: LinuxConda
-    pool:
-      vmImage: 'ubuntu-latest'
-    variables:
-      DISPLAY: ':99.0'
-      PYVISTA_OFF_SCREEN: 'True'
-    steps:
-      - script: |
-          .ci/setup_headless_display.sh
-        displayName: Install headless display
+          - script: |
+              source /usr/share/miniconda/etc/profile.d/conda.sh
+              conda activate pyvistaqt-env
+              pytest -v --doctest-modules pyvistaqt
+            displayName: "Test Package Docstrings against VTK"
 
-      - script: |
-          export CONDA_ALWAYS_YES=1
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda config --add channels conda-forge
-          conda env create --quiet -n pyvistaqt-env --file environment.yml
-          conda activate pyvistaqt-env
-          pip install PyQt5==5.12.*
-          pip install -e .
-          conda list
-          which python
-          python -c "import pyvista; print(pyvista.Report())"
-        displayName: Create Anaconda environment
+      # DESCRIPTION: Core API testing for Windows
+      - job: Windows
+        pool:
+          vmIMage: "windows-2019"
+        strategy:
+          maxParallel: 4
+          matrix:
+            Python310-64bit:
+              PYTHON_VERSION: "3.10"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(PYTHON_VERSION)
+              addToPath: true
+          - powershell: |
+              Set-StrictMode -Version Latest
+              $ErrorActionPreference = "Stop"
+              $PSDefaultParameterValues['*:ErrorAction']='Stop'
+              git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
+              powershell gl-ci-helpers/appveyor/install_opengl.ps1
+            displayName: "Install OpenGL"
+          - script: |
+              python -m pip install -r requirements_test.txt
+            displayName: "Install test dependencies"
+          - script: |
+              pip install PyQt5>=5.11
+              python -m pip install -e .
+              python -c "import pyvista; print(pyvista.Report())"
+            displayName: "Install PyVista"
+          - script: |
+              pytest -v --cov pyvistaqt --cov-report html
+            displayName: "Run Tests"
 
-      - script: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda activate pyvistaqt-env
-          pytest -v --cov pyvistaqt --cov-report html
-        displayName: 'Test Core API against VTK'
+          - bash: |
+              bash <(curl -s https://codecov.io/bash)
+            displayName: "Upload coverage to codecov.io"
 
-      - script: |  # this must be right after the core API
-          bash <(curl -s https://codecov.io/bash)
-        displayName: 'Upload coverage to codecov.io'
+      # DESCRIPTION: Core API testing for MacOS
+      - job: MacOS
+        variables:
+          python.architecture: "x64"
+        strategy:
+          matrix:
+            Python310:
+              python.version: "3.10"
+        pool:
+          vmImage: "macOS-11"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(python.version)"
+            displayName: "Get Python"
 
-      - script: |
-          source /usr/share/miniconda/etc/profile.d/conda.sh
-          conda activate pyvistaqt-env
-          pytest -v --doctest-modules pyvistaqt
-        displayName: 'Test Package Docstrings against VTK'
+          - script: |
+              python -m pip install PyQt5>=5.11
+              python -m pip install -e .
+              python -c "import pyvista; print(pyvista.Report())"
+            displayName: "Install pyvistaqt"
 
+          - script: |
+              python -m pip install -r requirements_test.txt
+              python -m pip install pytest-azurepipelines
+              python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
+            displayName: "Run Tests"
 
-  # DESCRIPTION: Core API testing for Windows
-  - job: Windows
-    pool:
-      vmIMage: 'windows-2019'
-    strategy:
-      maxParallel: 4
-      matrix:
-        Python310-64bit:
-          PYTHON_VERSION: '3.10'
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: $(PYTHON_VERSION)
-        addToPath: true
-    - powershell: |
-        Set-StrictMode -Version Latest
-        $ErrorActionPreference = "Stop"
-        $PSDefaultParameterValues['*:ErrorAction']='Stop'
-        git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
-        powershell gl-ci-helpers/appveyor/install_opengl.ps1
-      displayName: 'Install OpenGL'
-    - script: |
-        python -m pip install -r requirements_test.txt
-      displayName: 'Install test dependencies'
-    - script: |
-        pip install PyQt5>=5.11
-        python -m pip install -e .
-        python -c "import pyvista; print(pyvista.Report())"
-      displayName: 'Install PyVista'
-    - script: |
-        pytest -v --cov pyvistaqt --cov-report html
-      displayName: 'Run Tests'
-
-    - bash: |
-        bash <(curl -s https://codecov.io/bash)
-      displayName: 'Upload coverage to codecov.io'
-
-
-  # DESCRIPTION: Core API testing for MacOS
-  - job: MacOS
-    variables:
-      python.architecture: 'x64'
-    strategy:
-      matrix:
-        Python310:
-          python.version: '3.10'
-    pool:
-      vmImage: 'macOS-11'
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: '$(python.version)'
-        displayName: 'Get Python'
-
-      - script: |
-          python -m pip install PyQt5>=5.11
-          python -m pip install -e .
-          python -c "import pyvista; print(pyvista.Report())"
-        displayName: 'Install pyvistaqt'
-
-      - script: |
-          python -m pip install -r requirements_test.txt
-          python -m pip install pytest-azurepipelines
-          python -m pytest -v --cov pyvistaqt --cov-report html --durations=0
-        displayName: 'Run Tests'
-
-      - script: |
-          bash <(curl -s https://codecov.io/bash)
-        displayName: 'Upload coverage to codecov.io'
+          - script: |
+              bash <(curl -s https://codecov.io/bash)
+            displayName: "Upload coverage to codecov.io"
