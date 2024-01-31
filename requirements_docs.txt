@@ -2,7 +2,7 @@ cmocean==3.0.3
 colorcet==3.0.1
 imageio==2.31.2
 imageio-ffmpeg==0.4.9
-lxml==4.9.3
+lxml==5.1.0
 matplotlib==3.8.2
 meshio==5.3.4
 pytest-sphinx==0.5.0
