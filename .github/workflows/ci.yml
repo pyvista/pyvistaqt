@@ -62,6 +62,8 @@ jobs:
         name: "Import without Qt"
         if: matrix.qt == 'None'
       - uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
         name: "Upload coverage to CodeCov"
 
@@ -140,6 +142,8 @@ jobs:
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
       - uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
         name: "Upload coverage to CodeCov"
 
@@ -188,5 +192,7 @@ jobs:
         run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
       - uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
         name: "Upload coverage to CodeCov"
