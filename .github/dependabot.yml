@@ -8,10 +8,20 @@ updates:
     labels:
       - "maintenance"
       - "dependencies"
+    groups:
+      trame:
+        patterns:
+          - "trame"
+          - "trame-*"
   - package-ecosystem: "github-actions"
     directory: "/.github/workflows"
     schedule:
       interval: "weekly"
+    groups:
+      artifacts:
+        patterns:
+          - "actions/upload-artifact"
+          - "actions/download-artifact"
     labels:
       - "maintenance"
       - "dependencies"
