@@ -15,4 +15,4 @@ trame==3.5.2
 trame-client==2.15.0
 trame-server==2.16.0
 trame-vtk==2.8.0
-PyQt6-Qt6==6.6.0
+PyQt6-Qt6==6.6.1
