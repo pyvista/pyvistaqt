@@ -1,5 +1,5 @@
 ipython==8.22.1
-numpy==1.26.1
+numpy==1.26.4
 pytest==7.4.0
 pytest-cov==4.1.0
 pytest-memprof==0.2.0
@@ -12,6 +12,6 @@ toml==0.10.2
 sphinx_gallery==0.15.0
 nest_asyncio==1.6.0
 trame==3.5.2
-trame-client==2.15.0
-trame-server==2.16.0
-trame-vtk==2.8.0
+trame-client==2.16.1
+trame-server==2.17.2
+trame-vtk==2.8.5
