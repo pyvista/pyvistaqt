@@ -900,7 +900,9 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
     assert plotter._closed
 
 
-def test_multiplotter(qtbot, plotting):
+def test_multiplotter(qtbot, plotting, tmpdir):
+    output_dir = str(tmpdir.mkdir("tmpdir"))
+    assert os.path.isdir(output_dir)
     mp = MultiPlotter(
         nrows=1,
         ncols=2,
@@ -916,6 +918,9 @@ def test_multiplotter(qtbot, plotting):
     with qtbot.wait_exposed(mp._window):
         mp.show()
     assert mp._window.isVisible()
+    filename = str(os.path.join(output_dir, "tmp.png"))
+    mp.screenshot(filename=filename)
+    assert os.path.isfile(filename)
     for p in mp._plotters:
         assert not p._closed
     with qtbot.wait_signals([mp._window.signal_close], timeout=1000):
@@ -924,7 +929,12 @@ def test_multiplotter(qtbot, plotting):
         assert p._closed
 
     # cover default show=True
-    mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
+    mp = MultiPlotter(
+        off_screen=False,
+        menu_bar=False,
+        toolbar=False,
+        margin=False,
+    )
     qtbot.addWidget(mp._window)
     with qtbot.wait_exposed(mp._window):
         assert mp._window.isVisible()

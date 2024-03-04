@@ -51,6 +51,8 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, 
 import numpy as np  # type: ignore
 import pyvista
 import scooby  # type: ignore
+import vtk
+from PIL import Image
 from pyvista import global_theme
 
 try:
@@ -88,6 +90,7 @@ from .utils import (
     _setup_application,
     _setup_ipython,
     _setup_off_screen,
+    pad_image,
 )
 from .window import MainWindow
 
@@ -114,31 +117,6 @@ LOG.addHandler(logging.StreamHandler())
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
-
-
-def resample_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
-    """Resample a square image to an image of max_size."""
-    dim = np.max(arr.shape[0:2])
-    max_size = min(max_size, dim)
-    x_size, y_size, _ = arr.shape
-    s_x = int(np.ceil(x_size / max_size))
-    s_y = int(np.ceil(y_size / max_size))
-    img = np.zeros((max_size, max_size, arr.shape[2]), dtype=arr.dtype)
-    arr = arr[0:-1:s_x, 0:-1:s_y, :]
-    x_l = (max_size - arr.shape[0]) // 2
-    y_l = (max_size - arr.shape[1]) // 2
-    img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
-    return img
-
-
-def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
-    """Pad an image to a square then resamples to max_size."""
-    dim = np.max(arr.shape)
-    img = np.zeros((dim, dim, arr.shape[2]), dtype=arr.dtype)
-    x_l = (dim - arr.shape[0]) // 2
-    y_l = (dim - arr.shape[1]) // 2
-    img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
-    return resample_image(img, max_size=max_size)
 
 
 @contextlib.contextmanager
@@ -951,6 +929,8 @@ class MultiPlotter:
     show : bool
         Show the plotting window.  If ``False``, show this window by
         running ``show()``
+    margin : bool
+        Show a space between the plotters. Default to True.
     window_size : tuple, optional
         Window size in pixels.  Defaults to ``[1024, 768]``
     off_screen : bool, optional
@@ -974,6 +954,7 @@ class MultiPlotter:
         nrows: int = 1,
         ncols: int = 1,
         show: bool = True,
+        margin: bool = True,
         window_size: Optional[Tuple[int, int]] = None,
         title: Optional[str] = None,
         off_screen: Optional[bool] = None,
@@ -984,6 +965,7 @@ class MultiPlotter:
         _check_type(nrows, "nrows", [int])
         _check_type(ncols, "ncols", [int])
         _check_type(show, "show", [bool])
+        _check_type(margin, "margin", [bool])
         _check_type(window_size, "window_size", [tuple, type(None)])
         _check_type(title, "title", [str, type(None)])
         _check_type(off_screen, "off_screen", [bool, type(None)])
@@ -995,13 +977,20 @@ class MultiPlotter:
         self._window = MainWindow(title=title, size=window_size)
         self._central_widget = QWidget(parent=self._window)
         self._layout = QGridLayout()
-        self._plotter = None
+        if not margin:
+            self._layout.setSpacing(0)
+            self._layout.setContentsMargins(0, 0, 0, 0)
+        self._plotter: Optional[BackgroundPlotter] = None
         self._plotters = [None] * (self._nrows * self._ncols)
         kwargs.update(show=False)  # only show main window
         kwargs.update(allow_quit_keypress=False)  # dynamic removal is not supported
         for row in range(self._nrows):
             for col in range(self._ncols):
                 self._plotter = BackgroundPlotter(off_screen=self.off_screen, **kwargs)
+                if not margin:
+                    self._plotter.app_window.centralWidget().layout().setContentsMargins(
+                        0, 0, 0, 0
+                    )
                 self._window.signal_close.connect(self._plotter.close)
                 self.__setitem__((row, col), self._plotter)
                 self._layout.addWidget(self._plotter.app_window, row, col)
@@ -1018,6 +1007,26 @@ class MultiPlotter:
     def close(self) -> None:
         """Close the multi plotter."""
         self._window.close()
+
+    def screenshot(
+        self,
+        filename: Optional[str] = None,
+        transparent_background: Optional[bool] = None,
+    ) -> np.ndarray:
+        """Take a screenshot."""
+        self.app.processEvents()
+        width = self._plotter.size().width()
+        height = self._plotter.size().height()
+        img = np.zeros((height * self._nrows, width * self._ncols, 3), dtype=np.uint8)
+        for row in range(self._nrows):
+            for col in range(self._ncols):
+                plotter = self._plotters[row * self._ncols + col]
+                img[
+                    height * row : height * (row + 1), width * col : width * (col + 1)
+                ] = plotter.screenshot(transparent_background=transparent_background)
+        if filename is not None:
+            Image.fromarray(img).save(filename)
+        return img
 
     def __setitem__(self, idx: Tuple[int, int], plotter: Any) -> None:
         """Set a valid plotter in the grid.
