@@ -12,7 +12,7 @@ repos:
         args: ["--check", "--settings=.isort.cfg"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.9.0
     hooks:
       - id: mypy
         # `pass_filenames` is used to overcome the "duplicate module"
