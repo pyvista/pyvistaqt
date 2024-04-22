@@ -526,7 +526,11 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     @staticmethod
     def _getPixelRatio():
-        if PyQtImpl in ["PyQt5", "PySide2", "PySide6"]:
+        if PyQtImpl in ("PyQt4", "PySide"):
+            # Qt4 seems not to provide any cross-platform means to get the
+            # pixel ratio.
+            return 1.
+        else:
             # Source: https://stackoverflow.com/a/40053864/3388962
             pos = QCursor.pos()
             for screen in QApplication.screens():
@@ -535,10 +539,6 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
                     return screen.devicePixelRatio()
             # Should never happen, but try to find a good fallback.
             return QApplication.instance().devicePixelRatio()
-        else:
-            # Qt4 seems not to provide any cross-platform means to get the
-            # pixel ratio.
-            return 1.
 
     def _setEventInformation(self, x, y, ctrl, shift,
                              key, repeat=0, keysum=None):
