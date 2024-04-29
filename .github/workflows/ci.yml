@@ -71,7 +71,7 @@ jobs:
         name: "Upload coverage to CodeCov"
 
   pip:
-    name: ${{ matrix.os }} / pip / PyQt5 / pyvista-${{ matrix.pyvista }}
+    name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -80,9 +80,6 @@ jobs:
         pyvista: ["0"] # All OSes on latest release
         python-version: ["3.12"]
         include: # and Linux for older ones
-          - os: "ubuntu-latest"
-            pyvista: "0.32"
-            python-version: "3.8"
           - os: "ubuntu-latest"
             pyvista: "0.33"
             python-version: "3.9"
@@ -136,7 +133,7 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements_test.txt
         name: "Install dependencies with pip"
-      - run: pip install PyQt5
+      - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install Qt binding"
       - run: |
           pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
