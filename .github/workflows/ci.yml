@@ -109,7 +109,7 @@ jobs:
         shell: bash -e {0}
     env:
       ALLOW_PLOTTING: "true"
-      PYTHON_VERSION: "3.9"
+      PYTHON_VERSION: "3.10"
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
