@@ -2,7 +2,7 @@ name: pyvistaqt-env
 channels:
   - conda-forge
 dependencies:
-  - python<3.9
+  - python
   - codecov
   - ipython
   - mypy
