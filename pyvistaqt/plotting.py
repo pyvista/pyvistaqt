@@ -50,7 +50,6 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, 
 
 import numpy as np  # type: ignore
 import pyvista
-import scooby  # type: ignore
 from pyvista import global_theme
 
 try:
@@ -63,7 +62,7 @@ try:
     from pyvista.core.utilities import conditional_decorator, threaded
 except ImportError:  # PV < 0.40
     from pyvista.utilities import conditional_decorator, threaded
-from qtpy import QtCore
+from qtpy import QtCore, QtGui
 from qtpy.QtCore import QSize, QTimer, Signal
 from qtpy.QtWidgets import (
     QAction,
@@ -90,12 +89,6 @@ from .utils import (
     _setup_off_screen,
 )
 from .window import MainWindow
-
-if scooby.in_ipython():  # pragma: no cover
-    # pylint: disable=unused-import
-    from IPython.external.qt_for_kernel import QtGui
-else:
-    from qtpy import QtGui  # pylint: disable=ungrouped-imports
 
 LOG = logging.getLogger("pyvistaqt")
 LOG.setLevel(logging.CRITICAL)
