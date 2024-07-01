@@ -1,5 +1,5 @@
 ipython==8.14.0
-numpy==1.26.4
+numpy==2.0.0
 pytest==8.2.1
 pytest-cov==5.0.0
 pytest-memprof==0.2.0
