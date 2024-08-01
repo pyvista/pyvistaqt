@@ -133,6 +133,12 @@ jobs:
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install Qt binding"
       - run: |
+          pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
+          if [[ "${{ matrix.pyvista }}" != "0" ]] $$ [[ "${{ matrix.pyvista }}" != "0.44" ]]; then
+            pip install "numpy<2"
+          fi
+        name: "Install PyVista ${{ matrix.pyvista }}"
+      - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
