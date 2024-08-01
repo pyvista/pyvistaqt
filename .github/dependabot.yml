@@ -5,6 +5,7 @@ updates:
     insecure-external-code-execution: allow
     schedule:
       interval: "monthly"
+    open-pull-requests-limit: 100
     labels:
       - "maintenance"
       - "dependencies"
@@ -17,6 +18,7 @@ updates:
     directory: "/.github/workflows"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 100
     groups:
       artifacts:
         patterns:
