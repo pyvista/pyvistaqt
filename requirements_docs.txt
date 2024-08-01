@@ -8,7 +8,7 @@ meshio==5.3.5
 pytest-sphinx==0.6.3
 QtPy==2.4.1
 Sphinx==7.2.6
-sphinx-autobuild==2024.2.4
+sphinx-autobuild==2024.4.16
 sphinx-copybutton==0.5.2
 sphinx-notfound-page==1.0.2
 pydata-sphinx-theme==0.15.3
