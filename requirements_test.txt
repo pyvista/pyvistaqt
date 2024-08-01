@@ -1,5 +1,5 @@
 ipython==8.26.0
-numpy==1.26.4
+numpy==2.0.0
 pytest==8.3.2
 pytest-cov==5.0.0
 pytest-memprof==0.2.0
@@ -9,7 +9,7 @@ QtPy==2.4.1
 scooby==0.10.0
 check-jsonschema==0.29.1
 toml==0.10.2
-sphinx_gallery==0.16.0
+sphinx_gallery==0.17.0
 nest_asyncio==1.6.0
 trame==3.6.3
 trame-client==3.2.1
