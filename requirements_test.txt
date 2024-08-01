@@ -5,7 +5,7 @@ pytest-cov==5.0.0
 pytest-memprof==0.2.0
 pytest-qt==4.4.0
 pyvista==0.42.2
-QtPy==2.4.0
+QtPy==2.4.1
 scooby==0.9.2
 check-jsonschema==0.28.6
 toml==0.10.2
