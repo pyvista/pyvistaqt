@@ -1,7 +1,7 @@
 cmocean==4.0.3
 colorcet==3.0.1
 imageio==2.34.1
-imageio-ffmpeg==0.4.9
+imageio-ffmpeg==0.5.1
 lxml==5.2.2
 matplotlib==3.8.3
 meshio==5.3.5
