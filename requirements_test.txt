@@ -1,13 +1,13 @@
 ipython==8.14.0
 numpy==2.0.0
-pytest==8.2.1
+pytest==8.3.2
 pytest-cov==5.0.0
 pytest-memprof==0.2.0
 pytest-qt==4.4.0
-pyvista==0.42.2
+pyvista==0.44.1
 QtPy==2.4.1
 scooby==0.10.0
-check-jsonschema==0.28.6
+check-jsonschema==0.29.1
 toml==0.10.2
 sphinx_gallery==0.16.0
 nest_asyncio==1.6.0
