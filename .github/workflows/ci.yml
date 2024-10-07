@@ -170,7 +170,7 @@ jobs:
         with:
           qt: true
           pyvista: false
-      - uses: mamba-org/setup-micromamba@v1
+      - uses: mamba-org/setup-micromamba@v2
         with:
           # https://github.com/mamba-org/setup-micromamba/issues/225
           micromamba-version: 1.5.10-0
