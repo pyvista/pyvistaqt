@@ -46,6 +46,3 @@ repos:
       - id: ruff
         args: [--fix, --show-fixes]
       - id: ruff-format
-
-ci:
-  skip: [pylint, pycodestyle]
