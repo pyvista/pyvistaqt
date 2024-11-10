@@ -1,23 +1,28 @@
-"""This module contains utilities routines."""
+"""This module contains utilities routines."""  # noqa: D404
 
-from typing import Any, List, Optional, Type
+from __future__ import annotations
+
+from typing import Any
+from typing import List
+from typing import Optional
+from typing import Type
 
 import pyvista
-import scooby  # type: ignore
-from qtpy.QtWidgets import QApplication, QMenuBar
+from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import QMenuBar
+import scooby  # type: ignore  # noqa: PGH003
 
 
-def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:
+def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:  # noqa: ANN401
     types = tuple(var_types)
     if not isinstance(var, types):
-        raise TypeError(
-            f"Expected type for ``{var_name}`` is {str(types)}"
-            f" but {type(var)} was given."
-        )
+        msg = f"Expected type for ``{var_name}`` is {types!s}" f" but {type(var)} was given."
+        raise TypeError(msg)
 
 
-def _create_menu_bar(parent: Any) -> QMenuBar:
-    """Create a menu bar.
+def _create_menu_bar(parent: Any) -> QMenuBar:  # noqa: ANN401
+    """
+    Create a menu bar.
 
     The menu bar is expected to behave consistently
     for every operating system since `setNativeMenuBar(False)`
@@ -31,7 +36,7 @@ def _create_menu_bar(parent: Any) -> QMenuBar:
     return menu_bar
 
 
-def _setup_ipython(ipython: Any = None) -> Any:
+def _setup_ipython(ipython: Any = None) -> Any:  # noqa: ANN401
     # ipython magic
     if scooby.in_ipython():  # pragma: no cover
         # pylint: disable=import-outside-toplevel
