@@ -14,8 +14,8 @@ dependencies:
   - scooby>=0.5.1
   - toml
   - pip
-  - vtk
   - pyvista
   - pip:
+      - vtk
       - pytest-memprof
       - sphinx-gallery
