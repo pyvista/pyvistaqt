@@ -50,7 +50,7 @@ jobs:
         name: "Install PySide6"
         if: matrix.qt == 'PySide6'
       - run: |
-          pip install -e .
+          pip install -e . "vtk<9.4" --only-binary vtk
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
       - run: python pyvistaqt/rwi.py
