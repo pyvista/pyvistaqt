@@ -64,7 +64,7 @@ jobs:
           pytest -v tests/test_qt.py
         name: "Import without Qt"
         if: matrix.qt == 'None'
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
@@ -128,7 +128,7 @@ jobs:
         name: "Setup python"
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install -r requirements_test.txt "vtk<9.4" --only-binary vtk
+          pip install -r requirements_test.txt
         name: "Install dependencies with pip"
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install Qt binding"
@@ -144,7 +144,7 @@ jobs:
         name: "Install pyvistaqt"
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
@@ -157,7 +157,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-13", "macos-latest", "windows-latest"]
-        qt: ["PySide6"]
+        qt: ["PyQt5"]
         python-version: ["3.12"]
     defaults:
       run:
@@ -177,7 +177,10 @@ jobs:
           environment-file: "environment.yml"
           environment-name: "pyvistaqt-env"
           create-args: >-
-            python=${{ matrix.python-version }} ${{ matrix.qt }}
+            python=${{ matrix.python-version }}
+      - shell: bash -el {0}
+        run: pip install ${{ matrix.qt }}
+        name: "Install Qt binding"
       - shell: bash -el {0}
         run: |
           pip install -e .
@@ -186,7 +189,7 @@ jobs:
       - shell: bash -el {0}
         run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
