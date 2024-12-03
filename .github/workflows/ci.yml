@@ -64,7 +64,7 @@ jobs:
           pytest -v tests/test_qt.py
         name: "Import without Qt"
         if: matrix.qt == 'None'
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
@@ -144,7 +144,7 @@ jobs:
         name: "Install pyvistaqt"
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
@@ -189,7 +189,7 @@ jobs:
       - shell: bash -el {0}
         run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
