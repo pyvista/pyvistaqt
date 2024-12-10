@@ -11,6 +11,6 @@ toml==0.10.2
 sphinx_gallery==0.18.0
 nest_asyncio==1.6.0
 trame==3.7.0
-trame-client==3.4.0
+trame-client==3.5.0
 trame-server==3.2.3
-trame-vtk==2.8.11
+trame-vtk==2.8.12
