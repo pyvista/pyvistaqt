@@ -28,7 +28,7 @@ jobs:
       PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@v4
-      - uses: pyvista/setup-headless-display-action@main
+      - uses: tlambert03/setup-headless-display-action@1338c4dc941d771e3311d0a43a5e5e66f27b2ea6
         with:
           qt: true
           pyvista: false
@@ -118,7 +118,7 @@ jobs:
       ALLOW_PLOTTING: "true"
     steps:
       - uses: actions/checkout@v4
-      - uses: pyvista/setup-headless-display-action@main
+      - uses: tlambert03/setup-headless-display-action@1338c4dc941d771e3311d0a43a5e5e66f27b2ea6
         with:
           qt: true
           pyvista: false
@@ -166,7 +166,7 @@ jobs:
       ALLOW_PLOTTING: "true"
     steps:
       - uses: actions/checkout@v4
-      - uses: pyvista/setup-headless-display-action@main
+      - uses: tlambert03/setup-headless-display-action@1338c4dc941d771e3311d0a43a5e5e66f27b2ea6
         with:
           qt: true
           pyvista: false
