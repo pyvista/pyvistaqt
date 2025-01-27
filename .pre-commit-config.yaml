@@ -35,7 +35,7 @@ repos:
         args: ["--config=.flake8"]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.0
     hooks:
       - id: codespell
         args: ["docs examples examples_flask pyvista tests", "*.py *.rst *.md"]
