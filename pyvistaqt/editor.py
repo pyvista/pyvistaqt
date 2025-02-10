@@ -60,7 +60,7 @@ class Editor(QDialog):
         """Update the internal widget list."""
         self.tree_widget.clear()
         for idx, renderer in enumerate(self.renderers):
-            actors = renderer._actors  # pylint: disable=protected-access
+            actors = renderer.actors
             widget_idx = self.stacked_widget.addWidget(_get_renderer_widget(renderer))
             top_item = QTreeWidgetItem(self.tree_widget, [f"Renderer {idx}"])
             top_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
