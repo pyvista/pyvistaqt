@@ -7,7 +7,7 @@ matplotlib==3.10.1
 meshio==5.3.5
 pytest-sphinx==0.6.3
 QtPy==2.4.2
-Sphinx==8.1.3
+Sphinx==8.2.1
 sphinx-autobuild==2024.10.3
 sphinx-copybutton==0.5.2
 sphinx-notfound-page==1.0.4
