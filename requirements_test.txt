@@ -5,7 +5,7 @@ pytest-cov==6.0.0
 pytest-memprof==0.2.0
 pytest-qt==4.4.0
 pyvista==0.44.2
-QtPy==2.4.2
+QtPy==2.4.3
 scooby==0.10.0
 toml==0.10.2
 sphinx_gallery==0.19.0
