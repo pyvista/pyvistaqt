@@ -12,7 +12,7 @@ import pytest
 import pyvista
 import vtk
 from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
-from qtpy import QtCore, API_NAME, PYQT5, PYQT6
+from qtpy import QtCore, API_NAME
 from qtpy.QtCore import Qt, QPoint, QPointF, QMimeData, QUrl
 from qtpy.QtGui import QDragEnterEvent, QDropEvent
 from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
@@ -33,6 +33,7 @@ from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
 PV_VERSION = Version(pyvista.__version__)
+VTK_9_4 = (pyvista.vtk_version_info.major, pyvista.vtk_version_info.minor) >= (9, 4)
 
 
 class TstWindow(MainWindow):
@@ -213,10 +214,7 @@ def test_subplot_gc(border):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
 
 
-@pytest.mark.skipif(
-    (PYQT5 or PYQT6) and PV_VERSION >= Version("0.44.3"),
-    reason="Segfaults on PyQt5 + PV 0.44.3+",
-)
+@pytest.mark.skipif(VTK_9_4, reason="Segfaults on VTK 9.4+")
 @pytest.mark.allow_bad_gc_pyside
 def test_editor(qtbot, plotting):
     # test editor=False
