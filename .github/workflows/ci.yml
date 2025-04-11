@@ -14,7 +14,7 @@ on:
 
 jobs:
   pip-pre:
-    name: ${{ matrix.os }} / Python${{ matrix.python }} / ${{ matrix.qt }} / pyvista-main / qtpy-master / ${{ matrix.vtk }}
+    name: ${{ matrix.os }} / Python${{ matrix.python }} / ${{ matrix.qt }} / pyvista-main / qtpy-master
     runs-on: ${{ matrix.os}}
     strategy:
       fail-fast: false
@@ -22,14 +22,12 @@ jobs:
         qt: ["None", "PySide6", "PyQt5", "PyQt6"]
         python: ["3.12"]
         os: ["ubuntu-latest"]
-        vtk: ["vtk==9.4.2"]
         # PySide2 requires an ancient NumPy so we have to use Python 3.9 (where NumPy 2
         # is not available)
         include:
           - qt: "PySide2"
             python: "3.9"
             os: "ubuntu-latest"
-            vtk: "vtk==9.3.1"
     defaults:
       run:
         shell: bash
@@ -48,7 +46,7 @@ jobs:
       - run: |
           python -m pip install --upgrade pip wheel
           pip install --upgrade -r requirements_test.txt
-          pip install --upgrade --progress-bar off https://github.com/pyvista/pyvista/zipball/main https://github.com/spyder-ide/qtpy/zipball/master ${{ matrix.vtk }} --only-binary vtk
+          pip install --upgrade --progress-bar off https://github.com/pyvista/pyvista/zipball/main https://github.com/spyder-ide/qtpy/zipball/master
         name: "Install dependencies with pip"
       - run: pip install ${{ matrix.qt }}
         name: "Install Qt binding"
@@ -81,7 +79,7 @@ jobs:
         name: "Upload coverage to CodeCov"
 
   pip:
-    name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}
+    name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }} / vtk${{ matrix.vtk }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -89,6 +87,7 @@ jobs:
         os: ["ubuntu-latest", "macos-13", "macos-latest", "windows-latest"]
         pyvista: ["0"] # All OSes on latest release
         python-version: ["3.12"]
+        vtk: [""]
         include: # and Linux for older ones
           - os: "ubuntu-latest"
             pyvista: "0.34"
@@ -120,6 +119,10 @@ jobs:
           - os: "ubuntu-latest"
             pyvista: "0.43"
             python-version: "3.12"
+          - os: "ubuntu-latest"
+            pyvista: "0.44"
+            python-version: "3.12"
+            vtk: "==9.3.1"
 
     defaults:
       run:
@@ -138,7 +141,7 @@ jobs:
         name: "Setup python"
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install -r requirements_test.txt vtk --only-binary vtk
+          pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" --only-binary vtk
         name: "Install dependencies with pip"
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install Qt binding"
