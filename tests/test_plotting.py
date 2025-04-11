@@ -12,7 +12,7 @@ import pytest
 import pyvista
 import vtk
 from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
-from qtpy import QtCore, API_NAME
+from qtpy import QtCore, API_NAME, PYQT5
 from qtpy.QtCore import Qt, QPoint, QPointF, QMimeData, QUrl
 from qtpy.QtGui import QDragEnterEvent, QDropEvent
 from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
@@ -213,6 +213,10 @@ def test_subplot_gc(border):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
 
 
+@pytest.mark.skipif(
+    PYQT5 and PV_VERSION >= "0.44.3",
+    reason="Segfaults on PyQt5 + PV 0.44.3+",
+)
 @pytest.mark.allow_bad_gc_pyside
 def test_editor(qtbot, plotting):
     # test editor=False
@@ -291,7 +295,7 @@ def ensure_closed():
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
     yield
-    WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
+    WANT_AFTER = 0 if PV_VERSION >= "0.37" else 1
     assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
@@ -347,8 +351,6 @@ def test_qt_interactor(qtbot, plotting, ensure_closed):
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    if Version(pyvista.__version__) < Version('0.27.0'):
-        assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
 
 
@@ -813,7 +815,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
 
 
 def allow_bad_gc_old_pyvista(func):
-    if Version(pyvista.__version__) < Version('0.37'):
+    if PV_VERSION < "0.37":
         return pytest.mark.allow_bad_gc(func)
     else:
         return func
@@ -895,8 +897,6 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    if Version(pyvista.__version__) < Version('0.27.0'):
-        assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
 
 
@@ -979,7 +979,7 @@ def assert_hasattr(variable, attribute_name, variable_type):
 @pytest.mark.parametrize('n_win', [1, 2])
 def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     pytest.importorskip('sphinx_gallery')
-    if Version('0.38.0') <= PV_VERSION <= Version('0.38.6'):
+    if "0.38.0" <= PV_VERSION <= "0.38.6":
         pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.6')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
     if n_win == 2 and API_NAME == "PySide6" and sys.platform == "linux":
