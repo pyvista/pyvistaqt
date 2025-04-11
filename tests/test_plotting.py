@@ -214,7 +214,7 @@ def test_subplot_gc(border):
 
 
 @pytest.mark.skipif(
-    PYQT5 and PV_VERSION >= "0.44.3",
+    PYQT5 and PV_VERSION >= Version("0.44.3"),
     reason="Segfaults on PyQt5 + PV 0.44.3+",
 )
 @pytest.mark.allow_bad_gc_pyside
@@ -295,7 +295,7 @@ def ensure_closed():
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
     yield
-    WANT_AFTER = 0 if PV_VERSION >= "0.37" else 1
+    WANT_AFTER = int(PV_VERSION < Version("0.37"))
     assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
@@ -815,7 +815,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
 
 
 def allow_bad_gc_old_pyvista(func):
-    if PV_VERSION < "0.37":
+    if PV_VERSION < Version("0.37"):
         return pytest.mark.allow_bad_gc(func)
     else:
         return func
@@ -979,7 +979,7 @@ def assert_hasattr(variable, attribute_name, variable_type):
 @pytest.mark.parametrize('n_win', [1, 2])
 def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     pytest.importorskip('sphinx_gallery')
-    if "0.38.0" <= PV_VERSION <= "0.38.6":
+    if Version("0.38.0") <= PV_VERSION <= Version("0.38.6"):
         pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.6')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
     if n_win == 2 and API_NAME == "PySide6" and sys.platform == "linux":
