@@ -213,7 +213,6 @@ def test_subplot_gc(border):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
 
 
-@pytest.mark.skipif(PV_VERSION > Version("0.44.2"), reason="Segfaults on PyVista dev")
 @pytest.mark.allow_bad_gc_pyside
 def test_editor(qtbot, plotting):
     # test editor=False
