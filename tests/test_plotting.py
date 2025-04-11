@@ -12,7 +12,7 @@ import pytest
 import pyvista
 import vtk
 from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
-from qtpy import QtCore, API_NAME, PYQT5
+from qtpy import QtCore, API_NAME, PYQT5, PYQT6
 from qtpy.QtCore import Qt, QPoint, QPointF, QMimeData, QUrl
 from qtpy.QtGui import QDragEnterEvent, QDropEvent
 from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
@@ -214,7 +214,7 @@ def test_subplot_gc(border):
 
 
 @pytest.mark.skipif(
-    PYQT5 and PV_VERSION >= Version("0.44.3"),
+    (PYQT5 or PYQT6) and PV_VERSION >= Version("0.44.3"),
     reason="Segfaults on PyQt5 + PV 0.44.3+",
 )
 @pytest.mark.allow_bad_gc_pyside
