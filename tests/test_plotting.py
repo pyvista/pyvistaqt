@@ -33,7 +33,6 @@ from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
 
 
 PV_VERSION = Version(pyvista.__version__)
-VTK_9_4 = (pyvista.vtk_version_info.major, pyvista.vtk_version_info.minor) >= (9, 4)
 
 
 class TstWindow(MainWindow):
@@ -214,7 +213,7 @@ def test_subplot_gc(border):
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
 
 
-@pytest.mark.skipif(VTK_9_4, reason="Segfaults on VTK 9.4+")
+@pytest.mark.skipif(PV_VERSION > Version("0.44.2"), reason="Segfaults on PyVista dev")
 @pytest.mark.allow_bad_gc_pyside
 def test_editor(qtbot, plotting):
     # test editor=False
