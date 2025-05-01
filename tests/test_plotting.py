@@ -985,9 +985,11 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     if (
         n_win == 2
         and API_NAME == "PySide6"
-        and sys.platform in ("linux", "win32")
+        and sys.platform == "linux"
     ):
         pytest.skip("Problems with PySide6 with multiple windows")
+    if n_win == 2 and sys.platform == "win32":
+        pytest.skip("Problems on Windows with multiple windows")
 
     plotters = [
         BackgroundPlotter(off_screen=False, editor=False, show=True)
