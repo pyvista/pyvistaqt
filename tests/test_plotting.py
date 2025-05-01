@@ -978,8 +978,12 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     if Version("0.38.0") <= PV_VERSION <= Version("0.38.6"):
         pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.6')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
-    if n_win == 2 and API_NAME == "PySide6" and sys.platform == "linux":
-        pytest.skip("Problems with PySide6 on Linux")
+    if (
+        n_win == 2
+        and API_NAME == "PySide6"
+        and sys.platform in ("linux", "win32")
+    ):
+        pytest.skip("Problems with PySide6 with multiple windows")
 
     plotters = [
         BackgroundPlotter(off_screen=False, editor=False, show=True)
