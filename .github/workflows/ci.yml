@@ -14,18 +14,26 @@ on:
 
 jobs:
   pip-pre:
-    name: ubuntu-latest / Python3.9 / ${{ matrix.qt }} / pyvista-main / qtpy-master
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} / Python${{ matrix.python }} / ${{ matrix.qt }} / pyvista-main / qtpy-master
+    runs-on: ${{ matrix.os}}
     strategy:
       fail-fast: false
       matrix:
-        qt: ["None", "PySide2", "PySide6", "PyQt5", "PyQt6"]
+        qt: ["None", "PySide6", "PyQt5", "PyQt6"]
+        python: ["3.12"]
+        os: ["ubuntu-latest"]
+        # PySide2 requires an ancient NumPy so we have to use Python 3.9 (where NumPy 2
+        # is not available)
+        include:
+          - qt: "PySide2"
+            python: "3.9"
+            os: "ubuntu-latest"
     defaults:
       run:
         shell: bash
     env:
       ALLOW_PLOTTING: "true"
-      PYTHON_VERSION: "3.9"
+      PYTHON_VERSION: ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v4
       - uses: pyvista/setup-headless-display-action@main
@@ -71,7 +79,7 @@ jobs:
         name: "Upload coverage to CodeCov"
 
   pip:
-    name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}
+    name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}${{ matrix.vtk && ' / vtk'}}${{ matrix.vtk }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -79,6 +87,7 @@ jobs:
         os: ["ubuntu-latest", "macos-13", "macos-latest", "windows-latest"]
         pyvista: ["0"] # All OSes on latest release
         python-version: ["3.12"]
+        vtk: [""]
         include: # and Linux for older ones
           - os: "ubuntu-latest"
             pyvista: "0.34"
@@ -110,6 +119,10 @@ jobs:
           - os: "ubuntu-latest"
             pyvista: "0.43"
             python-version: "3.12"
+          - os: "ubuntu-latest"
+            pyvista: "0.44"
+            python-version: "3.12"
+            vtk: "==9.3.1"
 
     defaults:
       run:
@@ -128,7 +141,7 @@ jobs:
         name: "Setup python"
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install -r requirements_test.txt "vtk<9.4" --only-binary vtk
+          pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" --only-binary vtk
         name: "Install dependencies with pip"
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install Qt binding"
