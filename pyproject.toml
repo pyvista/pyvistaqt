@@ -39,7 +39,11 @@ ignore = [
   "COM812",
   "D203",
   "D212",
-  "ISC001"
+  "ISC001",
+  "PLR2004",
+]
+exclude = [
+  "pyvistaqt/rwi.py",  # should be maintained copy of upstream VTK code
 ]
 
 [tool.ruff.lint.isort]

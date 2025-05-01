@@ -1,6 +1,6 @@
 # modified from: https://gitlab.kitware.com/vtk/vtk
 # under the OSI-approved BSD 3-clause License
-# TODO: Mayavi has a potentially different version that might be better or worse  # noqa: FIX002, TD002, TD003
+# TODO: Mayavi has a potentially different version that might be better or worse
 # coding=utf-8
 """
 A simple VTK widget for PyQt or PySide.
@@ -54,7 +54,7 @@ Changes by Chen Jintao, Aug. 2021
 
 Changes by Eric Larson and Guillaume Favelier, Apr. 2022
  Support for PyQt6
-"""  # noqa: D205
+"""
 
 # Check whether a specific PyQt implementation was chosen
 from __future__ import annotations
@@ -78,43 +78,42 @@ try:
 except ImportError:
     pass
 
-from vtkmodules.vtkRenderingCore import vtkRenderWindow  # noqa: E402
-from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor  # noqa: E402
+from vtkmodules.vtkRenderingCore import vtkRenderWindow
+from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
 
 if PyQtImpl is None:
     # Autodetect the PyQt implementation to use
     try:
-        import PyQt6  # noqa: F401
+        import PyQt6
 
         PyQtImpl = "PyQt6"
     except ImportError:
         try:
-            import PySide6  # noqa: F401
+            import PySide6
 
             PyQtImpl = "PySide6"
         except ImportError:
             try:
-                import PyQt5  # noqa: F401
+                import PyQt5
 
                 PyQtImpl = "PyQt5"
             except ImportError:
                 try:
-                    import PySide2  # noqa: F401
+                    import PySide2
 
                     PyQtImpl = "PySide2"
                 except ImportError:
                     try:
-                        import PyQt4  # noqa: F401
+                        import PyQt4
 
                         PyQtImpl = "PyQt4"
                     except ImportError:
                         try:
-                            import PySide  # noqa: F401
+                            import PySide
 
                             PyQtImpl = "PySide"
                         except ImportError:
-                            msg = "Cannot load either PyQt or PySide"
-                            raise ImportError(msg)  # noqa: B904
+                            raise ImportError("Cannot load either PyQt or PySide")
 
 # Check the compatibility of PyQtImpl and QVTKRWIBase
 if QVTKRWIBase != "QWidget":
@@ -227,10 +226,13 @@ else:
     SizePolicy = QSizePolicy
     EventType = QEvent
 
-MiddleButton = MouseButton.MidButton if PyQtImpl in ("PyQt4", "PySide") else MouseButton.MiddleButton
+if PyQtImpl in ("PyQt4", "PySide"):
+    MiddleButton = MouseButton.MidButton
+else:
+    MiddleButton = MouseButton.MiddleButton
 
 
-def _get_event_pos(ev):  # noqa: ANN001, ANN202
+def _get_event_pos(ev):
     try:  # Qt6+
         return ev.position().x(), ev.position().y()
     except AttributeError:  # Qt5
@@ -304,10 +306,10 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     - Keypress w: modify the representation of all actors so that they
     are wireframe.
-    """  # noqa: D205
+    """
 
     # Map between VTK and Qt cursors.
-    _CURSOR_MAP = {  # noqa: RUF012
+    _CURSOR_MAP = {
         0: CursorShape.ArrowCursor,  # VTK_CURSOR_DEFAULT
         1: CursorShape.ArrowCursor,  # VTK_CURSOR_ARROW
         2: CursorShape.SizeBDiagCursor,  # VTK_CURSOR_SIZENE
@@ -321,7 +323,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         10: CursorShape.CrossCursor,  # VTK_CURSOR_CROSSHAIR
     }
 
-    def __init__(self, parent=None, **kw) -> None:  # noqa: ANN001, ANN003, C901, D107, PLR0915
+    def __init__(self, parent=None, **kw):
         # the current button
         self._ActiveButton = MouseButton.NoButton
 
@@ -347,7 +349,10 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
         # create base qt-level widget
         if QVTKRWIBase == "QWidget":
-            wflags = kw.get("wflags", Qt.WindowType.Widget)
+            if "wflags" in kw:
+                wflags = kw["wflags"]
+            else:
+                wflags = Qt.WindowType.Widget
             QWidget.__init__(self, parent, wflags | WindowType.MSWindowsOwnDC)
         elif QVTKRWIBase == "QGLWidget":
             QGLWidget.__init__(self, parent)
@@ -359,7 +364,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         else:
             self._RenderWindow = vtkRenderWindow()
 
-        WId = self.winId()  # noqa: N806
+        WId = self.winId()
 
         # Python2
         if type(WId).__name__ == "PyCObject":
@@ -370,7 +375,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             pythonapi.PyCObject_AsVoidPtr.restype = c_void_p
             pythonapi.PyCObject_AsVoidPtr.argtypes = [py_object]
 
-            WId = pythonapi.PyCObject_AsVoidPtr(WId)  # noqa: N806
+            WId = pythonapi.PyCObject_AsVoidPtr(WId)
 
         # Python3
         elif type(WId).__name__ == "PyCapsule":
@@ -387,7 +392,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             pythonapi.PyCapsule_GetPointer.restype = c_void_p
             pythonapi.PyCapsule_GetPointer.argtypes = [py_object, c_char_p]
 
-            WId = pythonapi.PyCapsule_GetPointer(WId, name)  # noqa: N806
+            WId = pythonapi.PyCapsule_GetPointer(WId, name)
 
         self._RenderWindow.SetWindowInfo(str(int(WId)))
 
@@ -421,58 +426,60 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         if self.parent():
             self.parent().destroyed.connect(self.close, ConnectionType.DirectConnection)
 
-    def __getattr__(self, attr):  # noqa: ANN001, ANN204
-        """Makes the object behave like a vtkGenericRenderWindowInteractor."""  # noqa: D401
+    def __getattr__(self, attr):
+        """Makes the object behave like a vtkGenericRenderWindowInteractor"""
         if attr == "__vtk__":
             return lambda t=self._Iren: t
         if hasattr(self._Iren, attr):
             return getattr(self._Iren, attr)
         raise AttributeError(self.__class__.__name__ + " has no attribute named " + attr)
 
-    def Finalize(self) -> None:  # noqa: N802
-        """Call internal cleanup method on VTK objects."""
+    def Finalize(self):
+        """
+        Call internal cleanup method on VTK objects
+        """
         self._RenderWindow.Finalize()
 
-    def CreateTimer(self, obj, evt) -> None:  # noqa: ANN001, ARG002, N802, D102
+    def CreateTimer(self, obj, evt):
         self._Timer.start(10)
 
-    def DestroyTimer(self, obj, evt) -> int:  # noqa: ANN001, ARG002, N802, D102
+    def DestroyTimer(self, obj, evt):
         self._Timer.stop()
         return 1
 
-    def TimerEvent(self) -> None:  # noqa: N802, D102
+    def TimerEvent(self):
         self._Iren.TimerEvent()
 
-    def CursorChangedEvent(self, obj, evt) -> None:  # noqa: ANN001, ARG002, N802
-        """Called when the CursorChangedEvent fires on the render window."""  # noqa: D401
+    def CursorChangedEvent(self, obj, evt):
+        """Called when the CursorChangedEvent fires on the render window."""
         # This indirection is needed since when the event fires, the current
         # cursor is not yet set so we defer this by which time the current
         # cursor should have been set.
         QTimer.singleShot(0, self.ShowCursor)
 
-    def HideCursor(self) -> None:  # noqa: N802
+    def HideCursor(self):
         """Hides the cursor."""
         self.setCursor(Qt.BlankCursor)
 
-    def ShowCursor(self) -> None:  # noqa: N802
-        """Shows the cursor."""  # noqa: D401
+    def ShowCursor(self):
+        """Shows the cursor."""
         vtk_cursor = self._Iren.GetRenderWindow().GetCurrentCursor()
         qt_cursor = self._CURSOR_MAP.get(vtk_cursor, Qt.ArrowCursor)
         self.setCursor(qt_cursor)
 
-    def closeEvent(self, evt) -> None:  # noqa: ANN001, ARG002, N802, D102
+    def closeEvent(self, evt):
         self.Finalize()
 
-    def sizeHint(self):  # noqa: ANN201, N802, D102
+    def sizeHint(self):
         return QSize(400, 400)
 
-    def paintEngine(self) -> None:  # noqa: N802, D102
+    def paintEngine(self):
         return None
 
-    def paintEvent(self, ev) -> None:  # noqa: ANN001, ARG002, N802, D102
+    def paintEvent(self, ev):
         self._Iren.Render()
 
-    def resizeEvent(self, ev) -> None:  # noqa: ANN001, ARG002, N802, D102
+    def resizeEvent(self, ev):
         scale = self._getPixelRatio()
         w = int(round(scale * self.width()))
         h = int(round(scale * self.height()))
@@ -484,7 +491,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self._Iren.ConfigureEvent()
         self.update()
 
-    def _GetKeyCharAndKeySym(self, ev):  # noqa: ANN001, ANN202, N802
+    def _GetKeyCharAndKeySym(self, ev):
         """
         Convert a Qt key into a char and a vtk keysym.
 
@@ -493,26 +500,26 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         """
         # if there is a char, convert its ASCII code to a VTK keysym
         try:
-            keyChar = ev.text()[0]  # noqa: N806
-            keySym = _keysyms_for_ascii[ord(keyChar)]  # noqa: N806
+            keyChar = ev.text()[0]
+            keySym = _keysyms_for_ascii[ord(keyChar)]
         except IndexError:
-            keyChar = "\0"  # noqa: N806
-            keySym = None  # noqa: N806
+            keyChar = "\0"
+            keySym = None
 
         # next, try converting Qt key code to a VTK keysym
         if keySym is None:
             try:
-                keySym = _keysyms[ev.key()]  # noqa: N806
+                keySym = _keysyms[ev.key()]
             except KeyError:
-                keySym = None  # noqa: N806
+                keySym = None
 
         # use "None" as a fallback
         if keySym is None:
-            keySym = "None"  # noqa: N806
+            keySym = "None"
 
         return keyChar, keySym
 
-    def _GetCtrlShift(self, ev):  # noqa: ANN001, ANN202, N802
+    def _GetCtrlShift(self, ev):
         ctrl = shift = False
 
         if hasattr(ev, "modifiers"):
@@ -529,7 +536,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         return ctrl, shift
 
     @staticmethod
-    def _getPixelRatio():  # noqa: ANN205, N802
+    def _getPixelRatio():
         if PyQtImpl in ("PyQt4", "PySide"):
             # Qt4 seems not to provide any cross-platform means to get the
             # pixel ratio.
@@ -543,21 +550,21 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         # Should never happen, but try to find a good fallback.
         return QApplication.instance().devicePixelRatio()
 
-    def _setEventInformation(self, x, y, ctrl, shift, key, repeat=0, keysum=None) -> None:  # noqa: ANN001, N802, PLR0913
+    def _setEventInformation(self, x, y, ctrl, shift, key, repeat=0, keysum=None):
         scale = self._getPixelRatio()
         self._Iren.SetEventInformation(int(round(x * scale)), int(round((self.height() - y - 1) * scale)), ctrl, shift, key, repeat, keysum)
 
-    def enterEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
+    def enterEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
         self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None)
         self._Iren.EnterEvent()
 
-    def leaveEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
+    def leaveEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
         self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None)
         self._Iren.LeaveEvent()
 
-    def mousePressEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
+    def mousePressEvent(self, ev):
         pos_x, pos_y = _get_event_pos(ev)
         ctrl, shift = self._GetCtrlShift(ev)
         repeat = 0
@@ -574,7 +581,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         elif self._ActiveButton == MiddleButton:
             self._Iren.MiddleButtonPressEvent()
 
-    def mouseReleaseEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
+    def mouseReleaseEvent(self, ev):
         pos_x, pos_y = _get_event_pos(ev)
         ctrl, shift = self._GetCtrlShift(ev)
         self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), 0, None)
@@ -586,7 +593,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         elif self._ActiveButton == MiddleButton:
             self._Iren.MiddleButtonReleaseEvent()
 
-    def mouseMoveEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
+    def mouseMoveEvent(self, ev):
         pos_x, pos_y = _get_event_pos(ev)
         self.__saveModifiers = ev.modifiers()
         self.__saveButtons = ev.buttons()
@@ -597,41 +604,41 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), 0, None)
         self._Iren.MouseMoveEvent()
 
-    def keyPressEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
-        key, keySym = self._GetKeyCharAndKeySym(ev)  # noqa: N806
+    def keyPressEvent(self, ev):
+        key, keySym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
         self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym)
         self._Iren.KeyPressEvent()
         self._Iren.CharEvent()
 
-    def keyReleaseEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
-        key, keySym = self._GetKeyCharAndKeySym(ev)  # noqa: N806
+    def keyReleaseEvent(self, ev):
+        key, keySym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
         self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym)
         self._Iren.KeyReleaseEvent()
 
-    def wheelEvent(self, ev) -> None:  # noqa: ANN001, N802, D102
+    def wheelEvent(self, ev):
         if hasattr(ev, "delta"):
             self.__wheelDelta += ev.delta()
         else:
             self.__wheelDelta += ev.angleDelta().y()
 
-        if self.__wheelDelta >= 120:  # noqa: PLR2004
+        if self.__wheelDelta >= 120:
             self._Iren.MouseWheelForwardEvent()
             self.__wheelDelta = 0
-        elif self.__wheelDelta <= -120:  # noqa: PLR2004
+        elif self.__wheelDelta <= -120:
             self._Iren.MouseWheelBackwardEvent()
             self.__wheelDelta = 0
 
-    def GetRenderWindow(self):  # noqa: ANN201, N802, D102
+    def GetRenderWindow(self):
         return self._RenderWindow
 
-    def Render(self) -> None:  # noqa: N802, D102
+    def Render(self):
         self.update()
 
 
-def QVTKRenderWidgetConeExample(block=False) -> None:  # noqa: ANN001, FBT002, N802
-    """A simple example that uses the QVTKRenderWindowInteractor class."""  # noqa: D401
+def QVTKRenderWidgetConeExample(block=False):
+    """A simple example that uses the QVTKRenderWindowInteractor class."""
     from vtkmodules.vtkFiltersSources import vtkConeSource
     from vtkmodules.vtkRenderingCore import vtkActor
     from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
@@ -650,7 +657,7 @@ def QVTKRenderWidgetConeExample(block=False) -> None:  # noqa: ANN001, FBT002, N
     widget = QVTKRenderWindowInteractor(window)
     window.setCentralWidget(widget)
     # if you don't want the 'q' key to exit comment this.
-    widget.AddObserver("ExitEvent", lambda o, e, a=app: a.quit())  # noqa: ARG005
+    widget.AddObserver("ExitEvent", lambda o, e, a=app: a.quit())
 
     ren = vtkRenderer()
     widget.GetRenderWindow().AddRenderer(ren)
@@ -658,10 +665,10 @@ def QVTKRenderWidgetConeExample(block=False) -> None:  # noqa: ANN001, FBT002, N
     cone = vtkConeSource()
     cone.SetResolution(8)
 
-    coneMapper = vtkPolyDataMapper()  # noqa: N806
+    coneMapper = vtkPolyDataMapper()
     coneMapper.SetInputConnection(cone.GetOutputPort())
 
-    coneActor = vtkActor()  # noqa: N806
+    coneActor = vtkActor()
     coneActor.SetMapper(coneMapper)
 
     ren.AddActor(coneActor)
@@ -911,4 +918,5 @@ _keysyms = {
 
 
 if __name__ == "__main__":
+    print(PyQtImpl)
     QVTKRenderWidgetConeExample()

@@ -688,13 +688,13 @@ class BackgroundPlotter(QtInteractor):
 
         """
         if not (
-            isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[0] == img.shape[1] and img.dtype == np.uint8 and img.shape[-1] in (3, 4)  # noqa: PLR2004
+            isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[0] == img.shape[1] and img.dtype == np.uint8 and img.shape[-1] in (3, 4)
         ) and not isinstance(img, str):
             msg = "img must be 3D uint8 ndarray with shape[1] == shape[2] and " "shape[2] == 3 or 4, or str"
             raise ValueError(msg)
         if isinstance(img, np.ndarray):
             fmt_str = "Format_RGB"
-            fmt_str += ("A8" if img.shape[2] == 4 else "") + "888"  # noqa: PLR2004
+            fmt_str += ("A8" if img.shape[2] == 4 else "") + "888"
             fmt = getattr(QtGui.QImage, fmt_str)
             img = QtGui.QPixmap.fromImage(QtGui.QImage(img.copy(), img.shape[1], img.shape[0], fmt))
         # Currently no way to check if str/path is actually correct (want to
@@ -804,7 +804,7 @@ class BackgroundPlotter(QtInteractor):
                 self.camera_position = camera_position
 
             self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
-            if ncam < 10:  # noqa: PLR2004
+            if ncam < 10:
                 self.add_key_event(str(ncam), load_camera_position)
 
     def clear_camera_positions(self) -> None:
