@@ -38,17 +38,28 @@ might not be fixable because Qt is doing something in ``QWidget`` which is
 probably entirely separate from the Python ``super()`` process.
 We fix this by internally by temporarily monkey-patching
 ``BasePlotter.__init__`` with a no-op ``__init__``.
-"""
+"""  # noqa: D404
+
+from __future__ import annotations
+
 import contextlib
+from functools import wraps
 import logging
 import os
 import platform
 import time
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Generator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
 import warnings
-from functools import wraps
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
-import numpy as np  # type: ignore
+import numpy as np  # type: ignore  # noqa: PGH003
 import pyvista
 from pyvista import global_theme
 
@@ -59,35 +70,37 @@ except ImportError:  # PV < 0.40
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 
 try:
-    from pyvista.core.utilities import conditional_decorator, threaded
+    from pyvista.core.utilities import conditional_decorator
+    from pyvista.core.utilities import threaded
 except ImportError:  # PV < 0.40
-    from pyvista.utilities import conditional_decorator, threaded
-from qtpy import QtCore, QtGui
-from qtpy.QtCore import QSize, QTimer, Signal
-from qtpy.QtWidgets import (
-    QAction,
-    QApplication,
-    QFrame,
-    QGestureEvent,
-    QGridLayout,
-    QMenuBar,
-    QToolBar,
-    QVBoxLayout,
-    QWidget,
-)
+    from pyvista.utilities import conditional_decorator
+    from pyvista.utilities import threaded
+from qtpy import QtCore
+from qtpy import QtGui
+from qtpy.QtCore import QSize
+from qtpy.QtCore import QTimer
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QAction
+from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import QFrame
+from qtpy.QtWidgets import QGestureEvent
+from qtpy.QtWidgets import QGridLayout
+from qtpy.QtWidgets import QMenuBar
+from qtpy.QtWidgets import QToolBar
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
-from .dialog import FileDialog, ScaleAxesDialog
+from .dialog import FileDialog
+from .dialog import ScaleAxesDialog
 from .editor import Editor
 from .rwi import QVTKRenderWindowInteractor
-from .utils import (
-    _check_type,
-    _create_menu_bar,
-    _setup_application,
-    _setup_ipython,
-    _setup_off_screen,
-)
+from .utils import _check_type
+from .utils import _create_menu_bar
+from .utils import _setup_application
+from .utils import _setup_ipython
+from .utils import _setup_off_screen
 from .window import MainWindow
 
 LOG = logging.getLogger("pyvistaqt")
@@ -102,8 +115,8 @@ LOG.addHandler(logging.StreamHandler())
 # See https://github.com/pyvista/pyvista/pull/693
 
 # LOG is unused at the moment
-# LOG = logging.getLogger(__name__)
-# LOG.setLevel('DEBUG')
+# LOG = logging.getLogger(__name__)  # noqa: ERA001
+# LOG.setLevel('DEBUG')  # noqa: ERA001
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
@@ -137,7 +150,7 @@ def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
 @contextlib.contextmanager
 def _no_base_plotter_init() -> Generator[None, None, None]:
     init = BasePlotter.__init__
-    BasePlotter.__init__ = lambda *args, **kwargs: None
+    BasePlotter.__init__ = lambda *args, **kwargs: None  # noqa: ARG005
     try:
         yield
     finally:
@@ -145,7 +158,8 @@ def _no_base_plotter_init() -> Generator[None, None, None]:
 
 
 class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
-    """Extend QVTKRenderWindowInteractor class.
+    """
+    Extend QVTKRenderWindowInteractor class.
 
     This adds the methods available to pyvista.Plotter.
 
@@ -175,6 +189,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         Number of updates per second.  Useful for automatically
         updating the render window when actors are change without
         being automatically ``Modified``.
+
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -185,17 +200,17 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     key_press_event_signal = Signal(vtkGenericRenderWindowInteractor, str)
 
     # pylint: disable=too-many-arguments
-    def __init__(
+    def __init__(  # noqa: C901, PLR0912, PLR0913
         self,
         parent: MainWindow = None,
-        title: str = None,
-        off_screen: bool = None,
-        multi_samples: int = None,
-        line_smoothing: bool = False,
-        point_smoothing: bool = False,
-        polygon_smoothing: bool = False,
+        title: Optional[str] = None,
+        off_screen: Optional[bool] = None,
+        multi_samples: Optional[int] = None,
+        line_smoothing: bool = False,  # noqa: FBT001, FBT002
+        point_smoothing: bool = False,  # noqa: FBT001, FBT002
+        polygon_smoothing: bool = False,  # noqa: FBT001, FBT002
         auto_update: Union[float, bool] = 5.0,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
@@ -263,34 +278,27 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.render_timer.timeout.connect(self.render)
             self.render_timer.start(twait)
 
-        if global_theme.depth_peeling["enabled"]:
-            if self.enable_depth_peeling():
-                for renderer in self.renderers:
-                    renderer.enable_depth_peeling()
+        if global_theme.depth_peeling["enabled"] and self.enable_depth_peeling():
+            for renderer in self.renderers:
+                renderer.enable_depth_peeling()
 
         # Set some private attributes that let BasePlotter know
         #   that this is safely rendering
         self._first_time = False  # Crucial!
-        # self._rendered = True  # this is handled in render()
+        # self._rendered = True  # this is handled in render()  # noqa: ERA001
         LOG.debug("QtInteractor init stop")
 
-    def _setup_interactor(self, off_screen: bool) -> None:
+    def _setup_interactor(self, off_screen: bool) -> None:  # noqa: FBT001
         if off_screen:
             self.iren: Any = None
         else:
-            self.iren = RenderWindowInteractor(
-                self, interactor=self.ren_win.GetInteractor()
-            )
-            self.iren.interactor.RemoveObservers(
-                "MouseMoveEvent"
-            )  # slows window update?
+            self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
+            self.iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?
             self.iren.initialize()
             self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
-        self._observers: Dict[None, None] = (
-            {}
-        )  # Map of events to observers of self.iren
+        self._observers: Dict[None, None] = {}  # Map of events to observers of self.iren
         self.iren.add_observer("KeyPressEvent", self.key_press_event)
         self.reset_key_events()
 
@@ -303,12 +311,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.update()
         return True
 
-    def key_press_event(self, obj: Any, event: Any) -> None:
+    def key_press_event(self, obj: Any, event: Any) -> None:  # noqa: ANN401
         """Call `key_press_event` using a signal."""
         self.key_press_event_signal.emit(obj, event)
 
     @wraps(BasePlotter.render)
-    def _render(self, *args: Any, **kwargs: Any) -> BasePlotter.render:
+    def _render(self, *args: Any, **kwargs: Any) -> BasePlotter.render:  # noqa: ANN401
         """Wrap ``BasePlotter.render``."""
         return BasePlotter.render(self, *args, **kwargs)
 
@@ -333,10 +341,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.setDisabled(True)
         return BasePlotter.disable(self)
 
-    def link_views_across_plotters(
-        self, other_plotter: Any, view: int = 0, other_views: Any = None
-    ) -> None:
-        """Link the views' cameras across two plotters.
+    def link_views_across_plotters(self, other_plotter: Any, view: int = 0, other_views: Any = None) -> None:  # noqa: ANN401
+        """
+        Link the views' cameras across two plotters.
 
         Parameters
         ----------
@@ -363,18 +370,17 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             other_views = np.asarray(other_views)
 
         if not np.issubdtype(other_views.dtype, int):
-            raise TypeError(
-                "Expected `other_views` type is int, or list or tuple of ints, "
-                f"but {other_views.dtype} is given"
-            )
+            msg = "Expected `other_views` type is int, or list or tuple of ints, " f"but {other_views.dtype} is given"
+            raise TypeError(msg)
 
         renderer = self.renderers[view]
         for view_index in other_views:
             other_plotter.renderers[view_index].camera = renderer.camera
 
     # pylint: disable=invalid-name
-    def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
-        """Event is called when something is dropped onto the vtk window.
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:  # noqa: N802
+        """
+        Event is called when something is dropped onto the vtk window.
 
         Only triggers event when event contains file paths that
         exist.  User can drop anything in this window and we only want
@@ -382,23 +388,23 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """
         try:
             for url in event.mimeData().urls():
-                if os.path.isfile(url.path()):
+                if os.path.isfile(url.path()):  # noqa: PTH113
                     # only call accept on files
                     event.accept()
-        except IOError as exception:  # pragma: no cover
-            warnings.warn(f"Exception when dragging files: {str(exception)}")
+        except OSError as exception:  # pragma: no cover
+            warnings.warn(f"Exception when dragging files: {exception!s}")  # noqa: B028
 
     # pylint: disable=invalid-name,useless-return
-    def dropEvent(self, event: QtCore.QEvent) -> None:
+    def dropEvent(self, event: QtCore.QEvent) -> None:  # noqa: N802
         """Event is called after dragEnterEvent."""
         try:
             for url in event.mimeData().urls():
                 self.url = url
                 filename = self.url.path()
-                if os.path.isfile(filename):
+                if os.path.isfile(filename):  # noqa: PTH113
                     self.add_mesh(pyvista.read(filename))
-        except IOError as exception:  # pragma: no cover
-            warnings.warn(f"Exception when dropping files: {str(exception)}")
+        except OSError as exception:  # pragma: no cover
+            warnings.warn(f"Exception when dropping files: {exception!s}")  # noqa: B028
 
     def close(self) -> None:
         """Quit application."""
@@ -414,14 +420,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             _FakeEventHandler()
         )
         for key in ("_RenderWindow", "renderer"):
-            try:
+            with contextlib.suppress(AttributeError):
                 setattr(self, key, None)
-            except AttributeError:
-                pass
 
 
 class BackgroundPlotter(QtInteractor):
-    """Qt interactive plotter.
+    """
+    Qt interactive plotter.
 
     Background plotter for pyvista that allows you to maintain an
     interactive plotting window without blocking the main python
@@ -493,6 +498,7 @@ class BackgroundPlotter(QtInteractor):
     >>> from pyvistaqt import BackgroundPlotter
     >>> plotter = BackgroundPlotter()
     >>> _ = plotter.add_mesh(pv.Sphere())
+
     """
 
     # pylint: disable=too-many-ancestors
@@ -503,19 +509,19 @@ class BackgroundPlotter(QtInteractor):
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
-    def __init__(
+    def __init__(  # noqa: PLR0913, PLR0915
         self,
-        show: bool = True,
+        show: bool = True,  # noqa: FBT001, FBT002
         app: Optional[QApplication] = None,
         window_size: Optional[Tuple[int, int]] = None,
         off_screen: Optional[bool] = None,
-        allow_quit_keypress: bool = True,
-        toolbar: bool = True,
-        menu_bar: bool = True,
-        editor: bool = True,
+        allow_quit_keypress: bool = True,  # noqa: FBT001, FBT002
+        toolbar: bool = True,  # noqa: FBT001, FBT002
+        menu_bar: bool = True,  # noqa: FBT001, FBT002
+        editor: bool = True,  # noqa: FBT001, FBT002
         update_app_icon: Optional[bool] = None,
         app_window_class: Optional[Type[MainWindow]] = None,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
@@ -563,14 +569,12 @@ class BackgroundPlotter(QtInteractor):
         self.off_screen = _setup_off_screen(off_screen)
         if app_window_class is None:
             app_window_class = MainWindow
-        self.app_window = app_window_class(
-            title=kwargs.get("title", global_theme.title)
-        )
+        self.app_window = app_window_class(title=kwargs.get("title", global_theme.title))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
         super().__init__(parent=self.frame, off_screen=off_screen, **kwargs)
-        assert not self._closed
+        assert not self._closed  # noqa: S101
         vlayout.addWidget(self)
         self.frame.setLayout(vlayout)
         self.app_window.setCentralWidget(self.frame)
@@ -596,13 +600,9 @@ class BackgroundPlotter(QtInteractor):
         if update_app_icon:
             self.add_callback(self.update_app_icon)
         elif update_app_icon is None:
-            self.set_icon(
-                os.path.join(
-                    os.path.dirname(__file__), "data", "pyvista_logo_square.png"
-                )
-            )
+            self.set_icon(os.path.join(os.path.dirname(__file__), "data", "pyvista_logo_square.png"))  # noqa: PTH118, PTH120
         else:
-            assert update_app_icon is False
+            assert update_app_icon is False  # noqa: S101
 
         # Keypress events
         if self.iren is not None:
@@ -610,7 +610,8 @@ class BackgroundPlotter(QtInteractor):
         LOG.debug("BackgroundPlotter init stop")
 
     def reset_key_events(self) -> None:
-        """Reset all of the key press events to their defaults.
+        """
+        Reset all of the key press events to their defaults.
 
         Handles closing configuration for q-key.
         """
@@ -619,12 +620,13 @@ class BackgroundPlotter(QtInteractor):
             # pylint: disable=unnecessary-lambda
             self.add_key_event("q", lambda: self.close())
 
-    def scale_axes_dialog(self, show: bool = True) -> ScaleAxesDialog:
+    def scale_axes_dialog(self, show: bool = True) -> ScaleAxesDialog:  # noqa: FBT001, FBT002
         """Open scale axes dialog."""
         return ScaleAxesDialog(self.app_window, self, show=show)
 
     def close(self) -> None:
-        """Close the plotter.
+        """
+        Close the plotter.
 
         This function closes the window which in turn will
         close the plotter through `signal_close`.
@@ -637,9 +639,9 @@ class BackgroundPlotter(QtInteractor):
             #     been deleted
             #
             # So let's be safe and try/except this in case of a problem.
-            try:
+            try:  # noqa: SIM105
                 self.app_window.close()
-            except Exception:  # pragma: no cover # pylint: disable=broad-except
+            except Exception:  # pragma: no cover # pylint: disable=broad-except  # noqa: S110, BLE001
                 pass
 
     def _close(self) -> None:
@@ -647,9 +649,7 @@ class BackgroundPlotter(QtInteractor):
 
     def update_app_icon(self) -> None:
         """Update the app icon if the user is not trying to resize the window."""
-        if os.name == "nt" or not hasattr(
-            self, "_last_window_size"
-        ):  # pragma: no cover
+        if os.name == "nt" or not hasattr(self, "_last_window_size"):  # pragma: no cover
             # DO NOT EVEN ATTEMPT TO UPDATE ICON ON WINDOWS
             return
         cur_time = time.time()
@@ -657,9 +657,7 @@ class BackgroundPlotter(QtInteractor):
             # Window size hasn't remained constant since last render.
             # This means the user is resizing it so ignore update.
             pass
-        elif (
-            cur_time - self._last_update_time > BackgroundPlotter.ICON_TIME_STEP
-        ) and self._last_camera_pos != self.camera_position:
+        elif (cur_time - self._last_update_time > BackgroundPlotter.ICON_TIME_STEP) and self._last_camera_pos != self.camera_position:
             # its been a while since last update OR
             # the camera position has changed and its been at least one second
 
@@ -673,7 +671,8 @@ class BackgroundPlotter(QtInteractor):
         self._last_window_size = self.window_size
 
     def set_icon(self, img: Union[np.ndarray, str]) -> None:
-        """Set the icon image.
+        """
+        Set the icon image.
 
         Parameters
         ----------
@@ -686,41 +685,35 @@ class BackgroundPlotter(QtInteractor):
         -----
         Currently string paths can silently fail, so make sure your path
         is something that produces a valid ``QIcon(img)``.
+
         """
         if not (
-            isinstance(img, np.ndarray)
-            and img.ndim == 3
-            and img.shape[0] == img.shape[1]
-            and img.dtype == np.uint8
-            and img.shape[-1] in (3, 4)
+            isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[0] == img.shape[1] and img.dtype == np.uint8 and img.shape[-1] in (3, 4)
         ) and not isinstance(img, str):
-            raise ValueError(
-                "img must be 3D uint8 ndarray with shape[1] == shape[2] and "
-                "shape[2] == 3 or 4, or str"
-            )
+            msg = "img must be 3D uint8 ndarray with shape[1] == shape[2] and " "shape[2] == 3 or 4, or str"
+            raise ValueError(msg)
         if isinstance(img, np.ndarray):
             fmt_str = "Format_RGB"
             fmt_str += ("A8" if img.shape[2] == 4 else "") + "888"
             fmt = getattr(QtGui.QImage, fmt_str)
-            img = QtGui.QPixmap.fromImage(
-                QtGui.QImage(img.copy(), img.shape[1], img.shape[0], fmt)
-            )
+            img = QtGui.QPixmap.fromImage(QtGui.QImage(img.copy(), img.shape[1], img.shape[0], fmt))
         # Currently no way to check if str/path is actually correct (want to
         # allow resource paths and the like so os.path.isfile is no good)
         # and icon.isNull() returns False even if the path is bogus.
         self.app.setWindowIcon(QtGui.QIcon(img))
 
-    def _qt_screenshot(self, show: bool = True) -> FileDialog:
+    def _qt_screenshot(self, show: bool = True) -> FileDialog:  # noqa: FBT001, FBT002
         return FileDialog(
             self.app_window,
             filefilter=["Image File (*.png)", "JPEG (*.jpeg)"],
             show=show,
-            directory=bool(os.getcwd()),
+            directory=bool(os.getcwd()),  # noqa: PTH109
             callback=self.screenshot,
         )
 
-    def _qt_export_vtkjs(self, show: bool = True) -> FileDialog:
-        """Spawn an save file dialog to export a vtksz file.
+    def _qt_export_vtkjs(self, show: bool = True) -> FileDialog:  # noqa: FBT001, FBT002
+        """
+        Spawn an save file dialog to export a vtksz file.
 
         The exported file can be viewed with the OfflineLocalView viewer
         available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
@@ -728,16 +721,16 @@ class BackgroundPlotter(QtInteractor):
         """
         try:
             callback = self.export_vtksz
-            ext = 'vtksz'
+            ext = "vtksz"
         except AttributeError:
             callback = self.export_vtkjs  # pre-v0.40
-            ext = 'vtkjs'
+            ext = "vtkjs"
 
         return FileDialog(
             self.app_window,
             filefilter=[f"VTK.js File(*.{ext})"],
             show=show,
-            directory=bool(os.getcwd()),
+            directory=bool(os.getcwd()),  # noqa: PTH109
             callback=callback,
         )
 
@@ -763,16 +756,15 @@ class BackgroundPlotter(QtInteractor):
         self.app_window.setBaseSize(*window_size)
         self.app_window.resize(*window_size)
         # NOTE: setting BasePlotter is unnecessary and Segfaults CI
-        # BasePlotter.window_size.fset(self, window_size)
+        # BasePlotter.window_size.fset(self, window_size)  # noqa: ERA001
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
         self.close()
 
-    def add_callback(
-        self, func: Callable, interval: int = 1000, count: Optional[int] = None
-    ) -> None:
-        """Add a function that can update the scene in the background.
+    def add_callback(self, func: Callable, interval: int = 1000, count: Optional[int] = None) -> None:
+        """
+        Add a function that can update the scene in the background.
 
         Parameters
         ----------
@@ -823,7 +815,7 @@ class BackgroundPlotter(QtInteractor):
                     self.saved_cameras_tool_bar.removeAction(action)
         self.saved_camera_positions = []
 
-    def _add_action(self, tool_bar: QToolBar, key: str, method: Any) -> QAction:
+    def _add_action(self, tool_bar: QToolBar, key: str, method: Any) -> QAction:  # noqa: ANN401
         action = QAction(key, self.app_window)
         action.triggered.connect(method)
         tool_bar.addAction(action)
@@ -834,7 +826,7 @@ class BackgroundPlotter(QtInteractor):
         # Camera toolbar
         self.default_camera_tool_bar = self.app_window.addToolBar("Camera Position")
 
-        def _view_vector(*args: Any) -> None:
+        def _view_vector(*args: Any) -> None:  # noqa: ANN401
             return self.view_vector(*args)
 
         cvec_setters = {
@@ -848,23 +840,15 @@ class BackgroundPlotter(QtInteractor):
             "Isometric": lambda: _view_vector((1, 1, 1), (0, 0, 1)),
         }
         for key, method in cvec_setters.items():
-            self._view_action = self._add_action(
-                self.default_camera_tool_bar, key, method
-            )
+            self._view_action = self._add_action(self.default_camera_tool_bar, key, method)
         # pylint: disable=unnecessary-lambda
-        self._add_action(
-            self.default_camera_tool_bar, "Reset", lambda: self.reset_camera()
-        )
+        self._add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
 
         # Saved camera locations toolbar
         self.saved_camera_positions = []
-        self.saved_cameras_tool_bar = self.app_window.addToolBar(
-            "Saved Camera Positions"
-        )
+        self.saved_cameras_tool_bar = self.app_window.addToolBar("Saved Camera Positions")
 
-        self._add_action(
-            self.saved_cameras_tool_bar, SAVE_CAM_BUTTON_TEXT, self.save_camera_position
-        )
+        self._add_action(self.saved_cameras_tool_bar, SAVE_CAM_BUTTON_TEXT, self.save_camera_position)
         self._add_action(
             self.saved_cameras_tool_bar,
             CLEAR_CAMS_BUTTON_TEXT,
@@ -884,9 +868,7 @@ class BackgroundPlotter(QtInteractor):
         self._menu_close_action = file_menu.addAction("Exit", self.app_window.close)
 
         view_menu = self.main_menu.addMenu("View")
-        self._edl_action = view_menu.addAction(
-            "Toggle Eye Dome Lighting", self._toggle_edl
-        )
+        self._edl_action = view_menu.addAction("Toggle Eye Dome Lighting", self._toggle_edl)
         view_menu.addAction("Scale Axes", self.scale_axes_dialog)
         view_menu.addAction("Clear All", self.clear)
 
@@ -898,9 +880,7 @@ class BackgroundPlotter(QtInteractor):
         )
 
         cam_menu = view_menu.addMenu("Camera")
-        self._parallel_projection_action = cam_menu.addAction(
-            "Toggle Parallel Projection", self._toggle_parallel_projection
-        )
+        self._parallel_projection_action = cam_menu.addAction("Toggle Parallel Projection", self._toggle_parallel_projection)
 
         view_menu.addSeparator()
         # Orientation marker
@@ -927,7 +907,8 @@ class BackgroundPlotter(QtInteractor):
 
 
 class MultiPlotter:
-    """Qt interactive plotter.
+    """
+    Qt interactive plotter.
 
     Multi plotter for pyvista that allows to maintain an
     interactive window with multiple plotters without
@@ -956,21 +937,22 @@ class MultiPlotter:
     >>> from pyvistaqt import MultiPlotter
     >>> plotter = MultiPlotter()
     >>> _ = plotter[0, 0].add_mesh(pv.Sphere())
+
     """
 
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-arguments
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         app: Optional[QApplication] = None,
         nrows: int = 1,
         ncols: int = 1,
-        show: bool = True,
+        show: bool = True,  # noqa: FBT001, FBT002
         window_size: Optional[Tuple[int, int]] = None,
         title: Optional[str] = None,
         off_screen: Optional[bool] = None,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize the multi plotter."""
         _check_type(app, "app", [QApplication, type(None)])
@@ -1012,8 +994,9 @@ class MultiPlotter:
         """Close the multi plotter."""
         self._window.close()
 
-    def __setitem__(self, idx: Tuple[int, int], plotter: Any) -> None:
-        """Set a valid plotter in the grid.
+    def __setitem__(self, idx: Tuple[int, int], plotter: Any) -> None:  # noqa: ANN401
+        """
+        Set a valid plotter in the grid.
 
         Parameters
         ----------
@@ -1022,12 +1005,14 @@ class MultiPlotter:
             be an integer or a tuple ``(row, col)``.
         plotter : BackgroundPlotter
             The plotter to set.
+
         """
         row, col = idx
         self._plotters[row * self._ncols + col] = plotter
 
     def __getitem__(self, idx: Tuple[int, int]) -> Optional[BackgroundPlotter]:
-        """Get a valid plotter in the grid.
+        """
+        Get a valid plotter in the grid.
 
         Parameters
         ----------
@@ -1039,6 +1024,7 @@ class MultiPlotter:
         -------
         plotter : BackgroundPlotter
             The selected plotter.
+
         """
         row, col = idx
         self._plotter = self._plotters[row * self._ncols + col]
