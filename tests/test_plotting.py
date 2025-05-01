@@ -1,42 +1,65 @@
+from __future__ import annotations  # noqa: D100
+
 from contextlib import nullcontext
 import os
 import os.path as op
-from packaging.version import Version
 import platform
 import re
 import sys
 import weakref
 
 import numpy as np
+from packaging.version import Version
 import pytest
 import pyvista
-import vtk
-from qtpy.QtWidgets import QAction, QFrame, QMenuBar, QToolBar, QVBoxLayout
-from qtpy import QtCore, API_NAME
-from qtpy.QtCore import Qt, QPoint, QPointF, QMimeData, QUrl
-from qtpy.QtGui import QDragEnterEvent, QDropEvent
-from qtpy.QtWidgets import (QTreeWidget, QStackedWidget, QCheckBox,
-                            QGestureEvent, QPinchGesture)
-from pyvistaqt.plotting import global_theme
 from pyvista.plotting import Renderer
+from qtpy import API_NAME
+from qtpy import QtCore
+from qtpy.QtCore import QMimeData
+from qtpy.QtCore import QPoint
+from qtpy.QtCore import QPointF
+from qtpy.QtCore import Qt
+from qtpy.QtCore import QUrl
+from qtpy.QtGui import QDragEnterEvent
+from qtpy.QtGui import QDropEvent
+from qtpy.QtWidgets import QAction
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QFrame
+from qtpy.QtWidgets import QGestureEvent
+from qtpy.QtWidgets import QMenuBar
+from qtpy.QtWidgets import QPinchGesture
+from qtpy.QtWidgets import QStackedWidget
+from qtpy.QtWidgets import QToolBar
+from qtpy.QtWidgets import QTreeWidget
+from qtpy.QtWidgets import QVBoxLayout
+import vtk
+
+from pyvistaqt.plotting import global_theme
+
 try:
     from pyvista.plotting.utilities import Scraper
 except ImportError:  # PV < 0.40
     from pyvista.utilities import Scraper
 
 import pyvistaqt
-from pyvistaqt import MultiPlotter, BackgroundPlotter, MainWindow, QtInteractor
-from pyvistaqt.plotting import Counter, QTimer, QVTKRenderWindowInteractor
-from pyvistaqt.editor import Editor
+from pyvistaqt import BackgroundPlotter
+from pyvistaqt import MainWindow
+from pyvistaqt import MultiPlotter
+from pyvistaqt import QtInteractor
 from pyvistaqt.dialog import FileDialog
-from pyvistaqt.utils import _setup_application, _create_menu_bar, _check_type
-
+from pyvistaqt.editor import Editor
+from pyvistaqt.plotting import Counter
+from pyvistaqt.plotting import QTimer
+from pyvistaqt.plotting import QVTKRenderWindowInteractor
+from pyvistaqt.utils import _check_type
+from pyvistaqt.utils import _create_menu_bar
+from pyvistaqt.utils import _setup_application
 
 PV_VERSION = Version(pyvista.__version__)
 
 
-class TstWindow(MainWindow):
-    def __init__(self, parent=None, show=True, off_screen=True):
+class TstWindow(MainWindow):  # noqa: D101
+    def __init__(self, parent=None, show=True, off_screen=True) -> None:  # noqa: FBT002, D107
         MainWindow.__init__(self, parent)
 
         self.frame = QFrame()
@@ -51,17 +74,17 @@ class TstWindow(MainWindow):
         self.frame.setLayout(vlayout)
         self.setCentralWidget(self.frame)
 
-        mainMenu = _create_menu_bar(parent=self)
+        mainMenu = _create_menu_bar(parent=self)  # noqa: N806
 
-        fileMenu = mainMenu.addMenu('File')
-        self.exit_action = QAction('Exit', self)
-        self.exit_action.setShortcut('Ctrl+Q')
+        fileMenu = mainMenu.addMenu("File")  # noqa: N806
+        self.exit_action = QAction("Exit", self)
+        self.exit_action.setShortcut("Ctrl+Q")
         self.exit_action.triggered.connect(self.close)
         fileMenu.addAction(self.exit_action)
 
-        meshMenu = mainMenu.addMenu('Mesh')
-        self.add_sphere_action = QAction('Add Sphere', self)
-        self.exit_action.setShortcut('Ctrl+A')
+        meshMenu = mainMenu.addMenu("Mesh")  # noqa: N806
+        self.add_sphere_action = QAction("Add Sphere", self)
+        self.exit_action.setShortcut("Ctrl+A")
         self.add_sphere_action.triggered.connect(self.add_sphere)
         meshMenu.addAction(self.add_sphere_action)
 
@@ -70,25 +93,22 @@ class TstWindow(MainWindow):
         if show:
             self.show()
 
-    def add_sphere(self):
-        sphere = pyvista.Sphere(
-            phi_resolution=6,
-            theta_resolution=6
-        )
+    def add_sphere(self) -> None:  # noqa: D102
+        sphere = pyvista.Sphere(phi_resolution=6, theta_resolution=6)
         self.vtk_widget.add_mesh(sphere)
         self.vtk_widget.reset_camera()
 
 
-def test_create_menu_bar(qtbot):
+def test_create_menu_bar(qtbot) -> None:  # noqa: D103
     menu_bar = _create_menu_bar(parent=None)
     qtbot.addWidget(menu_bar)
 
 
-def test_setup_application(qapp):
+def test_setup_application(qapp) -> None:  # noqa: D103
     _setup_application(qapp)
 
 
-def test_file_dialog(tmpdir, qtbot):
+def test_file_dialog(tmpdir, qtbot) -> None:  # noqa: D103
     dialog = FileDialog(
         filefilter=None,
         directory=False,
@@ -100,8 +120,8 @@ def test_file_dialog(tmpdir, qtbot):
     dialog.emit_accepted()  # test no result
 
     p = tmpdir.mkdir("tmp").join("foo.png")
-    p.write('foo')
-    assert os.path.isfile(p)
+    p.write("foo")
+    assert os.path.isfile(p)  # noqa: PTH113
 
     filename = str(p)
     dialog.selectFile(filename)
@@ -118,14 +138,14 @@ def test_file_dialog(tmpdir, qtbot):
     assert not dialog.isVisible()  # dialog is closed after accept()
 
 
-def test_check_type():
+def test_check_type() -> None:  # noqa: D103
     with pytest.raises(TypeError, match="Expected type"):
         _check_type(0, "foo", [str])
     _check_type(0, "foo", [int, float])
     _check_type("foo", "foo", [str])
 
 
-def test_mouse_interactions(qtbot):
+def test_mouse_interactions(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter()
     window = plotter.app_window
     interactor = plotter.interactor
@@ -136,19 +156,18 @@ def test_mouse_interactions(qtbot):
     plotter.close()
 
 
-@pytest.mark.skipif(platform.system()=="Windows" and platform.python_version()[:-1]=="3.8.", reason="#51")
-def test_ipython(qapp):
-    IPython = pytest.importorskip('IPython')
-    cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" \
-          "p = Plotter(show=False, off_screen=False); p.close(); exit()"
+@pytest.mark.skipif(platform.system() == "Windows" and platform.python_version()[:-1] == "3.8.", reason="#51")
+def test_ipython(qapp) -> None:  # noqa: ARG001, D103
+    IPython = pytest.importorskip("IPython")  # noqa: N806
+    cmd = "from pyvistaqt import BackgroundPlotter as Plotter;" "p = Plotter(show=False, off_screen=False); p.close(); exit()"
     IPython.start_ipython(argv=["-c", cmd])
 
 
-class SuperWindow(MainWindow):
+class SuperWindow(MainWindow):  # noqa: D101
     pass
 
 
-def test_depth_peeling(qtbot):
+def test_depth_peeling(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
     assert not plotter.renderer.GetUseDepthPeeling()
@@ -164,10 +183,10 @@ def test_depth_peeling(qtbot):
 
 
 @pytest.mark.skipif(
-    platform.system() == 'Windows' and API_NAME == "PySide6",
-    reason='Always offscreen on Windows on conda',
+    platform.system() == "Windows" and API_NAME == "PySide6",
+    reason="Always offscreen on Windows on conda",
 )
-def test_off_screen(qtbot):
+def test_off_screen(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter(off_screen=False)
     qtbot.addWidget(plotter.app_window)
     assert not plotter.ren_win.GetOffScreenRendering()
@@ -178,7 +197,7 @@ def test_off_screen(qtbot):
     plotter.close()
 
 
-def test_smoothing(qtbot):
+def test_smoothing(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
     assert not plotter.ren_win.GetPolygonSmoothing()
@@ -197,10 +216,10 @@ def test_smoothing(qtbot):
     plotter.close()
 
 
-def test_counter(qtbot):
-    with pytest.raises(TypeError, match='type of'):
+def test_counter(qtbot) -> None:  # noqa: D103
+    with pytest.raises(TypeError, match="type of"):
         Counter(count=0.5)
-    with pytest.raises(ValueError, match='strictly positive'):
+    with pytest.raises(ValueError, match="strictly positive"):
         Counter(count=-1)
 
     counter = Counter(count=1)
@@ -210,15 +229,15 @@ def test_counter(qtbot):
     assert counter.count == 0
 
 
-# TODO: Fix gc on PySide6
-@pytest.mark.parametrize('border', (True, False))
+# TODO: Fix gc on PySide6  # noqa: FIX002, TD002, TD003
+@pytest.mark.parametrize("border", [True, False])
 @pytest.mark.allow_bad_gc_pyside
-def test_subplot_gc(border):
+def test_subplot_gc(border) -> None:  # noqa: D103
     BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
 
 
 @pytest.mark.allow_bad_gc_pyside
-def test_editor(qtbot, plotting):
+def test_editor(qtbot, plotting) -> None:  # noqa: ARG001, D103
     # test editor=False
     plotter = BackgroundPlotter(editor=False, off_screen=False)
     qtbot.addWidget(plotter.app_window)
@@ -284,22 +303,23 @@ def test_editor(qtbot, plotting):
     plotter.close()
 
 
-@pytest.fixture()
-def ensure_closed():
+@pytest.fixture
+def ensure_closed():  # noqa: ANN201
     """Ensure all plotters are closed."""
     try:
         from pyvista.plotting import close_all
         from pyvista.plotting.plotter import _ALL_PLOTTERS
     except ImportError:  # PV < 0.40
-        from pyvista.plotting.plotting import _ALL_PLOTTERS, close_all
+        from pyvista.plotting.plotting import _ALL_PLOTTERS
+        from pyvista.plotting.plotting import close_all
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
     yield
-    WANT_AFTER = int(PV_VERSION < Version("0.37"))
+    WANT_AFTER = int(Version("0.37") > PV_VERSION)  # noqa: N806
     assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
-def test_qt_interactor(qtbot, plotting, ensure_closed):
+def test_qt_interactor(qtbot, plotting, ensure_closed) -> None:  # noqa: ARG001, D103
     window = TstWindow(show=False, off_screen=False)
     qtbot.addWidget(window)  # register the main widget
 
@@ -336,7 +356,7 @@ def test_qt_interactor(qtbot, plotting, ensure_closed):
     assert window.isVisible()
     assert interactor.isVisible()
     assert render_timer.isActive()
-    assert not vtk_widget._closed
+    assert not vtk_widget._closed  # noqa: SLF001
 
     # test enable/disable interactivity
     vtk_widget.disable()
@@ -351,19 +371,18 @@ def test_qt_interactor(qtbot, plotting, ensure_closed):
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    assert vtk_widget._closed
+    assert vtk_widget._closed  # noqa: SLF001
 
 
-@pytest.mark.parametrize('show_plotter', [
-    True,
-    False,
-    ])
-def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
-    plotter = BackgroundPlotter(
-        show=show_plotter,
-        off_screen=False,
-        title='Testing Window'
-    )
+@pytest.mark.parametrize(
+    "show_plotter",
+    [
+        True,
+        False,
+    ],
+)
+def test_background_plotting_axes_scale(qtbot, show_plotter, plotting) -> None:  # noqa: ARG001, D103
+    plotter = BackgroundPlotter(show=show_plotter, off_screen=False, title="Testing Window")
     assert_hasattr(plotter, "app_window", MainWindow)
     window = plotter.app_window  # MainWindow
     qtbot.addWidget(window)  # register the window
@@ -378,7 +397,7 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     plotter.add_mesh(pyvista.Sphere())
     assert_hasattr(plotter, "renderer", Renderer)
     renderer = plotter.renderer
-    assert len(renderer._actors) == 1
+    assert len(renderer._actors) == 1  # noqa: SLF001
     assert np.any(plotter.mesh.points)
 
     dlg = plotter.scale_axes_dialog(show=False)  # ScaleAxesDialog
@@ -398,7 +417,7 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     dlg.x_slider_group.spinbox.setValue(1000.0)
     assert dlg.x_slider_group.value < 100
 
-    plotter._last_update_time = 0.0
+    plotter._last_update_time = 0.0  # noqa: SLF001
     plotter.update()
     plotter.update_app_icon()
     plotter.close()
@@ -406,8 +425,8 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting):
     assert not dlg.isVisible()
 
 
-def test_background_plotting_camera(qtbot, plotting):
-    plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
+def test_background_plotting_camera(qtbot, plotting) -> None:  # noqa: ARG001, D103
+    plotter = BackgroundPlotter(off_screen=False, title="Testing Window")
     plotter.add_mesh(pyvista.Sphere())
 
     cpos = [(0.0, 0.0, 1.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
@@ -426,16 +445,15 @@ def test_background_plotting_camera(qtbot, plotting):
     plotter.close()
 
 
-@pytest.mark.parametrize('other_views', [None, 0, [0]])
-def test_link_views_across_plotters(other_views):
-
-    def _to_array(camera_position):
+@pytest.mark.parametrize("other_views", [None, 0, [0]])
+def test_link_views_across_plotters(other_views) -> None:  # noqa: D103
+    def _to_array(camera_position):  # noqa: ANN202
         return np.asarray([list(row) for row in camera_position])
 
-    plotter_one = BackgroundPlotter(off_screen=True, title='Testing Window')
+    plotter_one = BackgroundPlotter(off_screen=True, title="Testing Window")
     plotter_one.add_mesh(pyvista.Sphere())
 
-    plotter_two = BackgroundPlotter(off_screen=True, title='Testing Window')
+    plotter_two = BackgroundPlotter(off_screen=True, title="Testing Window")
     plotter_two.add_mesh(pyvista.Sphere())
 
     plotter_one.link_views_across_plotters(plotter_two, other_views=other_views)
@@ -461,25 +479,24 @@ def test_link_views_across_plotters(other_views):
             _to_array(plotter_two.camera_position),
         )
 
-    match = 'Expected `other_views` type is int, or list or tuple of ints, but float64 is given'
+    match = "Expected `other_views` type is int, or list or tuple of ints, but float64 is given"
     with pytest.raises(TypeError, match=match):
         plotter_one.link_views_across_plotters(plotter_two, other_views=[0.0])
 
 
-@pytest.mark.parametrize('show_plotter', [
-    True,
-    False,
-    ])
-def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
+@pytest.mark.parametrize(
+    "show_plotter",
+    [
+        True,
+        False,
+    ],
+)
+def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting) -> None:  # noqa: ARG001, D103
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
-    assert os.path.isdir(output_dir)
+    assert os.path.isdir(output_dir)  # noqa: PTH112
 
-    plotter = BackgroundPlotter(
-        show=show_plotter,
-        off_screen=False,
-        title='Testing Window'
-    )
+    plotter = BackgroundPlotter(show=show_plotter, off_screen=False, title="Testing Window")
     assert_hasattr(plotter, "app_window", MainWindow)
     window = plotter.app_window  # MainWindow
     qtbot.addWidget(window)  # register the window
@@ -494,13 +511,13 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
     plotter.add_mesh(pyvista.Sphere())
     assert_hasattr(plotter, "renderer", Renderer)
     renderer = plotter.renderer
-    assert len(renderer._actors) == 1
+    assert len(renderer._actors) == 1  # noqa: SLF001
     assert np.any(plotter.mesh.points)
 
-    dlg = plotter._qt_screenshot(show=False)  # FileDialog
+    dlg = plotter._qt_screenshot(show=False)  # FileDialog  # noqa: SLF001
     qtbot.addWidget(dlg)  # register the dialog
 
-    filename = str(os.path.join(output_dir, "tmp.png"))
+    filename = str(os.path.join(output_dir, "tmp.png"))  # noqa: PTH118
     dlg.selectFile(filename)
 
     # show the dialog
@@ -516,21 +533,17 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting):
 
     plotter.close()
     assert not window.isVisible()
-    assert os.path.isfile(filename)
+    assert os.path.isfile(filename)  # noqa: PTH113
 
 
 @pytest.mark.skip
 @pytest.mark.allow_bad_gc
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # noqa: ARG001, D103
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
-    assert os.path.isdir(output_dir)
+    assert os.path.isdir(output_dir)  # noqa: PTH112
 
-    plotter = BackgroundPlotter(
-        show=False,
-        off_screen=False,
-        title='Testing Window'
-    )
+    plotter = BackgroundPlotter(show=False, off_screen=False, title="Testing Window")
     assert_hasattr(plotter, "app_window", MainWindow)
     window = plotter.app_window  # MainWindow
     qtbot.addWidget(window)  # register the window
@@ -545,18 +558,18 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
     plotter.add_mesh(pyvista.Sphere())
     assert_hasattr(plotter, "renderer", Renderer)
     renderer = plotter.renderer
-    assert len(renderer._actors) == 1
+    assert len(renderer._actors) == 1  # noqa: SLF001
     assert np.any(plotter.mesh.points)
 
-    dlg = plotter._qt_export_vtkjs(show=False)  # FileDialog
+    dlg = plotter._qt_export_vtkjs(show=False)  # FileDialog  # noqa: SLF001
     qtbot.addWidget(dlg)  # register the dialog
 
-    if hasattr(plotter, 'export_vtksz'):
-        ext = '.vtksz'
-        filename = str(os.path.join(output_dir, f"tmp{ext}"))
+    if hasattr(plotter, "export_vtksz"):
+        ext = ".vtksz"
+        filename = str(os.path.join(output_dir, f"tmp{ext}"))  # noqa: PTH118
     else:
-        ext = '.vtkjs'
-        filename = str(os.path.join(output_dir, f"tmp"))
+        ext = ".vtkjs"
+        filename = str(os.path.join(output_dir, "tmp"))  # noqa: PTH118
     dlg.selectFile(filename)
 
     # show the dialog
@@ -573,17 +586,17 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting):
     plotter.close()
     assert not window.isVisible()
 
-    if hasattr(plotter, 'export_vtksz'):
-        assert os.path.isfile(filename)
+    if hasattr(plotter, "export_vtksz"):
+        assert os.path.isfile(filename)  # noqa: PTH113
     else:
-        assert os.path.isfile(filename + ext)
+        assert os.path.isfile(filename + ext)  # noqa: PTH113
 
 
 # vtkWeakReference and vtkFloatArray, only sometimes -- usually PySide2
 # but also sometimes macOS
 @pytest.mark.allow_bad_gc
-def test_background_plotting_orbit(qtbot, plotting):
-    plotter = BackgroundPlotter(off_screen=False, title='Testing Window')
+def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D103
+    plotter = BackgroundPlotter(off_screen=False, title="Testing Window")
     plotter.add_mesh(pyvista.Sphere())
     # perform the orbit:
     plotter.orbit_on_path(threaded=True, step=0.0)
@@ -591,8 +604,8 @@ def test_background_plotting_orbit(qtbot, plotting):
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
-def test_background_plotting_toolbar(qtbot, plotting):
-    with pytest.raises(TypeError, match='toolbar'):
+def test_background_plotting_toolbar(qtbot, plotting) -> None:  # noqa: ARG001, D103
+    with pytest.raises(TypeError, match="toolbar"):  # noqa: PT012
         p = BackgroundPlotter(off_screen=False, toolbar="foo")
         p.close()
 
@@ -620,26 +633,24 @@ def test_background_plotting_toolbar(qtbot, plotting):
     assert saved_cameras_tool_bar.isVisible()
 
     # triggering a view action
-    plotter._view_action.trigger()
+    plotter._view_action.trigger()  # noqa: SLF001
 
     plotter.close()
 
 
-# TODO: _render_passes not GC'ed
+# TODO: _render_passes not GC'ed  # noqa: FIX002, TD002, TD003
 @pytest.mark.allow_bad_gc_pyside
-@pytest.mark.skipif(
-    platform.system() == 'Windows', reason='Segfaults on Windows')
-def test_background_plotting_menu_bar(qtbot, plotting):
-    with pytest.raises(TypeError, match='menu_bar'):
+@pytest.mark.skipif(platform.system() == "Windows", reason="Segfaults on Windows")
+def test_background_plotting_menu_bar(qtbot, plotting) -> None:  # noqa: ARG001, D103
+    with pytest.raises(TypeError, match="menu_bar"):
         BackgroundPlotter(off_screen=False, menu_bar="foo")
 
-    plotter = BackgroundPlotter(
-        off_screen=False, menu_bar=False, update_app_icon=False)
+    plotter = BackgroundPlotter(off_screen=False, menu_bar=False, update_app_icon=False)
     assert plotter.main_menu is None
-    assert plotter._menu_close_action is None
+    assert plotter._menu_close_action is None  # noqa: SLF001
     plotter.close()
 
-    # menu_bar=True
+    # menu_bar=True  # noqa: ERA001
     plotter = BackgroundPlotter(off_screen=False, update_app_icon=False)
 
     assert_hasattr(plotter, "app_window", MainWindow)
@@ -656,35 +667,35 @@ def test_background_plotting_menu_bar(qtbot, plotting):
         window.show()
 
     # EDL action
-    if hasattr(plotter.renderer, '_render_passes'):
-        obj, attr = plotter.renderer._render_passes, '_edl_pass'
+    if hasattr(plotter.renderer, "_render_passes"):
+        obj, attr = plotter.renderer._render_passes, "_edl_pass"  # noqa: SLF001
     else:
-        obj, attr = plotter.renderer, 'edl_pass'
+        obj, attr = plotter.renderer, "edl_pass"
     assert getattr(obj, attr, None) is None
-    plotter._edl_action.trigger()
+    plotter._edl_action.trigger()  # noqa: SLF001
     assert getattr(obj, attr, None) is not None
     # and now test reset
-    plotter._edl_action.trigger()
+    plotter._edl_action.trigger()  # noqa: SLF001
 
     # Parallel projection action
     assert not plotter.camera.GetParallelProjection()
-    plotter._parallel_projection_action.trigger()
+    plotter._parallel_projection_action.trigger()  # noqa: SLF001
     assert plotter.camera.GetParallelProjection()
     # and now test reset
-    plotter._parallel_projection_action.trigger()
+    plotter._parallel_projection_action.trigger()  # noqa: SLF001
 
     assert main_menu.isVisible()
     plotter.close()
     assert not main_menu.isVisible()
-    assert plotter._last_update_time == -np.inf
+    assert plotter._last_update_time == -np.inf  # noqa: SLF001
 
 
-def test_drop_event(tmpdir, qtbot):
+def test_drop_event(tmpdir, qtbot) -> None:  # noqa: D103
     output_dir = str(tmpdir.mkdir("tmpdir"))
-    filename = str(os.path.join(output_dir, "tmp.vtk"))
+    filename = str(os.path.join(output_dir, "tmp.vtk"))  # noqa: PTH118
     mesh = pyvista.Cone()
     mesh.save(filename)
-    assert os.path.isfile(filename)
+    assert os.path.isfile(filename)  # noqa: PTH113
     plotter = BackgroundPlotter(update_app_icon=False)
     with qtbot.wait_exposed(plotter.app_window, timeout=10000):
         plotter.app_window.show()
@@ -702,12 +713,12 @@ def test_drop_event(tmpdir, qtbot):
     plotter.close()
 
 
-def test_drag_event(tmpdir):
+def test_drag_event(tmpdir) -> None:  # noqa: D103
     output_dir = str(tmpdir.mkdir("tmpdir"))
-    filename = str(os.path.join(output_dir, "tmp.vtk"))
+    filename = str(os.path.join(output_dir, "tmp.vtk"))  # noqa: PTH118
     mesh = pyvista.Cone()
     mesh.save(filename)
-    assert os.path.isfile(filename)
+    assert os.path.isfile(filename)  # noqa: PTH113
     plotter = BackgroundPlotter(update_app_icon=False)
     point = QPoint(0, 0)
     data = QMimeData()
@@ -723,7 +734,7 @@ def test_drag_event(tmpdir):
     plotter.close()
 
 
-def test_gesture_event(qtbot):
+def test_gesture_event(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter(update_app_icon=False)
     with qtbot.wait_exposed(plotter.app_window, timeout=10000):
         plotter.app_window.show()
@@ -733,38 +744,38 @@ def test_gesture_event(qtbot):
     plotter.close()
 
 
-def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
-    class CallBack(object):
-        def __init__(self, sphere):
+def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:  # noqa: ARG001, D103
+    class CallBack:
+        def __init__(self, sphere) -> None:
             self.sphere = weakref.ref(sphere)
 
-        def __call__(self):
+        def __call__(self):  # noqa: ANN204
             self.sphere().points[:] = self.sphere().points * 0.5
 
     update_count = [0]
     orig_update_app_icon = BackgroundPlotter.update_app_icon
 
-    def update_app_icon(slf):
+    def update_app_icon(slf):  # noqa: ANN202
         update_count[0] = update_count[0] + 1
         return orig_update_app_icon(slf)
 
-    monkeypatch.setattr(BackgroundPlotter, 'update_app_icon', update_app_icon)
+    monkeypatch.setattr(BackgroundPlotter, "update_app_icon", update_app_icon)
     plotter = BackgroundPlotter(
         show=False,
         off_screen=False,
-        title='Testing Window',
+        title="Testing Window",
         update_app_icon=True,  # also does add_callback
     )
     assert_hasattr(plotter, "app_window", MainWindow)
     assert_hasattr(plotter, "_callback_timer", QTimer)
     assert_hasattr(plotter, "counters", list)
-    assert plotter._last_update_time == -np.inf
+    assert plotter._last_update_time == -np.inf  # noqa: SLF001
 
     sphere = pyvista.Sphere()
     plotter.add_mesh(sphere)
     mycallback = CallBack(sphere)
     window = plotter.app_window  # MainWindow
-    callback_timer = plotter._callback_timer  # QTimer
+    callback_timer = plotter._callback_timer  # QTimer  # noqa: SLF001
     assert callback_timer.isActive()
 
     # ensure that the window is showed
@@ -779,18 +790,16 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     plotter.update_app_icon()  # should be a no-op
     assert update_count[0] in [2, 3]
     with pytest.raises(ValueError, match="ndarray with shape"):
-        plotter.set_icon(0.)
+        plotter.set_icon(0.0)
     # Maybe someday manually setting "set_icon" should disable update_app_icon?
     # Strings also supported directly by QIcon
-    plotter.set_icon(os.path.join(
-        os.path.dirname(pyvistaqt.__file__), "data",
-        "pyvista_logo_square.png"))
+    plotter.set_icon(os.path.join(os.path.dirname(pyvistaqt.__file__), "data", "pyvista_logo_square.png"))  # noqa: PTH118, PTH120
     callback_timer.stop()
     assert not callback_timer.isActive()
 
     # check that timers are set properly in add_callback()
     plotter.add_callback(mycallback, interval=200, count=3)
-    callback_timer = plotter._callback_timer  # QTimer
+    callback_timer = plotter._callback_timer  # QTimer  # noqa: SLF001
     assert callback_timer.isActive()
     counter = plotter.counters[-1]  # Counter
 
@@ -803,7 +812,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     assert not callback_timer.isActive()  # counter stops the callback
 
     plotter.add_callback(mycallback, interval=200)
-    callback_timer = plotter._callback_timer  # QTimer
+    callback_timer = plotter._callback_timer  # QTimer  # noqa: SLF001
     assert callback_timer.isActive()
 
     # ensure that self.callback_timer send a signal
@@ -814,32 +823,36 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
     assert not callback_timer.isActive()  # window stops the callback
 
 
-def allow_bad_gc_old_pyvista(func):
-    if PV_VERSION < Version("0.37"):
+def allow_bad_gc_old_pyvista(func):  # noqa: ANN201, D103
+    if Version("0.37") > PV_VERSION:
         return pytest.mark.allow_bad_gc(func)
-    else:
-        return func
+    return func
 
 
-# TODO: Need to fix this allow_bad_gc:
+# TODO: Need to fix this allow_bad_gc:  # noqa: FIX002, TD002, TD003
 # - the actors are not cleaned up in the non-empty scene case
 # - the q_key_press leaves a lingering vtkUnsignedCharArray referred to by
 #   a "managedbuffer" object
 @allow_bad_gc_old_pyvista
 @pytest.mark.allow_bad_gc_pyside
-@pytest.mark.parametrize('close_event', [
-    "plotter_close",
-    "window_close",
-    pytest.param("q_key_press", marks=pytest.mark.allow_bad_gc),
-    "menu_exit",
-    "del_finalizer",
-    ])
-@pytest.mark.parametrize('empty_scene', [
-    True,
-    False,
-    ])
-def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
-                                   ensure_closed):
+@pytest.mark.parametrize(
+    "close_event",
+    [
+        "plotter_close",
+        "window_close",
+        pytest.param("q_key_press", marks=pytest.mark.allow_bad_gc),
+        "menu_exit",
+        "del_finalizer",
+    ],
+)
+@pytest.mark.parametrize(
+    "empty_scene",
+    [
+        True,
+        False,
+    ],
+)
+def test_background_plotting_close(qtbot, close_event, empty_scene, plotting, ensure_closed) -> None:  # noqa: ARG001, D103
     plotter = _create_testing_scene(empty_scene)
 
     # check that BackgroundPlotter.__init__() is called
@@ -876,7 +889,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
     assert interactor.isVisible()
     assert main_menu.isVisible()
     assert render_timer.isActive()
-    assert not plotter._closed
+    assert not plotter._closed  # noqa: SLF001
 
     with qtbot.wait_signals([window.signal_close], timeout=500):
         if close_event == "plotter_close":
@@ -886,7 +899,7 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
         elif close_event == "q_key_press":
             qtbot.keyClick(interactor, "q")
         elif close_event == "menu_exit":
-            plotter._menu_close_action.trigger()
+            plotter._menu_close_action.trigger()  # noqa: SLF001
         elif close_event == "del_finalizer":
             plotter.__del__()
 
@@ -897,41 +910,41 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    assert plotter._closed
+    assert plotter._closed  # noqa: SLF001
 
 
-def test_multiplotter(qtbot, plotting):
+def test_multiplotter(qtbot, plotting) -> None:  # noqa: ARG001, D103
     mp = MultiPlotter(
         nrows=1,
         ncols=2,
         window_size=(300, 300),
         show=False,
-        title='Test',
+        title="Test",
         off_screen=False,
     )
-    qtbot.addWidget(mp._window)
+    qtbot.addWidget(mp._window)  # noqa: SLF001
     mp[0, 0].add_mesh(pyvista.Cone())
     mp[0, 1].add_mesh(pyvista.Box())
-    assert not mp._window.isVisible()
-    with qtbot.wait_exposed(mp._window):
+    assert not mp._window.isVisible()  # noqa: SLF001
+    with qtbot.wait_exposed(mp._window):  # noqa: SLF001
         mp.show()
-    assert mp._window.isVisible()
-    for p in mp._plotters:
-        assert not p._closed
-    with qtbot.wait_signals([mp._window.signal_close], timeout=1000):
+    assert mp._window.isVisible()  # noqa: SLF001
+    for p in mp._plotters:  # noqa: SLF001
+        assert not p._closed  # noqa: SLF001
+    with qtbot.wait_signals([mp._window.signal_close], timeout=1000):  # noqa: SLF001
         mp.close()
-    for p in mp._plotters:
-        assert p._closed
+    for p in mp._plotters:  # noqa: SLF001
+        assert p._closed  # noqa: SLF001
 
     # cover default show=True
     mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
-    qtbot.addWidget(mp._window)
-    with qtbot.wait_exposed(mp._window):
-        assert mp._window.isVisible()
+    qtbot.addWidget(mp._window)  # noqa: SLF001
+    with qtbot.wait_exposed(mp._window):  # noqa: SLF001
+        assert mp._window.isVisible()  # noqa: SLF001
     mp.close()
 
 
-def _create_testing_scene(empty_scene, show=False, off_screen=False):
+def _create_testing_scene(empty_scene, show=False, off_screen=False):  # noqa: ANN202, FBT002
     if empty_scene:
         plotter = BackgroundPlotter(
             show=show,
@@ -943,100 +956,87 @@ def _create_testing_scene(empty_scene, show=False, off_screen=False):
             shape=(2, 2),
             border=True,
             border_width=10,
-            border_color='grey',
+            border_color="grey",
             show=show,
             off_screen=off_screen,
             update_app_icon=False,
         )
-        plotter.set_background('black', top='blue')
+        plotter.set_background("black", top="blue")
         plotter.subplot(0, 0)
         cone = pyvista.Cone(resolution=4)
         actor = plotter.add_mesh(cone)
         plotter.remove_actor(actor)
-        plotter.add_text('Actor is removed')
+        plotter.add_text("Actor is removed")
         plotter.subplot(0, 1)
-        plotter.add_mesh(pyvista.Box(), color='green', opacity=0.8)
+        plotter.add_mesh(pyvista.Box(), color="green", opacity=0.8)
         plotter.subplot(1, 0)
         cylinder = pyvista.Cylinder(resolution=6)
         plotter.add_mesh(cylinder, smooth_shading=True)
         plotter.show_bounds()
         plotter.subplot(1, 1)
-        sphere = pyvista.Sphere(
-            phi_resolution=6,
-            theta_resolution=6
-        )
+        sphere = pyvista.Sphere(phi_resolution=6, theta_resolution=6)
         plotter.add_mesh(sphere)
         plotter.enable_cell_picking()
     return plotter
 
 
-def assert_hasattr(variable, attribute_name, variable_type):
+def assert_hasattr(variable, attribute_name, variable_type) -> None:  # noqa: D103
     __tracebackhide__ = True
     assert hasattr(variable, attribute_name)
     assert isinstance(getattr(variable, attribute_name), variable_type)
 
 
-@pytest.mark.parametrize('n_win', [1, 2])
-def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
-    pytest.importorskip('sphinx_gallery')
+@pytest.mark.parametrize("n_win", [1, 2])
+def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win) -> None:  # noqa: ARG001, D103
+    pytest.importorskip("sphinx_gallery")
     if Version("0.38.0") <= PV_VERSION <= Version("0.38.6"):
-        pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.6')
-    monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
-    if (
-        n_win == 2
-        and API_NAME == "PySide6"
-        and sys.platform == "linux"
-    ):
+        pytest.xfail("Scraping fails on PyVista 0.38.0 to 0.38.6")
+    monkeypatch.setattr(pyvista, "BUILDING_GALLERY", True)
+    if n_win == 2 and API_NAME == "PySide6" and sys.platform == "linux":
         pytest.skip("Problems with PySide6 with multiple windows")
     if n_win == 2 and sys.platform == "win32":
         pytest.skip("Problems on Windows with multiple windows")
 
-    plotters = [
-        BackgroundPlotter(off_screen=False, editor=False, show=True)
-        for _ in range(n_win)
-    ]
+    plotters = [BackgroundPlotter(off_screen=False, editor=False, show=True) for _ in range(n_win)]
 
     # Adapted from pyvista/tests/test_scraper.py
     scraper = Scraper()
     src_dir = str(tmpdir)
-    out_dir = op.join(str(tmpdir), '_build', 'html')
-    img_fnames = [
-        op.join(src_dir, 'auto_examples', 'images', f'sg_img_{n}.png')
-        for n in range(n_win)
-    ]
+    out_dir = op.join(str(tmpdir), "_build", "html")  # noqa: PTH118
+    img_fnames = [op.join(src_dir, "auto_examples", "images", f"sg_img_{n}.png") for n in range(n_win)]  # noqa: PTH118
     gallery_conf = {"src_dir": src_dir, "builder_name": "html"}
-    target_file = op.join(src_dir, 'auto_examples', 'sg.py')
+    target_file = op.join(src_dir, "auto_examples", "sg.py")  # noqa: PTH118
     block = None
-    block_vars = dict(
-        image_path_iterator=(img for img in img_fnames),
-        example_globals=dict(a=1),
-        target_file=target_file,
-    )
-    os.makedirs(op.dirname(img_fnames[0]))
+    block_vars = {
+        "image_path_iterator": (img for img in img_fnames),
+        "example_globals": {"a": 1},
+        "target_file": target_file,
+    }
+    os.makedirs(op.dirname(img_fnames[0]))  # noqa: PTH103, PTH120
     for img_fname in img_fnames:
-        assert not os.path.isfile(img_fname)
-    os.makedirs(out_dir)
+        assert not os.path.isfile(img_fname)  # noqa: PTH113
+    os.makedirs(out_dir)  # noqa: PTH103
     scraper(block, block_vars, gallery_conf)
     for img_fname in img_fnames:
-        assert os.path.isfile(img_fname)
+        assert os.path.isfile(img_fname)  # noqa: PTH113
     for plotter in plotters:
         plotter.close()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
-@pytest.mark.parametrize("aa", [
-    False,
-    "fxaa",
-    "msaa",
-    pytest.param(
-        "ssaa",
-        marks=pytest.mark.xfail(
-            reason="SSAA broken on multiple plots",
-            strict=True
+@pytest.mark.parametrize(
+    "aa",
+    [
+        False,
+        "fxaa",
+        "msaa",
+        pytest.param(
+            "ssaa",
+            marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=True),
         ),
-    ),
-])
-def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
+    ],
+)
+def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None:  # noqa: ARG001, C901, D103
     plotter = BackgroundPlotter(
         show=True,
         off_screen=False,
@@ -1049,7 +1049,7 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
     )
     skip_reason = None
     if aa == "fxaa":  # Breaks on Windows and mesa
-        if platform.system()=="Windows":
+        if platform.system() == "Windows":
             skip_reason = "FXAA segfaults Windows"
         else:
             # Check if Mesa
@@ -1061,9 +1061,8 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
                 skip_reason = "FXAA broken on Mesa"
     elif aa == "msaa":
         pytest.importorskip("pyvista", minversion="0.37")
-    elif aa == "ssaa":
-        if sys.platform == "darwin":
-            pytest.skip("Works sometimes on Darwin")
+    elif aa == "ssaa" and sys.platform == "darwin":
+        pytest.skip("Works sometimes on Darwin")
     if skip_reason:
         plotter.close()
         pytest.skip(skip_reason)
@@ -1076,19 +1075,16 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa):
             plotter.camera.zoom(5)  # fill it
             if aa:
                 plotter.enable_anti_aliasing(aa_type=aa)
-    if platform.system() != "macOS":
-        ctx = qtbot.wait_exposed(plotter)
-    else:
-        ctx = nullcontext()
+    ctx = qtbot.wait_exposed(plotter) if platform.system() != "macOS" else nullcontext()
     with ctx:
         plotter.window().show()
     img = np.array(plotter.image)
     non_black = img.any(-1).astype(bool).mean()
     del img
-    # TODO: This is possibly a bug indicative of the view being wrong
+    # TODO: This is possibly a bug indicative of the view being wrong  # noqa: FIX002, TD002, TD003
     if sys.platform == "darwin" and platform.machine() == "arm64":
-        ratio = 2.
+        ratio = 2.0
     else:
-        ratio = 1.
-    assert 0.9 / ratio < non_black < 1. / ratio
+        ratio = 1.0
+    assert 0.9 / ratio < non_black < 1.0 / ratio
     plotter.close()

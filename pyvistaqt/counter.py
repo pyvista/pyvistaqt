@@ -1,6 +1,10 @@
-"""This module contains a basic Qt-compatible counter class."""
+"""This module contains a basic Qt-compatible counter class."""  # noqa: D404
 
-from qtpy.QtCore import QObject, Signal, Slot
+from __future__ import annotations
+
+from qtpy.QtCore import QObject
+from qtpy.QtCore import Signal
+from qtpy.QtCore import Slot
 
 
 class Counter(QObject):
@@ -16,11 +20,11 @@ class Counter(QObject):
         if isinstance(count, int) and count > 0:
             self.count = count
         elif count > 0:
-            raise TypeError(
-                f"Expected type of `count` to be `int` but got: {type(count)}"
-            )
+            msg = f"Expected type of `count` to be `int` but got: {type(count)}"
+            raise TypeError(msg)
         else:
-            raise ValueError("count is not strictly positive.")
+            msg = "count is not strictly positive."
+            raise ValueError(msg)
 
     @Slot()
     def decrease(self) -> None:

@@ -1,16 +1,4 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-      - id: black
-        args: ["--config=pyproject.toml"]
-
-  - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
-    hooks:
-      - id: isort
-        args: ["--check", "--settings=.isort.cfg"]
-
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.15.0
     hooks:
@@ -26,29 +14,11 @@ repos:
         pass_filenames: false
         args: ["--config-file", "mypy.ini", "@mypy_checklist.txt"]
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.2
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          ["flake8-black==0.3.6", "flake8-isort==6.1.1", "flake8-quotes==3.3.2"]
-        args: ["--config=.flake8"]
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
       - id: codespell
         args: ["docs examples examples_flask pyvista tests", "*.py *.rst *.md"]
-
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        additional_dependencies: [toml==0.10.2]
-        # We use the 'match' and do not want pre-commit to pass
-        # globbed files
-        pass_filenames: false
-        args: ["--config=pyproject.toml"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -64,30 +34,15 @@ repos:
     hooks:
       - id: check-github-workflows
 
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        args: [
-            "-rn", # Only display messages
-            "-sn", # Don't display the score
-            "--rcfile=.pylintrc", # Specify rc file
-          ]
-      - id: pycodestyle
-        name: pycodestyle
-        entry: pycodestyle
-        language: system
-        types: [python]
-        args: ["--config=./\\.pycodestyle"]
-
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: "v4.0.0-alpha.8"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
-ci:
-  skip: [pylint, pycodestyle]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --show-fixes]
+      - id: ruff-format
