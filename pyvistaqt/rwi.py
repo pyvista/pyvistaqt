@@ -57,11 +57,8 @@ Changes by Eric Larson and Guillaume Favelier, Apr. 2022
 """
 
 # Check whether a specific PyQt implementation was chosen
-from __future__ import annotations
-
 try:
     import vtkmodules.qt
-
     PyQtImpl = vtkmodules.qt.PyQtImpl
 except ImportError:
     pass
@@ -73,7 +70,6 @@ except ImportError:
 QVTKRWIBase = "QWidget"
 try:
     import vtkmodules.qt
-
     QVTKRWIBase = vtkmodules.qt.QVTKRWIBase
 except ImportError:
     pass
@@ -85,44 +81,35 @@ if PyQtImpl is None:
     # Autodetect the PyQt implementation to use
     try:
         import PyQt6
-
         PyQtImpl = "PyQt6"
     except ImportError:
         try:
             import PySide6
-
             PyQtImpl = "PySide6"
         except ImportError:
             try:
                 import PyQt5
-
                 PyQtImpl = "PyQt5"
             except ImportError:
                 try:
                     import PySide2
-
                     PyQtImpl = "PySide2"
                 except ImportError:
                     try:
                         import PyQt4
-
                         PyQtImpl = "PyQt4"
                     except ImportError:
                         try:
                             import PySide
-
                             PyQtImpl = "PySide"
                         except ImportError:
                             raise ImportError("Cannot load either PyQt or PySide")
 
 # Check the compatibility of PyQtImpl and QVTKRWIBase
 if QVTKRWIBase != "QWidget":
-    if (
-        PyQtImpl in ["PyQt6", "PySide6"]
-        and QVTKRWIBase == "QOpenGLWidget"
-        or PyQtImpl in ["PyQt5", "PySide2", "PyQt4", "PySide"]
-        and QVTKRWIBase == "QGLWidget"
-    ):
+    if PyQtImpl in ["PyQt6", "PySide6"] and QVTKRWIBase == "QOpenGLWidget":
+        pass  # compatible
+    elif PyQtImpl in ["PyQt5", "PySide2","PyQt4", "PySide"] and QVTKRWIBase == "QGLWidget":
         pass  # compatible
     else:
         raise ImportError("Cannot load " + QVTKRWIBase + " from " + PyQtImpl)
@@ -130,73 +117,79 @@ if QVTKRWIBase != "QWidget":
 if PyQtImpl == "PyQt6":
     if QVTKRWIBase == "QOpenGLWidget":
         from PyQt6.QtOpenGLWidgets import QOpenGLWidget
-    from PyQt6.QtCore import QEvent
-    from PyQt6.QtCore import QSize
-    from PyQt6.QtCore import Qt
-    from PyQt6.QtCore import QTimer
-    from PyQt6.QtGui import QCursor
+    from PyQt6.QtWidgets import QWidget
+    from PyQt6.QtWidgets import QSizePolicy
     from PyQt6.QtWidgets import QApplication
     from PyQt6.QtWidgets import QMainWindow
-    from PyQt6.QtWidgets import QSizePolicy
-    from PyQt6.QtWidgets import QWidget
+    from PyQt6.QtGui import QCursor
+    from PyQt6.QtCore import Qt
+    from PyQt6.QtCore import QTimer
+    from PyQt6.QtCore import QObject
+    from PyQt6.QtCore import QSize
+    from PyQt6.QtCore import QEvent
 elif PyQtImpl == "PySide6":
     if QVTKRWIBase == "QOpenGLWidget":
         from PySide6.QtOpenGLWidgets import QOpenGLWidget
-    from PySide6.QtCore import QEvent
-    from PySide6.QtCore import QSize
-    from PySide6.QtCore import Qt
-    from PySide6.QtCore import QTimer
-    from PySide6.QtGui import QCursor
+    from PySide6.QtWidgets import QWidget
+    from PySide6.QtWidgets import QSizePolicy
     from PySide6.QtWidgets import QApplication
     from PySide6.QtWidgets import QMainWindow
-    from PySide6.QtWidgets import QSizePolicy
-    from PySide6.QtWidgets import QWidget
+    from PySide6.QtGui import QCursor
+    from PySide6.QtCore import Qt
+    from PySide6.QtCore import QTimer
+    from PySide6.QtCore import QObject
+    from PySide6.QtCore import QSize
+    from PySide6.QtCore import QEvent
 elif PyQtImpl == "PyQt5":
     if QVTKRWIBase == "QGLWidget":
         from PyQt5.QtOpenGL import QGLWidget
-    from PyQt5.QtCore import QEvent
-    from PyQt5.QtCore import QSize
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtCore import QTimer
-    from PyQt5.QtGui import QCursor
+    from PyQt5.QtWidgets import QWidget
+    from PyQt5.QtWidgets import QSizePolicy
     from PyQt5.QtWidgets import QApplication
     from PyQt5.QtWidgets import QMainWindow
-    from PyQt5.QtWidgets import QSizePolicy
-    from PyQt5.QtWidgets import QWidget
+    from PyQt5.QtGui import QCursor
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtCore import QTimer
+    from PyQt5.QtCore import QObject
+    from PyQt5.QtCore import QSize
+    from PyQt5.QtCore import QEvent
 elif PyQtImpl == "PySide2":
     if QVTKRWIBase == "QGLWidget":
         from PySide2.QtOpenGL import QGLWidget
-    from PySide2.QtCore import QEvent
-    from PySide2.QtCore import QSize
-    from PySide2.QtCore import Qt
-    from PySide2.QtCore import QTimer
-    from PySide2.QtGui import QCursor
+    from PySide2.QtWidgets import QWidget
+    from PySide2.QtWidgets import QSizePolicy
     from PySide2.QtWidgets import QApplication
     from PySide2.QtWidgets import QMainWindow
-    from PySide2.QtWidgets import QSizePolicy
-    from PySide2.QtWidgets import QWidget
+    from PySide2.QtGui import QCursor
+    from PySide2.QtCore import Qt
+    from PySide2.QtCore import QTimer
+    from PySide2.QtCore import QObject
+    from PySide2.QtCore import QSize
+    from PySide2.QtCore import QEvent
 elif PyQtImpl == "PyQt4":
     if QVTKRWIBase == "QGLWidget":
         from PyQt4.QtOpenGL import QGLWidget
-    from PyQt4.QtCore import QEvent
-    from PyQt4.QtCore import QSize
-    from PyQt4.QtCore import Qt
-    from PyQt4.QtCore import QTimer
+    from PyQt4.QtGui import QWidget
+    from PyQt4.QtGui import QSizePolicy
     from PyQt4.QtGui import QApplication
     from PyQt4.QtGui import QMainWindow
-    from PyQt4.QtGui import QSizePolicy
-    from PyQt4.QtGui import QWidget
+    from PyQt4.QtCore import Qt
+    from PyQt4.QtCore import QTimer
+    from PyQt4.QtCore import QObject
+    from PyQt4.QtCore import QSize
+    from PyQt4.QtCore import QEvent
 elif PyQtImpl == "PySide":
     if QVTKRWIBase == "QGLWidget":
         from PySide.QtOpenGL import QGLWidget
-    from PySide.QtCore import QEvent
-    from PySide.QtCore import QSize
-    from PySide.QtCore import Qt
-    from PySide.QtCore import QTimer
+    from PySide.QtGui import QWidget
+    from PySide.QtGui import QSizePolicy
     from PySide.QtGui import QApplication
     from PySide.QtGui import QMainWindow
-    from PySide.QtGui import QSizePolicy
-    from PySide.QtGui import QWidget
+    from PySide.QtCore import Qt
+    from PySide.QtCore import QTimer
+    from PySide.QtCore import QObject
+    from PySide.QtCore import QSize
+    from PySide.QtCore import QEvent
 else:
     raise ImportError("Unknown PyQt implementation " + repr(PyQtImpl))
 
@@ -210,7 +203,7 @@ elif QVTKRWIBase == "QOpenGLWidget":
 else:
     raise ImportError("Unknown base class for QVTKRenderWindowInteractor " + QVTKRWIBase)
 
-if PyQtImpl == "PyQt6":
+if PyQtImpl == 'PyQt6':
     CursorShape = Qt.CursorShape
     MouseButton = Qt.MouseButton
     WindowType = Qt.WindowType
@@ -222,11 +215,12 @@ if PyQtImpl == "PyQt6":
     SizePolicy = QSizePolicy.Policy
     EventType = QEvent.Type
 else:
-    CursorShape = MouseButton = WindowType = WidgetAttribute = KeyboardModifier = FocusPolicy = ConnectionType = Key = Qt
+    CursorShape = MouseButton = WindowType = WidgetAttribute = \
+        KeyboardModifier = FocusPolicy = ConnectionType = Key = Qt
     SizePolicy = QSizePolicy
     EventType = QEvent
 
-if PyQtImpl in ("PyQt4", "PySide"):
+if PyQtImpl in ('PyQt4', 'PySide'):
     MiddleButton = MouseButton.MidButton
 else:
     MiddleButton = MouseButton.MiddleButton
@@ -240,8 +234,8 @@ def _get_event_pos(ev):
 
 
 class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
-    """
-    A QVTKRenderWindowInteractor for Python and Qt.  Uses a
+
+    """ A QVTKRenderWindowInteractor for Python and Qt.  Uses a
     vtkGenericRenderWindowInteractor to handle the interactions.  Use
     GetRenderWindow() to get the vtkRenderWindow.  Create with the
     keyword stereo=1 in order to generate a stereo-capable window.
@@ -310,17 +304,17 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     # Map between VTK and Qt cursors.
     _CURSOR_MAP = {
-        0: CursorShape.ArrowCursor,  # VTK_CURSOR_DEFAULT
-        1: CursorShape.ArrowCursor,  # VTK_CURSOR_ARROW
-        2: CursorShape.SizeBDiagCursor,  # VTK_CURSOR_SIZENE
-        3: CursorShape.SizeFDiagCursor,  # VTK_CURSOR_SIZENWSE
-        4: CursorShape.SizeBDiagCursor,  # VTK_CURSOR_SIZESW
-        5: CursorShape.SizeFDiagCursor,  # VTK_CURSOR_SIZESE
-        6: CursorShape.SizeVerCursor,  # VTK_CURSOR_SIZENS
-        7: CursorShape.SizeHorCursor,  # VTK_CURSOR_SIZEWE
-        8: CursorShape.SizeAllCursor,  # VTK_CURSOR_SIZEALL
-        9: CursorShape.PointingHandCursor,  # VTK_CURSOR_HAND
-        10: CursorShape.CrossCursor,  # VTK_CURSOR_CROSSHAIR
+        0:  CursorShape.ArrowCursor,          # VTK_CURSOR_DEFAULT
+        1:  CursorShape.ArrowCursor,          # VTK_CURSOR_ARROW
+        2:  CursorShape.SizeBDiagCursor,      # VTK_CURSOR_SIZENE
+        3:  CursorShape.SizeFDiagCursor,      # VTK_CURSOR_SIZENWSE
+        4:  CursorShape.SizeBDiagCursor,      # VTK_CURSOR_SIZESW
+        5:  CursorShape.SizeFDiagCursor,      # VTK_CURSOR_SIZESE
+        6:  CursorShape.SizeVerCursor,        # VTK_CURSOR_SIZENS
+        7:  CursorShape.SizeHorCursor,        # VTK_CURSOR_SIZEWE
+        8:  CursorShape.SizeAllCursor,        # VTK_CURSOR_SIZEALL
+        9:  CursorShape.PointingHandCursor,   # VTK_CURSOR_HAND
+        10: CursorShape.CrossCursor,          # VTK_CURSOR_CROSSHAIR
     }
 
     def __init__(self, parent=None, **kw):
@@ -338,19 +332,19 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         # stereo, rw
 
         try:
-            stereo = bool(kw["stereo"])
+            stereo = bool(kw['stereo'])
         except KeyError:
             stereo = False
 
         try:
-            rw = kw["rw"]
+            rw = kw['rw']
         except KeyError:
             rw = None
 
         # create base qt-level widget
         if QVTKRWIBase == "QWidget":
             if "wflags" in kw:
-                wflags = kw["wflags"]
+                wflags = kw['wflags']
             else:
                 wflags = Qt.WindowType.Widget
             QWidget.__init__(self, parent, wflags | WindowType.MSWindowsOwnDC)
@@ -359,7 +353,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         elif QVTKRWIBase == "QOpenGLWidget":
             QOpenGLWidget.__init__(self, parent)
 
-        if rw:  # user-supplied render window
+        if rw: # user-supplied render window
             self._RenderWindow = rw
         else:
             self._RenderWindow = vtkRenderWindow()
@@ -367,41 +361,36 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         WId = self.winId()
 
         # Python2
-        if type(WId).__name__ == "PyCObject":
-            from ctypes import c_void_p
-            from ctypes import py_object
-            from ctypes import pythonapi
+        if type(WId).__name__ == 'PyCObject':
+            from ctypes import pythonapi, c_void_p, py_object
 
-            pythonapi.PyCObject_AsVoidPtr.restype = c_void_p
+            pythonapi.PyCObject_AsVoidPtr.restype  = c_void_p
             pythonapi.PyCObject_AsVoidPtr.argtypes = [py_object]
 
             WId = pythonapi.PyCObject_AsVoidPtr(WId)
 
         # Python3
-        elif type(WId).__name__ == "PyCapsule":
-            from ctypes import c_char_p
-            from ctypes import c_void_p
-            from ctypes import py_object
-            from ctypes import pythonapi
+        elif type(WId).__name__ == 'PyCapsule':
+            from ctypes import pythonapi, c_void_p, py_object, c_char_p
 
             pythonapi.PyCapsule_GetName.restype = c_char_p
             pythonapi.PyCapsule_GetName.argtypes = [py_object]
 
             name = pythonapi.PyCapsule_GetName(WId)
 
-            pythonapi.PyCapsule_GetPointer.restype = c_void_p
+            pythonapi.PyCapsule_GetPointer.restype  = c_void_p
             pythonapi.PyCapsule_GetPointer.argtypes = [py_object, c_char_p]
 
             WId = pythonapi.PyCapsule_GetPointer(WId, name)
 
         self._RenderWindow.SetWindowInfo(str(int(WId)))
 
-        if stereo:  # stereo mode
+        if stereo: # stereo mode
             self._RenderWindow.StereoCapableWindowOn()
             self._RenderWindow.SetStereoTypeToCrystalEyes()
 
         try:
-            self._Iren = kw["iren"]
+            self._Iren = kw['iren']
         except KeyError:
             self._Iren = vtkGenericRenderWindowInteractor()
             self._Iren.SetRenderWindow(self._RenderWindow)
@@ -409,16 +398,17 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         # do all the necessary qt setup
         self.setAttribute(WidgetAttribute.WA_OpaquePaintEvent)
         self.setAttribute(WidgetAttribute.WA_PaintOnScreen)
-        self.setMouseTracking(True)  # get all mouse events
+        self.setMouseTracking(True) # get all mouse events
         self.setFocusPolicy(FocusPolicy.WheelFocus)
         self.setSizePolicy(QSizePolicy(SizePolicy.Expanding, SizePolicy.Expanding))
 
         self._Timer = QTimer(self)
         self._Timer.timeout.connect(self.TimerEvent)
 
-        self._Iren.AddObserver("CreateTimerEvent", self.CreateTimer)
-        self._Iren.AddObserver("DestroyTimerEvent", self.DestroyTimer)
-        self._Iren.GetRenderWindow().AddObserver("CursorChangedEvent", self.CursorChangedEvent)
+        self._Iren.AddObserver('CreateTimerEvent', self.CreateTimer)
+        self._Iren.AddObserver('DestroyTimerEvent', self.DestroyTimer)
+        self._Iren.GetRenderWindow().AddObserver('CursorChangedEvent',
+                                                 self.CursorChangedEvent)
 
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
@@ -428,16 +418,18 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     def __getattr__(self, attr):
         """Makes the object behave like a vtkGenericRenderWindowInteractor"""
-        if attr == "__vtk__":
+        if attr == '__vtk__':
             return lambda t=self._Iren: t
-        if hasattr(self._Iren, attr):
+        elif hasattr(self._Iren, attr):
             return getattr(self._Iren, attr)
-        raise AttributeError(self.__class__.__name__ + " has no attribute named " + attr)
+        else:
+            raise AttributeError(self.__class__.__name__ +
+                  " has no attribute named " + attr)
 
     def Finalize(self):
-        """
+        '''
         Call internal cleanup method on VTK objects
-        """
+        '''
         self._RenderWindow.Finalize()
 
     def CreateTimer(self, obj, evt):
@@ -481,19 +473,18 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     def resizeEvent(self, ev):
         scale = self._getPixelRatio()
-        w = int(round(scale * self.width()))
-        h = int(round(scale * self.height()))
+        w = int(round(scale*self.width()))
+        h = int(round(scale*self.height()))
         if self._RenderWindow is None:
             return
-        self._RenderWindow.SetDPI(int(round(72 * scale)))
+        self._RenderWindow.SetDPI(int(round(72*scale)))
         vtkRenderWindow.SetSize(self._RenderWindow, w, h)
         self._Iren.SetSize(w, h)
         self._Iren.ConfigureEvent()
         self.update()
 
     def _GetKeyCharAndKeySym(self, ev):
-        """
-        Convert a Qt key into a char and a vtk keysym.
+        """ Convert a Qt key into a char and a vtk keysym.
 
         This is essentially copied from the c++ implementation in
         GUISupport/Qt/QVTKInteractorAdapter.cxx.
@@ -503,7 +494,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
             keyChar = ev.text()[0]
             keySym = _keysyms_for_ascii[ord(keyChar)]
         except IndexError:
-            keyChar = "\0"
+            keyChar = '\0'
             keySym = None
 
         # next, try converting Qt key code to a VTK keysym
@@ -522,7 +513,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
     def _GetCtrlShift(self, ev):
         ctrl = shift = False
 
-        if hasattr(ev, "modifiers"):
+        if hasattr(ev, 'modifiers'):
             if ev.modifiers() & KeyboardModifier.ShiftModifier:
                 shift = True
             if ev.modifiers() & KeyboardModifier.ControlModifier:
@@ -540,28 +531,34 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         if PyQtImpl in ("PyQt4", "PySide"):
             # Qt4 seems not to provide any cross-platform means to get the
             # pixel ratio.
-            return 1.0
-        # Source: https://stackoverflow.com/a/40053864/3388962
-        pos = QCursor.pos()
-        for screen in QApplication.screens():
-            rect = screen.geometry()
-            if rect.contains(pos):
-                return screen.devicePixelRatio()
-        # Should never happen, but try to find a good fallback.
-        return QApplication.instance().devicePixelRatio()
+            return 1.
+        else:
+            # Source: https://stackoverflow.com/a/40053864/3388962
+            pos = QCursor.pos()
+            for screen in QApplication.screens():
+                rect = screen.geometry()
+                if rect.contains(pos):
+                    return screen.devicePixelRatio()
+            # Should never happen, but try to find a good fallback.
+            return QApplication.instance().devicePixelRatio()
 
-    def _setEventInformation(self, x, y, ctrl, shift, key, repeat=0, keysum=None):
+    def _setEventInformation(self, x, y, ctrl, shift,
+                             key, repeat=0, keysum=None):
         scale = self._getPixelRatio()
-        self._Iren.SetEventInformation(int(round(x * scale)), int(round((self.height() - y - 1) * scale)), ctrl, shift, key, repeat, keysum)
+        self._Iren.SetEventInformation(int(round(x*scale)),
+                                       int(round((self.height()-y-1)*scale)),
+                                       ctrl, shift, key, repeat, keysum)
 
     def enterEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(self.__saveX, self.__saveY,
+                                  ctrl, shift, chr(0), 0, None)
         self._Iren.EnterEvent()
 
     def leaveEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(self.__saveX, self.__saveY,
+                                  ctrl, shift, chr(0), 0, None)
         self._Iren.LeaveEvent()
 
     def mousePressEvent(self, ev):
@@ -570,7 +567,8 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         repeat = 0
         if ev.type() == EventType.MouseButtonDblClick:
             repeat = 1
-        self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), repeat, None)
+        self._setEventInformation(pos_x, pos_y,
+                                  ctrl, shift, chr(0), repeat, None)
 
         self._ActiveButton = ev.button()
 
@@ -584,7 +582,8 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
     def mouseReleaseEvent(self, ev):
         pos_x, pos_y = _get_event_pos(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(pos_x, pos_y,
+                                  ctrl, shift, chr(0), 0, None)
 
         if self._ActiveButton == MouseButton.LeftButton:
             self._Iren.LeftButtonReleaseEvent()
@@ -601,24 +600,27 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self.__saveY = pos_y
 
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(pos_x, pos_y, ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(pos_x, pos_y,
+                                  ctrl, shift, chr(0), 0, None)
         self._Iren.MouseMoveEvent()
 
     def keyPressEvent(self, ev):
         key, keySym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym)
+        self._setEventInformation(self.__saveX, self.__saveY,
+                                  ctrl, shift, key, 0, keySym)
         self._Iren.KeyPressEvent()
         self._Iren.CharEvent()
 
     def keyReleaseEvent(self, ev):
         key, keySym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY, ctrl, shift, key, 0, keySym)
+        self._setEventInformation(self.__saveX, self.__saveY,
+                                  ctrl, shift, key, 0, keySym)
         self._Iren.KeyReleaseEvent()
 
     def wheelEvent(self, ev):
-        if hasattr(ev, "delta"):
+        if hasattr(ev, 'delta'):
             self.__wheelDelta += ev.delta()
         else:
             self.__wheelDelta += ev.angleDelta().y()
@@ -639,12 +641,12 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
 def QVTKRenderWidgetConeExample(block=False):
     """A simple example that uses the QVTKRenderWindowInteractor class."""
-    from vtkmodules.vtkFiltersSources import vtkConeSource
-    from vtkmodules.vtkRenderingCore import vtkActor
-    from vtkmodules.vtkRenderingCore import vtkPolyDataMapper
-    from vtkmodules.vtkRenderingCore import vtkRenderer
 
+    from vtkmodules.vtkFiltersSources import vtkConeSource
+    from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
     # load implementations for rendering and interaction factory classes
+    import vtkmodules.vtkRenderingOpenGL2
+    import vtkmodules.vtkInteractionStyle
 
     # every QT app needs an app
     app = QApplication.instance()
@@ -691,230 +693,121 @@ def QVTKRenderWidgetConeExample(block=False):
 
 
 _keysyms_for_ascii = (
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    "Tab",
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    "space",
-    "exclam",
-    "quotedbl",
-    "numbersign",
-    "dollar",
-    "percent",
-    "ampersand",
-    "quoteright",
-    "parenleft",
-    "parenright",
-    "asterisk",
-    "plus",
-    "comma",
-    "minus",
-    "period",
-    "slash",
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "colon",
-    "semicolon",
-    "less",
-    "equal",
-    "greater",
-    "question",
-    "at",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-    "bracketleft",
-    "backslash",
-    "bracketright",
-    "asciicircum",
-    "underscore",
-    "quoteleft",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-    "braceleft",
-    "bar",
-    "braceright",
-    "asciitilde",
-    "Delete",
-)
+    None, None, None, None, None, None, None, None,
+    None, "Tab", None, None, None, None, None, None,
+    None, None, None, None, None, None, None, None,
+    None, None, None, None, None, None, None, None,
+    "space", "exclam", "quotedbl", "numbersign",
+    "dollar", "percent", "ampersand", "quoteright",
+    "parenleft", "parenright", "asterisk", "plus",
+    "comma", "minus", "period", "slash",
+    "0", "1", "2", "3", "4", "5", "6", "7",
+    "8", "9", "colon", "semicolon", "less", "equal", "greater", "question",
+    "at", "A", "B", "C", "D", "E", "F", "G",
+    "H", "I", "J", "K", "L", "M", "N", "O",
+    "P", "Q", "R", "S", "T", "U", "V", "W",
+    "X", "Y", "Z", "bracketleft",
+    "backslash", "bracketright", "asciicircum", "underscore",
+    "quoteleft", "a", "b", "c", "d", "e", "f", "g",
+    "h", "i", "j", "k", "l", "m", "n", "o",
+    "p", "q", "r", "s", "t", "u", "v", "w",
+    "x", "y", "z", "braceleft", "bar", "braceright", "asciitilde", "Delete",
+    )
 
 _keysyms = {
-    Key.Key_Backspace: "BackSpace",
-    Key.Key_Tab: "Tab",
-    Key.Key_Backtab: "Tab",
+    Key.Key_Backspace: 'BackSpace',
+    Key.Key_Tab: 'Tab',
+    Key.Key_Backtab: 'Tab',
     # Key.Key_Clear : 'Clear',
-    Key.Key_Return: "Return",
-    Key.Key_Enter: "Return",
-    Key.Key_Shift: "Shift_L",
-    Key.Key_Control: "Control_L",
-    Key.Key_Alt: "Alt_L",
-    Key.Key_Pause: "Pause",
-    Key.Key_CapsLock: "Caps_Lock",
-    Key.Key_Escape: "Escape",
-    Key.Key_Space: "space",
+    Key.Key_Return: 'Return',
+    Key.Key_Enter: 'Return',
+    Key.Key_Shift: 'Shift_L',
+    Key.Key_Control: 'Control_L',
+    Key.Key_Alt: 'Alt_L',
+    Key.Key_Pause: 'Pause',
+    Key.Key_CapsLock: 'Caps_Lock',
+    Key.Key_Escape: 'Escape',
+    Key.Key_Space: 'space',
     # Key.Key_Prior : 'Prior',
     # Key.Key_Next : 'Next',
-    Key.Key_End: "End",
-    Key.Key_Home: "Home",
-    Key.Key_Left: "Left",
-    Key.Key_Up: "Up",
-    Key.Key_Right: "Right",
-    Key.Key_Down: "Down",
-    Key.Key_SysReq: "Snapshot",
-    Key.Key_Insert: "Insert",
-    Key.Key_Delete: "Delete",
-    Key.Key_Help: "Help",
-    Key.Key_0: "0",
-    Key.Key_1: "1",
-    Key.Key_2: "2",
-    Key.Key_3: "3",
-    Key.Key_4: "4",
-    Key.Key_5: "5",
-    Key.Key_6: "6",
-    Key.Key_7: "7",
-    Key.Key_8: "8",
-    Key.Key_9: "9",
-    Key.Key_A: "a",
-    Key.Key_B: "b",
-    Key.Key_C: "c",
-    Key.Key_D: "d",
-    Key.Key_E: "e",
-    Key.Key_F: "f",
-    Key.Key_G: "g",
-    Key.Key_H: "h",
-    Key.Key_I: "i",
-    Key.Key_J: "j",
-    Key.Key_K: "k",
-    Key.Key_L: "l",
-    Key.Key_M: "m",
-    Key.Key_N: "n",
-    Key.Key_O: "o",
-    Key.Key_P: "p",
-    Key.Key_Q: "q",
-    Key.Key_R: "r",
-    Key.Key_S: "s",
-    Key.Key_T: "t",
-    Key.Key_U: "u",
-    Key.Key_V: "v",
-    Key.Key_W: "w",
-    Key.Key_X: "x",
-    Key.Key_Y: "y",
-    Key.Key_Z: "z",
-    Key.Key_Asterisk: "asterisk",
-    Key.Key_Plus: "plus",
-    Key.Key_Minus: "minus",
-    Key.Key_Period: "period",
-    Key.Key_Slash: "slash",
-    Key.Key_F1: "F1",
-    Key.Key_F2: "F2",
-    Key.Key_F3: "F3",
-    Key.Key_F4: "F4",
-    Key.Key_F5: "F5",
-    Key.Key_F6: "F6",
-    Key.Key_F7: "F7",
-    Key.Key_F8: "F8",
-    Key.Key_F9: "F9",
-    Key.Key_F10: "F10",
-    Key.Key_F11: "F11",
-    Key.Key_F12: "F12",
-    Key.Key_F13: "F13",
-    Key.Key_F14: "F14",
-    Key.Key_F15: "F15",
-    Key.Key_F16: "F16",
-    Key.Key_F17: "F17",
-    Key.Key_F18: "F18",
-    Key.Key_F19: "F19",
-    Key.Key_F20: "F20",
-    Key.Key_F21: "F21",
-    Key.Key_F22: "F22",
-    Key.Key_F23: "F23",
-    Key.Key_F24: "F24",
-    Key.Key_NumLock: "Num_Lock",
-    Key.Key_ScrollLock: "Scroll_Lock",
-}
+    Key.Key_End: 'End',
+    Key.Key_Home: 'Home',
+    Key.Key_Left: 'Left',
+    Key.Key_Up: 'Up',
+    Key.Key_Right: 'Right',
+    Key.Key_Down: 'Down',
+    Key.Key_SysReq: 'Snapshot',
+    Key.Key_Insert: 'Insert',
+    Key.Key_Delete: 'Delete',
+    Key.Key_Help: 'Help',
+    Key.Key_0: '0',
+    Key.Key_1: '1',
+    Key.Key_2: '2',
+    Key.Key_3: '3',
+    Key.Key_4: '4',
+    Key.Key_5: '5',
+    Key.Key_6: '6',
+    Key.Key_7: '7',
+    Key.Key_8: '8',
+    Key.Key_9: '9',
+    Key.Key_A: 'a',
+    Key.Key_B: 'b',
+    Key.Key_C: 'c',
+    Key.Key_D: 'd',
+    Key.Key_E: 'e',
+    Key.Key_F: 'f',
+    Key.Key_G: 'g',
+    Key.Key_H: 'h',
+    Key.Key_I: 'i',
+    Key.Key_J: 'j',
+    Key.Key_K: 'k',
+    Key.Key_L: 'l',
+    Key.Key_M: 'm',
+    Key.Key_N: 'n',
+    Key.Key_O: 'o',
+    Key.Key_P: 'p',
+    Key.Key_Q: 'q',
+    Key.Key_R: 'r',
+    Key.Key_S: 's',
+    Key.Key_T: 't',
+    Key.Key_U: 'u',
+    Key.Key_V: 'v',
+    Key.Key_W: 'w',
+    Key.Key_X: 'x',
+    Key.Key_Y: 'y',
+    Key.Key_Z: 'z',
+    Key.Key_Asterisk: 'asterisk',
+    Key.Key_Plus: 'plus',
+    Key.Key_Minus: 'minus',
+    Key.Key_Period: 'period',
+    Key.Key_Slash: 'slash',
+    Key.Key_F1: 'F1',
+    Key.Key_F2: 'F2',
+    Key.Key_F3: 'F3',
+    Key.Key_F4: 'F4',
+    Key.Key_F5: 'F5',
+    Key.Key_F6: 'F6',
+    Key.Key_F7: 'F7',
+    Key.Key_F8: 'F8',
+    Key.Key_F9: 'F9',
+    Key.Key_F10: 'F10',
+    Key.Key_F11: 'F11',
+    Key.Key_F12: 'F12',
+    Key.Key_F13: 'F13',
+    Key.Key_F14: 'F14',
+    Key.Key_F15: 'F15',
+    Key.Key_F16: 'F16',
+    Key.Key_F17: 'F17',
+    Key.Key_F18: 'F18',
+    Key.Key_F19: 'F19',
+    Key.Key_F20: 'F20',
+    Key.Key_F21: 'F21',
+    Key.Key_F22: 'F22',
+    Key.Key_F23: 'F23',
+    Key.Key_F24: 'F24',
+    Key.Key_NumLock: 'Num_Lock',
+    Key.Key_ScrollLock: 'Scroll_Lock',
+    }
 
 
 if __name__ == "__main__":

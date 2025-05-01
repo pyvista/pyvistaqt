@@ -32,6 +32,9 @@ line-length = 150
 
 [tool.ruff.format]
 docstring-code-format = true
+exclude = [
+  "pyvistaqt/rwi.py",  # should be maintained copy of upstream VTK code
+]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -43,7 +46,7 @@ ignore = [
   "PLR2004",
 ]
 exclude = [
-  "pyvistaqt/rwi.py",  # should be maintained copy of upstream VTK code
+  "pyvistaqt/rwi.py",
 ]
 
 [tool.ruff.lint.isort]
