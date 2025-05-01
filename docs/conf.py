@@ -1,27 +1,29 @@
+from __future__ import annotations  # noqa: INP001, D100
+
 import datetime
+import faulthandler
 import os
 import sys
 
-if sys.version_info >= (3, 0):
-    import faulthandler
-    faulthandler.enable()
+faulthandler.enable()
 
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath("."))  # noqa: PTH100
 
 
-import numpy as np
+import numpy as np  # noqa: E402
+
 # -- pyvista configuration ---------------------------------------------------
-import pyvista
+import pyvista  # noqa: E402
 
-import pyvistaqt
+import pyvistaqt  # noqa: E402
 
 # Manage errors
-pyvista.set_error_output_file('errors.txt')
+pyvista.set_error_output_file("errors.txt")
 # Ensure that offscreen rendering is used for docs generation
-pyvista.OFF_SCREEN = True # Not necessary - simply an insurance policy
+pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
 pyvista.BUILDING_GALLERY = True
 # Preferred plotting style for documentation
-pyvista.set_plot_theme('document')
+pyvista.set_plot_theme("document")
 ws = np.array([1024, 768]) * 2
 try:
     pyvista.global_theme.window_size = ws
@@ -29,56 +31,57 @@ except AttributeError:
     rc = pyvista.rcParams["window_size"] = ws
 del ws
 # Save figures in specified directory
-pyvista.FIGURE_PATH = os.path.join(os.path.abspath('./images/'), 'auto-generated/')
-if not os.path.exists(pyvista.FIGURE_PATH):
-    os.makedirs(pyvista.FIGURE_PATH)
+pyvista.FIGURE_PATH = os.path.join(os.path.abspath("./images/"), "auto-generated/")  # noqa: PTH100, PTH118
+if not os.path.exists(pyvista.FIGURE_PATH):  # noqa: PTH110
+    os.makedirs(pyvista.FIGURE_PATH)  # noqa: PTH103
 
 # SG warnings
-import warnings
+import warnings  # noqa: E402
 
 warnings.filterwarnings(
     "ignore",
     category=UserWarning,
-    message='Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.',
+    message="Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.",
 )
 
 # -- General configuration ------------------------------------------------
 numfig = False
 html_show_sourcelink = False
-html_logo = './_static/pyvista_logo.png'
+html_logo = "./_static/pyvista_logo.png"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.doctest',
-              'sphinx.ext.autosummary',
-              'notfound.extension',
-              'sphinx_copybutton',
-              'sphinx.ext.extlinks',
-              'sphinx.ext.coverage',
-              'sphinx.ext.intersphinx',
-              ]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.doctest",
+    "sphinx.ext.autosummary",
+    "notfound.extension",
+    "sphinx_copybutton",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.coverage",
+    "sphinx.ext.intersphinx",
+]
 
 
 linkcheck_retries = 3
 linkcheck_timeout = 500
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = u'PyVistaQt'
-year = datetime.date.today().year
-copyright = u'2017-{}, The PyVista Developers'.format(year)
-author = u'Alex Kaszynski and Bane Sullivan'
+project = "PyVistaQt"
+year = datetime.date.today().year  # noqa: DTZ011
+copyright = f"2017-{year}, The PyVista Developers"  # noqa: A001
+author = "Alex Kaszynski and Bane Sullivan"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -95,29 +98,28 @@ release = pyvistaqt.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'friendly'
+pygments_style = "friendly"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
 
 # -- Sphinx Gallery Options
-# from sphinx_gallery.sorting import FileNameSortKey
+# from sphinx_gallery.sorting import FileNameSortKey  # noqa: ERA001
 
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-import pydata_sphinx_theme
 
 html_theme = "pydata_sphinx_theme"
 html_context = {
@@ -133,21 +135,21 @@ html_copy_source = False
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
 
-html_theme = 'pydata_sphinx_theme'
+html_theme = "pydata_sphinx_theme"
 html_context = {
     # Enable the "Edit in GitHub link within the header of each page.
-    'display_github': False,
+    "display_github": False,
     # Set the following variables to generate the resulting github URL for each page.
-    # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
-    'github_user': 'pyvista',
-    'github_repo': 'pyvistaqt',
-    'github_version': 'main/docs/',
-    'menu_links_name': 'Getting Connected',
-    'menu_links': [
-        ('<i class="fa fa-slack fa-fw"></i> Slack Community', 'http://slack.pyvista.org'),
-        ('<i class="fa fa-comment fa-fw"></i> Support', 'https://github.com/pyvista/pyvista-support'),
-        ('<i class="fa fa-github fa-fw"></i> Source Code', 'https://github.com/pyvista/pyvistaqt'),
-        ('<i class="fa fa-gavel fa-fw"></i> Contributing', 'https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md'),
+    # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}  # noqa: E501
+    "github_user": "pyvista",
+    "github_repo": "pyvistaqt",
+    "github_version": "main/docs/",
+    "menu_links_name": "Getting Connected",
+    "menu_links": [
+        ('<i class="fa fa-slack fa-fw"></i> Slack Community', "http://slack.pyvista.org"),
+        ('<i class="fa fa-comment fa-fw"></i> Support', "https://github.com/pyvista/pyvista-support"),
+        ('<i class="fa fa-github fa-fw"></i> Source Code', "https://github.com/pyvista/pyvistaqt"),
+        ('<i class="fa fa-gavel fa-fw"></i> Contributing', "https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md"),
     ],
 }
 
@@ -183,19 +185,19 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pyvistaqtdoc'
+htmlhelp_basename = "pyvistaqtdoc"
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
-    "pyvista": ('https://docs.pyvista.org/', None),
+    "pyvista": ("https://docs.pyvista.org/", None),
     "PySide6": ("https://doc.qt.io/qtforpython-6/", None),
     "PyQt6": ("https://www.riverbankcomputing.com/static/Docs/PyQt6/", None),
     "numpy": ("https://numpy.org/doc/stable", None),
@@ -221,61 +223,63 @@ nitpick_ignore_regex = [
 # -- Custom 404 page
 
 notfound_context = {
-        'body': '<h1>Page not found.</h1>\n\nPerhaps try the <a href="http://docs.pyvista.org/examples/index.html">examples page</a>.',
+    "body": '<h1>Page not found.</h1>\n\nPerhaps try the <a href="http://docs.pyvista.org/examples/index.html">examples page</a>.',
 }
 notfound_no_urls_prefix = True
 
 
-from docutils.parsers.rst import directives
+from docutils.parsers.rst import directives  # noqa: E402
+
 # -- Autosummary options
-from sphinx.ext.autosummary import Autosummary, get_documenter
-from sphinx.util.inspect import safe_getattr
+from sphinx.ext.autosummary import Autosummary  # noqa: E402
+from sphinx.ext.autosummary import get_documenter  # noqa: E402
+from sphinx.util.inspect import safe_getattr  # noqa: E402
 
 
-class AutoAutoSummary(Autosummary):
-
-    option_spec = {
-        'methods': directives.unchanged,
-        'attributes': directives.unchanged,
+class AutoAutoSummary(Autosummary):  # noqa: D101
+    option_spec = {  # noqa: RUF012
+        "methods": directives.unchanged,
+        "attributes": directives.unchanged,
     }
 
     required_arguments = 1
     app = None
 
     @staticmethod
-    def get_members(obj, typ, include_public=None):
+    def get_members(obj, typ, include_public=None):  # noqa: ANN001, ANN205, D102
         if not include_public:
             include_public = []
         items = []
-        for name in sorted(obj.__dict__.keys()):#dir(obj):
+        for name in sorted(obj.__dict__.keys()):  # dir(obj):
             try:
                 documenter = get_documenter(AutoAutoSummary.app, safe_getattr(obj, name), obj)
             except AttributeError:
                 continue
             if documenter.objtype in typ:
                 items.append(name)
-        public = [x for x in items if x in include_public or not x.startswith('_')]
+        public = [x for x in items if x in include_public or not x.startswith("_")]
         return public, items
 
-    def run(self):
+    def run(self):  # noqa: ANN201, D102
         clazz = str(self.arguments[0])
         try:
-            (module_name, class_name) = clazz.rsplit('.', 1)
+            (module_name, class_name) = clazz.rsplit(".", 1)
             m = __import__(module_name, globals(), locals(), [class_name])
             c = getattr(m, class_name)
-            if 'methods' in self.options:
-                _, methods = self.get_members(c, ['method'], ['__init__'])
-                self.content = ["~%s.%s" % (clazz, method) for method in methods if not method.startswith('_')]
-            if 'attributes' in self.options:
-                _, attribs = self.get_members(c, ['attribute', 'property'])
-                self.content = ["~%s.%s" % (clazz, attrib) for attrib in attribs if not attrib.startswith('_')]
-        except:
-            print('Something went wrong when autodocumenting {}'.format(clazz))
+            if "methods" in self.options:
+                _, methods = self.get_members(c, ["method"], ["__init__"])
+                self.content = [f"~{clazz}.{method}" for method in methods if not method.startswith("_")]
+            if "attributes" in self.options:
+                _, attribs = self.get_members(c, ["attribute", "property"])
+                self.content = [f"~{clazz}.{attrib}" for attrib in attribs if not attrib.startswith("_")]
+        except:  # noqa: S110, E722
+            pass
         finally:
-            return super(AutoAutoSummary, self).run()
+            return super().run()  # noqa: B012
 
-def setup(app):
+
+def setup(app) -> None:  # noqa: ANN001, D103
     AutoAutoSummary.app = app
-    app.add_directive('autoautosummary', AutoAutoSummary)
+    app.add_directive("autoautosummary", AutoAutoSummary)
     app.add_css_file("style.css")
     app.add_css_file("copybutton.css")
