@@ -163,6 +163,10 @@ def test_depth_peeling(qtbot):
     global_theme.depth_peeling["enabled"] = False
 
 
+@pytest.mark.skipif(
+    platform.system() == 'Windows' and API_NAME == "PySide6",
+    reason='Always offscreen on Windows on conda',
+)
 def test_off_screen(qtbot):
     plotter = BackgroundPlotter(off_screen=False)
     qtbot.addWidget(plotter.app_window)
@@ -291,7 +295,7 @@ def ensure_closed():
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
     yield
-    WANT_AFTER = 0 if PV_VERSION >= Version('0.37') else 1
+    WANT_AFTER = int(PV_VERSION < Version("0.37"))
     assert len(_ALL_PLOTTERS) == WANT_AFTER
 
 
@@ -347,8 +351,6 @@ def test_qt_interactor(qtbot, plotting, ensure_closed):
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    if Version(pyvista.__version__) < Version('0.27.0'):
-        assert not hasattr(vtk_widget, "iren")
     assert vtk_widget._closed
 
 
@@ -813,7 +815,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting):
 
 
 def allow_bad_gc_old_pyvista(func):
-    if Version(pyvista.__version__) < Version('0.37'):
+    if PV_VERSION < Version("0.37"):
         return pytest.mark.allow_bad_gc(func)
     else:
         return func
@@ -895,8 +897,6 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting,
     assert not render_timer.isActive()
 
     # check that BasePlotter.close() is called
-    if Version(pyvista.__version__) < Version('0.27.0'):
-        assert not hasattr(window.vtk_widget, "iren")
     assert plotter._closed
 
 
@@ -979,11 +979,15 @@ def assert_hasattr(variable, attribute_name, variable_type):
 @pytest.mark.parametrize('n_win', [1, 2])
 def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win):
     pytest.importorskip('sphinx_gallery')
-    if Version('0.38.0') <= PV_VERSION <= Version('0.38.6'):
+    if Version("0.38.0") <= PV_VERSION <= Version("0.38.6"):
         pytest.xfail('Scraping fails on PyVista 0.38.0 to 0.38.6')
     monkeypatch.setattr(pyvista, 'BUILDING_GALLERY', True)
-    if n_win == 2 and API_NAME == "PySide6" and sys.platform == "linux":
-        pytest.skip("Problems with PySide6 on Linux")
+    if (
+        n_win == 2
+        and API_NAME == "PySide6"
+        and sys.platform in ("linux", "win32")
+    ):
+        pytest.skip("Problems with PySide6 with multiple windows")
 
     plotters = [
         BackgroundPlotter(off_screen=False, editor=False, show=True)
