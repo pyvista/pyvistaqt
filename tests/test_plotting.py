@@ -163,6 +163,7 @@ def test_depth_peeling(qtbot):
     global_theme.depth_peeling["enabled"] = False
 
 
+@pytest.mark.allow_bad_gc_pyside  # on Windows
 def test_off_screen(qtbot):
     plotter = BackgroundPlotter(off_screen=False)
     qtbot.addWidget(plotter.app_window)
