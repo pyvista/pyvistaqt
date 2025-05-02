@@ -183,8 +183,8 @@ def test_depth_peeling(qtbot) -> None:  # noqa: D103
 
 
 @pytest.mark.skipif(
-    platform.system() == "Windows" and API_NAME == "PySide6",
-    reason="Always offscreen on Windows on conda",
+    platform.system() == "Windows" and API_NAME in ("PySide6", "PyQt6"),
+    reason="Can be in offscreen mode on Windows",
 )
 def test_off_screen(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter(off_screen=False)
