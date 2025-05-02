@@ -1,4 +1,6 @@
 name: "CI"
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
