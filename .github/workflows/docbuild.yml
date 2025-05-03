@@ -1,5 +1,9 @@
 name: Documentation
 
+permissions:
+  contents: read
+  pages: write
+
 on:
   pull_request:
     branches:
