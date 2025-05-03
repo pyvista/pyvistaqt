@@ -1,6 +1,7 @@
 name: "CI"
 permissions:
   contents: write
+  statuses: write
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
