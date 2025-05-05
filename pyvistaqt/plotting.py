@@ -42,6 +42,7 @@ We fix this by internally by temporarily monkey-patching
 
 from __future__ import annotations
 
+from collections.abc import Generator
 import contextlib
 from functools import wraps
 import logging
@@ -51,7 +52,6 @@ import time
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -370,7 +370,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             other_views = np.asarray(other_views)
 
         if not np.issubdtype(other_views.dtype, int):
-            msg = "Expected `other_views` type is int, or list or tuple of ints, " f"but {other_views.dtype} is given"
+            msg = f"Expected `other_views` type is int, or list or tuple of ints, but {other_views.dtype} is given"
             raise TypeError(msg)
 
         renderer = self.renderers[view]
@@ -690,7 +690,7 @@ class BackgroundPlotter(QtInteractor):
         if not (
             isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[0] == img.shape[1] and img.dtype == np.uint8 and img.shape[-1] in (3, 4)
         ) and not isinstance(img, str):
-            msg = "img must be 3D uint8 ndarray with shape[1] == shape[2] and " "shape[2] == 3 or 4, or str"
+            msg = "img must be 3D uint8 ndarray with shape[1] == shape[2] and shape[2] == 3 or 4, or str"
             raise ValueError(msg)
         if isinstance(img, np.ndarray):
             fmt_str = "Format_RGB"

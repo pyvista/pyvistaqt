@@ -47,9 +47,9 @@ else:
 
 
 __all__ = [
-    "__version__",
     "BackgroundPlotter",
     "MainWindow",
     "MultiPlotter",
     "QtInteractor",
+    "__version__",
 ]
