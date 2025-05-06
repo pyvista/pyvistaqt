@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import Optional
-from typing import Tuple
 
 from qtpy import QtCore
 from qtpy.QtCore import Signal
@@ -21,7 +20,7 @@ class MainWindow(QMainWindow):
         self,
         parent: Optional[QWidget] = None,
         title: Optional[str] = None,
-        size: Optional[Tuple[int, int]] = None,
+        size: Optional[tuple[int, int]] = None,
     ) -> None:
         """Initialize the main window."""
         QMainWindow.__init__(self, parent=parent)

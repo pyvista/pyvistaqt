@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import List
 from typing import Optional
 
 from qtpy import QtCore
@@ -40,7 +39,7 @@ class FileDialog(QFileDialog):
     def __init__(  # noqa: PLR0913
         self,
         parent: MainWindow = None,
-        filefilter: Optional[List[str]] = None,
+        filefilter: Optional[list[str]] = None,
         save_mode: bool = True,  # noqa: FBT001, FBT002
         show: bool = True,  # noqa: FBT001, FBT002
         callback: np.ndarray = None,

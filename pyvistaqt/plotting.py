@@ -48,14 +48,10 @@ import logging
 import os
 import platform
 import time
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import Generator
-from typing import List
 from typing import Optional
-from typing import Tuple
-from typing import Type
 from typing import Union
 import warnings
 
@@ -102,6 +98,9 @@ from .utils import _setup_application
 from .utils import _setup_ipython
 from .utils import _setup_off_screen
 from .window import MainWindow
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 LOG = logging.getLogger("pyvistaqt")
 LOG.setLevel(logging.CRITICAL)
@@ -298,7 +297,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
-        self._observers: Dict[None, None] = {}  # Map of events to observers of self.iren
+        self._observers: dict[None, None] = {}  # Map of events to observers of self.iren
         self.iren.add_observer("KeyPressEvent", self.key_press_event)
         self.reset_key_events()
 
@@ -370,7 +369,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             other_views = np.asarray(other_views)
 
         if not np.issubdtype(other_views.dtype, int):
-            msg = "Expected `other_views` type is int, or list or tuple of ints, " f"but {other_views.dtype} is given"
+            msg = f"Expected `other_views` type is int, or list or tuple of ints, but {other_views.dtype} is given"
             raise TypeError(msg)
 
         renderer = self.renderers[view]
@@ -513,14 +512,14 @@ class BackgroundPlotter(QtInteractor):
         self,
         show: bool = True,  # noqa: FBT001, FBT002
         app: Optional[QApplication] = None,
-        window_size: Optional[Tuple[int, int]] = None,
+        window_size: Optional[tuple[int, int]] = None,
         off_screen: Optional[bool] = None,
         allow_quit_keypress: bool = True,  # noqa: FBT001, FBT002
         toolbar: bool = True,  # noqa: FBT001, FBT002
         menu_bar: bool = True,  # noqa: FBT001, FBT002
         editor: bool = True,  # noqa: FBT001, FBT002
         update_app_icon: Optional[bool] = None,
-        app_window_class: Optional[Type[MainWindow]] = None,
+        app_window_class: Optional[type[MainWindow]] = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         # pylint: disable=too-many-branches
@@ -555,7 +554,7 @@ class BackgroundPlotter(QtInteractor):
         self._editor_action: QAction = None
 
         self.active = True
-        self.counters: List[Counter] = []
+        self.counters: list[Counter] = []
         self.allow_quit_keypress = allow_quit_keypress
 
         if window_size is None:
@@ -690,7 +689,7 @@ class BackgroundPlotter(QtInteractor):
         if not (
             isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[0] == img.shape[1] and img.dtype == np.uint8 and img.shape[-1] in (3, 4)
         ) and not isinstance(img, str):
-            msg = "img must be 3D uint8 ndarray with shape[1] == shape[2] and " "shape[2] == 3 or 4, or str"
+            msg = "img must be 3D uint8 ndarray with shape[1] == shape[2] and shape[2] == 3 or 4, or str"
             raise ValueError(msg)
         if isinstance(img, np.ndarray):
             fmt_str = "Format_RGB"
@@ -745,7 +744,7 @@ class BackgroundPlotter(QtInteractor):
         return self.enable_parallel_projection()
 
     @property
-    def window_size(self) -> Tuple[int, int]:
+    def window_size(self) -> tuple[int, int]:
         """Return render window size."""
         the_size = self.app_window.baseSize()
         return the_size.width(), the_size.height()
@@ -949,7 +948,7 @@ class MultiPlotter:
         nrows: int = 1,
         ncols: int = 1,
         show: bool = True,  # noqa: FBT001, FBT002
-        window_size: Optional[Tuple[int, int]] = None,
+        window_size: Optional[tuple[int, int]] = None,
         title: Optional[str] = None,
         off_screen: Optional[bool] = None,
         **kwargs: Any,  # noqa: ANN401
@@ -994,7 +993,7 @@ class MultiPlotter:
         """Close the multi plotter."""
         self._window.close()
 
-    def __setitem__(self, idx: Tuple[int, int], plotter: Any) -> None:  # noqa: ANN401
+    def __setitem__(self, idx: tuple[int, int], plotter: Any) -> None:  # noqa: ANN401
         """
         Set a valid plotter in the grid.
 
@@ -1010,7 +1009,7 @@ class MultiPlotter:
         row, col = idx
         self._plotters[row * self._ncols + col] = plotter
 
-    def __getitem__(self, idx: Tuple[int, int]) -> Optional[BackgroundPlotter]:
+    def __getitem__(self, idx: tuple[int, int]) -> Optional[BackgroundPlotter]:
         """
         Get a valid plotter in the grid.
 

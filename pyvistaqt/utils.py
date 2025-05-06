@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import List
 from typing import Optional
-from typing import Type
 
 import pyvista
 from qtpy.QtWidgets import QApplication
@@ -13,10 +11,10 @@ from qtpy.QtWidgets import QMenuBar
 import scooby  # type: ignore  # noqa: PGH003
 
 
-def _check_type(var: Any, var_name: str, var_types: List[Type[Any]]) -> None:  # noqa: ANN401
+def _check_type(var: Any, var_name: str, var_types: list[type[Any]]) -> None:  # noqa: ANN401
     types = tuple(var_types)
     if not isinstance(var, types):
-        msg = f"Expected type for ``{var_name}`` is {types!s}" f" but {type(var)} was given."
+        msg = f"Expected type for ``{var_name}`` is {types!s} but {type(var)} was given."
         raise TypeError(msg)
 
 
