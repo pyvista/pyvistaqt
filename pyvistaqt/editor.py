@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import List
 import weakref
 
 from qtpy.QtCore import Qt
@@ -28,7 +27,7 @@ if TYPE_CHECKING:
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent: MainWindow, renderers: List[Renderer]) -> None:
+    def __init__(self, parent: MainWindow, renderers: list[Renderer]) -> None:
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
