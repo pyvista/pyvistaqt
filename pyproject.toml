@@ -43,7 +43,6 @@ ignore = [
   "D203",
   "D212",
   "ISC001",
-  "PLC0415",
   "PLR2004",
 ]
 exclude = [

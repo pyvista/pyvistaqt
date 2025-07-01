@@ -4,10 +4,10 @@ import pytest
 
 
 def test_no_qt_binding(no_qt) -> None:  # noqa: ARG001, D103
-    from pyvistaqt import BackgroundPlotter
-    from pyvistaqt import MainWindow
-    from pyvistaqt import MultiPlotter
-    from pyvistaqt import QtInteractor
+    from pyvistaqt import BackgroundPlotter  # noqa: PLC0415
+    from pyvistaqt import MainWindow  # noqa: PLC0415
+    from pyvistaqt import MultiPlotter  # noqa: PLC0415
+    from pyvistaqt import QtInteractor  # noqa: PLC0415
 
     with pytest.raises(RuntimeError, match="No Qt binding"):
         BackgroundPlotter()
