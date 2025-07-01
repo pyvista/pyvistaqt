@@ -60,7 +60,7 @@ def _setup_application(app: Optional[QApplication] = None) -> QApplication:
     return app
 
 
-def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
+def _setup_off_screen(*, off_screen: Optional[bool] = None) -> bool:
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen
