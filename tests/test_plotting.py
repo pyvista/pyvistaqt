@@ -307,11 +307,11 @@ def test_editor(qtbot, plotting) -> None:  # noqa: ARG001, D103
 def ensure_closed():  # noqa: ANN201
     """Ensure all plotters are closed."""
     try:
-        from pyvista.plotting import close_all
-        from pyvista.plotting.plotter import _ALL_PLOTTERS
+        from pyvista.plotting import close_all  # noqa: PLC0415
+        from pyvista.plotting.plotter import _ALL_PLOTTERS  # noqa: PLC0415
     except ImportError:  # PV < 0.40
-        from pyvista.plotting.plotting import _ALL_PLOTTERS
-        from pyvista.plotting.plotting import close_all
+        from pyvista.plotting.plotting import _ALL_PLOTTERS  # noqa: PLC0415
+        from pyvista.plotting.plotting import close_all  # noqa: PLC0415
     close_all()  # this is necessary to test _ALL_PLOTTERS
     assert len(_ALL_PLOTTERS) == 0
     yield

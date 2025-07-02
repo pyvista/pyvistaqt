@@ -203,11 +203,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self,
         parent: MainWindow = None,
         title: Optional[str] = None,
+        *,
         off_screen: Optional[bool] = None,
         multi_samples: Optional[int] = None,
-        line_smoothing: bool = False,  # noqa: FBT001, FBT002
-        point_smoothing: bool = False,  # noqa: FBT001, FBT002
-        polygon_smoothing: bool = False,  # noqa: FBT001, FBT002
+        line_smoothing: bool = False,
+        point_smoothing: bool = False,
+        polygon_smoothing: bool = False,
         auto_update: Union[float, bool] = 5.0,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
@@ -513,11 +514,12 @@ class BackgroundPlotter(QtInteractor):
         show: bool = True,  # noqa: FBT001, FBT002
         app: Optional[QApplication] = None,
         window_size: Optional[tuple[int, int]] = None,
+        *,
         off_screen: Optional[bool] = None,
-        allow_quit_keypress: bool = True,  # noqa: FBT001, FBT002
-        toolbar: bool = True,  # noqa: FBT001, FBT002
-        menu_bar: bool = True,  # noqa: FBT001, FBT002
-        editor: bool = True,  # noqa: FBT001, FBT002
+        allow_quit_keypress: bool = True,
+        toolbar: bool = True,
+        menu_bar: bool = True,
+        editor: bool = True,
         update_app_icon: Optional[bool] = None,
         app_window_class: Optional[type[MainWindow]] = None,
         **kwargs: Any,  # noqa: ANN401
@@ -565,7 +567,7 @@ class BackgroundPlotter(QtInteractor):
 
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
-        self.off_screen = _setup_off_screen(off_screen)
+        self.off_screen = _setup_off_screen(off_screen=off_screen)
         if app_window_class is None:
             app_window_class = MainWindow
         self.app_window = app_window_class(title=kwargs.get("title", global_theme.title))
@@ -950,6 +952,7 @@ class MultiPlotter:
         show: bool = True,  # noqa: FBT001, FBT002
         window_size: Optional[tuple[int, int]] = None,
         title: Optional[str] = None,
+        *,
         off_screen: Optional[bool] = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
@@ -963,7 +966,7 @@ class MultiPlotter:
         _check_type(off_screen, "off_screen", [bool, type(None)])
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
-        self.off_screen = _setup_off_screen(off_screen)
+        self.off_screen = _setup_off_screen(off_screen=off_screen)
         self._nrows = nrows
         self._ncols = ncols
         self._window = MainWindow(title=title, size=window_size)
