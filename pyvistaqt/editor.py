@@ -88,7 +88,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
     axes = QCheckBox("Axes")
-    if hasattr(renderer, "axes_widget"):
+    if getattr(renderer, "axes_widget", None):
         axes.setChecked(renderer.axes_widget.GetEnabled())
     else:
         axes.setChecked(False)
