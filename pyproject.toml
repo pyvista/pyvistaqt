@@ -6,7 +6,7 @@ authors = [
 ]
 license = {text = "MIT"}
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 keywords = ["vtk", "numpy", "plotting", "mesh", "qt"]
 classifiers = [
     "Development Status :: 4 - Beta",
