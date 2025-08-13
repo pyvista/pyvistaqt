@@ -45,22 +45,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - uses: astral-sh/setup-uv@v4
       - run: |
-          python -m pip install --upgrade pip wheel
-          pip install --upgrade -r requirements_test.txt
-          pip install --upgrade --progress-bar off https://github.com/pyvista/pyvista/zipball/main https://github.com/spyder-ide/qtpy/zipball/master
-        name: "Install dependencies with pip"
-      - run: pip install ${{ matrix.qt }}
+          uv pip install --upgrade -r requirements_test.txt
+          uv pip install --upgrade https://github.com/pyvista/pyvista/zipball/main https://github.com/spyder-ide/qtpy/zipball/master
+        name: "Install dependencies with uv"
+      - run: uv pip install ${{ matrix.qt }}
         name: "Install Qt binding"
         if: matrix.qt != 'None'
-      - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
+      - run: uv pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install PyQt6-Qt6"
         if: matrix.qt == 'PyQt6'
-      - run: pip install "PySide6!=6.7.0"
+      - run: uv pip install "PySide6!=6.7.0"
         name: "Install PySide6"
         if: matrix.qt == 'PySide6'
       - run: |
-          pip install -e .
+          uv pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
       - run: python pyvistaqt/rwi.py
@@ -70,7 +70,7 @@ jobs:
         name: "Run Tests"
         if: matrix.qt != 'None'
       - run: |
-          pip uninstall -y pytest-qt
+          uv pip uninstall -y pytest-qt
           pytest -v tests/test_qt.py
         name: "Import without Qt"
         if: matrix.qt == 'None'
@@ -131,23 +131,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
         name: "Setup python"
+      - uses: astral-sh/setup-uv@v4
       - run: |
-          python -m pip install --upgrade pip wheel
-          pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" --only-binary vtk
-        name: "Install dependencies with pip"
-      - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
+          uv pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" --only-binary vtk
+        name: "Install dependencies with uv"
+      - run: uv pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install Qt binding"
       - run: |
-          pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
+          uv pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
           if [[ "${{ matrix.pyvista }}" != "0" ]] && [[ "${{ matrix.pyvista }}" != "0.44" ]]; then
-            pip install "numpy<2"
+            uv pip install "numpy<2"
           fi
           if [[ "${{ matrix.pyvista }}" != "0" ]] && [[ "${{ matrix.pyvista }}" < "0.45" ]]; then
-            pip install "vtk<9.4"
+            uv pip install "vtk<9.4"
           fi
         name: "Install PyVista ${{ matrix.pyvista }}"
       - run: |
-          pip install -e .
+          uv pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
       - run: pytest -v --cov pyvistaqt --cov-report html
@@ -186,9 +186,10 @@ jobs:
           environment-name: "pyvistaqt-env"
           create-args: >-
             python=${{ matrix.python-version }} ${{ matrix.qt }}
+      - uses: astral-sh/setup-uv@v4
       - shell: bash -el {0}
         run: |
-          pip install -e .
+          uv pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
       - shell: bash -el {0}
