@@ -27,7 +27,7 @@ jobs:
           python-version: "3.10"
       - uses: astral-sh/setup-uv@v4
       - name: Install dependencies
-        run: uv pip install --upgrade twine wheel setuptools setuptools_scm
+        run: uv pip install --system --upgrade twine wheel setuptools setuptools_scm
       - name: Build package
         run: python setup.py sdist bdist_wheel
       - name: Check package
