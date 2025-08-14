@@ -48,7 +48,7 @@ jobs:
       - uses: astral-sh/setup-uv@v4
       - run: |
           uv pip install --system --upgrade -r requirements_test.txt
-          uv pip install --system --upgrade https://github.com/pyvista/pyvista/zipball/main https://github.com/spyder-ide/qtpy/zipball/master
+          uv pip install --system --upgrade git+https://github.com/pyvista/pyvista.git@main git+https://github.com/spyder-ide/qtpy.git@master
         name: "Install dependencies with uv"
       - run: uv pip install --system ${{ matrix.qt }}
         name: "Install Qt binding"
