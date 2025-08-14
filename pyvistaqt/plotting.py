@@ -203,7 +203,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self,
         parent: MainWindow = None,
         title: Optional[str] = None,
-        *,
         off_screen: Optional[bool] = None,
         multi_samples: Optional[int] = None,
         line_smoothing: bool = False,
