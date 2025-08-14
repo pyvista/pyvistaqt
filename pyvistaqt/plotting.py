@@ -514,10 +514,10 @@ class BackgroundPlotter(QtInteractor):
         app: Optional[QApplication] = None,
         window_size: Optional[tuple[int, int]] = None,
         off_screen: Optional[bool] = None,
-        allow_quit_keypress: bool = True,
-        toolbar: bool = True,
-        menu_bar: bool = True,
-        editor: bool = True,
+        allow_quit_keypress: bool = True,  # noqa: FBT001, FBT002
+        toolbar: bool = True,  # noqa: FBT001, FBT002
+        menu_bar: bool = True,  # noqa: FBT001, FBT002
+        editor: bool = True,  # noqa: FBT001, FBT002
         update_app_icon: Optional[bool] = None,
         app_window_class: Optional[type[MainWindow]] = None,
         **kwargs: Any,  # noqa: ANN401
