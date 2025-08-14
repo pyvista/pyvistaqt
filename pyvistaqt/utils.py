@@ -38,14 +38,14 @@ def _setup_ipython(ipython: Any = None) -> Any:  # noqa: ANN401
     # ipython magic
     if scooby.in_ipython():  # pragma: no cover
         # pylint: disable=import-outside-toplevel
-        from IPython import get_ipython
+        from IPython import get_ipython  # noqa: PLC0415
 
         ipython = get_ipython()
         ipython.run_line_magic("gui", "qt")
 
         # pylint: disable=redefined-outer-name
         # pylint: disable=import-outside-toplevel
-        from IPython.external.qt_for_kernel import QtGui
+        from IPython.external.qt_for_kernel import QtGui  # noqa: PLC0415
 
         QtGui.QApplication.instance()
     return ipython
@@ -60,7 +60,7 @@ def _setup_application(app: Optional[QApplication] = None) -> QApplication:
     return app
 
 
-def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:
+def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:  # noqa: FBT001
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen
