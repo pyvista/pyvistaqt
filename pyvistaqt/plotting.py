@@ -950,7 +950,6 @@ class MultiPlotter:
         show: bool = True,  # noqa: FBT001, FBT002
         window_size: Optional[tuple[int, int]] = None,
         title: Optional[str] = None,
-        *,
         off_screen: Optional[bool] = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
