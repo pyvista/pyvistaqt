@@ -34,7 +34,7 @@ def _is_vtk(obj):  # noqa: ANN202
 
 def _check_qt_installed() -> bool:
     try:
-        from qtpy import QtCore  # noqa: F401
+        from qtpy import QtCore  # noqa: F401, PLC0415
     except Exception:  # noqa: BLE001
         return False
     else:
@@ -48,7 +48,7 @@ def check_gc(request):  # noqa: ANN201, C901
         yield
         return
     try:
-        from qtpy import API_NAME
+        from qtpy import API_NAME  # noqa: PLC0415
     except Exception:  # noqa: BLE001
         API_NAME = ""  # noqa: N806
     marks = {mark.name for mark in request.node.iter_markers()}
