@@ -963,7 +963,7 @@ class MultiPlotter:
         _check_type(off_screen, "off_screen", [bool, type(None)])
         self.ipython = _setup_ipython()
         self.app = _setup_application(app)
-        self.off_screen = _setup_off_screen(off_screen=off_screen)
+        self.off_screen = _setup_off_screen(off_screen)
         self._nrows = nrows
         self._ncols = ncols
         self._window = MainWindow(title=title, size=window_size)
