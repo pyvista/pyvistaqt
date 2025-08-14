@@ -203,12 +203,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self,
         parent: MainWindow = None,
         title: Optional[str] = None,
-        off_screen: Optional[bool] = None,
+        off_screen: Optional[bool] = None,  # noqa: FBT001
         multi_samples: Optional[int] = None,
         line_smoothing: bool = False,  # noqa: FBT001, FBT002
         point_smoothing: bool = False,  # noqa: FBT001, FBT002
         polygon_smoothing: bool = False,  # noqa: FBT001, FBT002
-        auto_update: Union[float, bool] = 5.0,
+        auto_update: Union[float, bool] = 5.0,  # noqa: FBT001
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         # pylint: disable=too-many-branches
@@ -513,12 +513,12 @@ class BackgroundPlotter(QtInteractor):
         show: bool = True,  # noqa: FBT001, FBT002
         app: Optional[QApplication] = None,
         window_size: Optional[tuple[int, int]] = None,
-        off_screen: Optional[bool] = None,
+        off_screen: Optional[bool] = None,  # noqa: FBT001
         allow_quit_keypress: bool = True,  # noqa: FBT001, FBT002
         toolbar: bool = True,  # noqa: FBT001, FBT002
         menu_bar: bool = True,  # noqa: FBT001, FBT002
         editor: bool = True,  # noqa: FBT001, FBT002
-        update_app_icon: Optional[bool] = None,
+        update_app_icon: Optional[bool] = None,  # noqa: FBT001
         app_window_class: Optional[type[MainWindow]] = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
@@ -950,7 +950,7 @@ class MultiPlotter:
         show: bool = True,  # noqa: FBT001, FBT002
         window_size: Optional[tuple[int, int]] = None,
         title: Optional[str] = None,
-        off_screen: Optional[bool] = None,
+        off_screen: Optional[bool] = None,  # noqa: FBT001
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize the multi plotter."""
