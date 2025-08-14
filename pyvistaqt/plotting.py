@@ -513,7 +513,6 @@ class BackgroundPlotter(QtInteractor):
         show: bool = True,  # noqa: FBT001, FBT002
         app: Optional[QApplication] = None,
         window_size: Optional[tuple[int, int]] = None,
-        *,
         off_screen: Optional[bool] = None,
         allow_quit_keypress: bool = True,
         toolbar: bool = True,
