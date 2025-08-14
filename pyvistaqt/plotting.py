@@ -205,9 +205,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         title: Optional[str] = None,
         off_screen: Optional[bool] = None,
         multi_samples: Optional[int] = None,
-        line_smoothing: bool = False,
-        point_smoothing: bool = False,
-        polygon_smoothing: bool = False,
+        line_smoothing: bool = False,  # noqa: FBT001, FBT002
+        point_smoothing: bool = False,  # noqa: FBT001, FBT002
+        polygon_smoothing: bool = False,  # noqa: FBT001, FBT002
         auto_update: Union[float, bool] = 5.0,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
