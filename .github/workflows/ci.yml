@@ -37,7 +37,7 @@ jobs:
       ALLOW_PLOTTING: "true"
       PYTHON_VERSION: ${{ matrix.python }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pyvista/setup-headless-display-action@main
         with:
           qt: true
@@ -122,7 +122,7 @@ jobs:
     env:
       ALLOW_PLOTTING: "true"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pyvista/setup-headless-display-action@main
         with:
           qt: true
@@ -173,7 +173,7 @@ jobs:
     env:
       ALLOW_PLOTTING: "true"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pyvista/setup-headless-display-action@main
         with:
           qt: true
