@@ -1,6 +1,6 @@
 ipython==8.27.0
 numpy==2.1.0
-pytest==8.4.1
+pytest==8.4.2
 pytest-cov==6.2.1
 pytest-memprof==0.2.0
 pytest-qt==4.4.0
