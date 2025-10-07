@@ -471,6 +471,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         scale = self._getPixelRatio()
         w = int(round(scale*self.width()))
         h = int(round(scale*self.height()))
+        # Next 2 lines are specific to PyVistaQt because we set it to None elsewhere:
         if self._RenderWindow is None:
             return
         self._RenderWindow.SetDPI(int(round(72*scale)))
