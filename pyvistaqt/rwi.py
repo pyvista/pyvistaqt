@@ -636,7 +636,8 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self.update()
 
 
-def QVTKRenderWidgetConeExample():
+# In PyVistaQt we run this example so we need to add non-blocking conditionals
+def QVTKRenderWidgetConeExample(block=False):
     """A simple example that uses the QVTKRenderWindowInteractor class."""
 
     from vtkmodules.vtkFiltersSources import vtkConeSource
@@ -646,7 +647,9 @@ def QVTKRenderWidgetConeExample():
     import vtkmodules.vtkInteractionStyle
 
     # every QT app needs an app
-    app = QApplication(['QVTKRenderWindowInteractor'])
+    app = QApplication.instance()
+    if not app:  # pragma: no cover
+        app = QApplication(["PyVista"])
 
     window = QMainWindow()
 
@@ -680,10 +683,11 @@ def QVTKRenderWidgetConeExample():
     # Source: https://doc.qt.io/qtforpython/porting_from2.html
     # 'exec_' is deprecated and will be removed in the future.
     # Use 'exec' instead.
-    try:
-        app.exec()
-    except AttributeError:
-        app.exec_()
+    if block:
+        try:
+            app.exec()
+        except AttributeError:
+            app.exec_()
 
 
 _keysyms_for_ascii = (
