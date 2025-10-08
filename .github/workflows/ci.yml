@@ -19,6 +19,7 @@ jobs:
   pip-pre:
     name: ${{ matrix.os }} / Python${{ matrix.python }} / ${{ matrix.qt }} / pyvista-main / qtpy-master
     runs-on: ${{ matrix.os}}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -83,6 +84,7 @@ jobs:
   pip:
     name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}${{ matrix.vtk && ' / vtk'}}${{ matrix.vtk }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -161,6 +163,7 @@ jobs:
   conda:
     name: ${{ matrix.os }} / conda / ${{ matrix.qt }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
