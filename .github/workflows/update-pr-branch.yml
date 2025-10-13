@@ -14,7 +14,7 @@ jobs:
     if: github.repository == 'pyvista/pyvistaqt'
     steps:
       - name: Automatically update PR
-        uses: adRise/update-pr-branch@v0.10.1
+        uses: adRise/update-pr-branch@v0.10.2
         with:
           # Using a PAT (Personal Access Token) instead of GITHUB_TOKEN
           # GITHUB_TOKEN doesn't have permission to update PRs from forks
