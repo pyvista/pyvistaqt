@@ -83,7 +83,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macos-15-intel", "macos-latest", "windows-latest"]
+        os:
+          ["ubuntu-latest", "macos-15-intel", "macos-latest", "windows-latest"]
         pyvista: ["0"] # All OSes on latest release
         python-version: ["3.12"]
         vtk: [""]
@@ -162,7 +163,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macos-15-intel", "macos-latest", "windows-latest"]
+        os:
+          ["ubuntu-latest", "macos-15-intel", "macos-latest", "windows-latest"]
         qt: ["PySide6"]
         python-version: ["3.12"]
     defaults:
