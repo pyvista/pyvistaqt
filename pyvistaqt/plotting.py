@@ -50,9 +50,6 @@ import platform
 import time
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
-from typing import Optional
-from typing import Union
 import warnings
 
 import numpy as np  # type: ignore  # noqa: PGH003
@@ -100,6 +97,7 @@ from .utils import _setup_off_screen
 from .window import MainWindow
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Generator
 
 LOG = logging.getLogger("pyvistaqt")
@@ -202,13 +200,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     def __init__(  # noqa: C901, PLR0912, PLR0913
         self,
         parent: MainWindow = None,
-        title: Optional[str] = None,
-        off_screen: Optional[bool] = None,  # noqa: FBT001
-        multi_samples: Optional[int] = None,
+        title: str | None = None,
+        off_screen: bool | None = None,  # noqa: FBT001
+        multi_samples: int | None = None,
         line_smoothing: bool = False,  # noqa: FBT001, FBT002
         point_smoothing: bool = False,  # noqa: FBT001, FBT002
         polygon_smoothing: bool = False,  # noqa: FBT001, FBT002
-        auto_update: Union[float, bool] = 5.0,  # noqa: FBT001
+        auto_update: float | bool = 5.0,  # noqa: FBT001
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         # pylint: disable=too-many-branches
@@ -511,15 +509,15 @@ class BackgroundPlotter(QtInteractor):
     def __init__(  # noqa: PLR0913, PLR0915
         self,
         show: bool = True,  # noqa: FBT001, FBT002
-        app: Optional[QApplication] = None,
-        window_size: Optional[tuple[int, int]] = None,
-        off_screen: Optional[bool] = None,  # noqa: FBT001
+        app: QApplication | None = None,
+        window_size: tuple[int, int] | None = None,
+        off_screen: bool | None = None,  # noqa: FBT001
         allow_quit_keypress: bool = True,  # noqa: FBT001, FBT002
         toolbar: bool = True,  # noqa: FBT001, FBT002
         menu_bar: bool = True,  # noqa: FBT001, FBT002
         editor: bool = True,  # noqa: FBT001, FBT002
-        update_app_icon: Optional[bool] = None,  # noqa: FBT001
-        app_window_class: Optional[type[MainWindow]] = None,
+        update_app_icon: bool | None = None,  # noqa: FBT001
+        app_window_class: type[MainWindow] | None = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         # pylint: disable=too-many-branches
@@ -542,7 +540,7 @@ class BackgroundPlotter(QtInteractor):
         # toolbar
         self._view_action: QAction = None
         self.default_camera_tool_bar: QToolBar = None
-        self.saved_camera_positions: Optional[list] = None
+        self.saved_camera_positions: list | None = None
         self.saved_cameras_tool_bar: QToolBar = None
         # menu bar
         self.main_menu: QMenuBar = None
@@ -550,7 +548,7 @@ class BackgroundPlotter(QtInteractor):
         self._menu_close_action: QAction = None
         self._parallel_projection_action: QAction = None
         # editor
-        self.editor: Optional[Editor] = None
+        self.editor: Editor | None = None
         self._editor_action: QAction = None
 
         self.active = True
@@ -669,7 +667,7 @@ class BackgroundPlotter(QtInteractor):
         # Update trackers
         self._last_window_size = self.window_size
 
-    def set_icon(self, img: Union[np.ndarray, str]) -> None:
+    def set_icon(self, img: np.ndarray | str) -> None:
         """
         Set the icon image.
 
@@ -761,7 +759,7 @@ class BackgroundPlotter(QtInteractor):
         """Delete the qt plotter."""
         self.close()
 
-    def add_callback(self, func: Callable, interval: int = 1000, count: Optional[int] = None) -> None:
+    def add_callback(self, func: Callable, interval: int = 1000, count: int | None = None) -> None:
         """
         Add a function that can update the scene in the background.
 
@@ -944,13 +942,13 @@ class MultiPlotter:
 
     def __init__(  # noqa: PLR0913
         self,
-        app: Optional[QApplication] = None,
+        app: QApplication | None = None,
         nrows: int = 1,
         ncols: int = 1,
         show: bool = True,  # noqa: FBT001, FBT002
-        window_size: Optional[tuple[int, int]] = None,
-        title: Optional[str] = None,
-        off_screen: Optional[bool] = None,  # noqa: FBT001
+        window_size: tuple[int, int] | None = None,
+        title: str | None = None,
+        off_screen: bool | None = None,  # noqa: FBT001
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """Initialize the multi plotter."""
@@ -1009,7 +1007,7 @@ class MultiPlotter:
         row, col = idx
         self._plotters[row * self._ncols + col] = plotter
 
-    def __getitem__(self, idx: tuple[int, int]) -> Optional[BackgroundPlotter]:
+    def __getitem__(self, idx: tuple[int, int]) -> BackgroundPlotter | None:
         """
         Get a valid plotter in the grid.
 
