@@ -138,11 +138,11 @@ Using Different Qt bindings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use different Qt bindings you must first install them.
-For example, to use *PySide2*, you install it via:
+For example, to use *PySide6*, you install it via:
 
 .. code:: bash
 
-    pip install PySide2
+    pip install PySide6
 
 
 Then you set the ``QT_API`` value to the specific binding you would
@@ -150,7 +150,7 @@ like to use:
 
 .. code:: python
 
-    os.environ["QT_API"] = "pyside2"
+    os.environ["QT_API"] = "pyside6"
 
 Please refer to the
 `*QtPy* documentation page <https://github.com/spyder-ide/qtpy>`_

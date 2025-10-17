@@ -24,13 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         qt: ["None", "PySide6", "PyQt5", "PyQt6"]
-        python: ["3.12"]
+        python: ["3.13"]
         os: ["ubuntu-latest"]
-        # PySide2 requires an ancient NumPy so we have to use Python 3.10
-        include:
-          - qt: "PySide2"
-            python: "3.10"
-            os: "ubuntu-latest"
     defaults:
       run:
         shell: bash
