@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Optional
 
 import pyvista
 from qtpy.QtWidgets import QApplication
@@ -51,7 +50,7 @@ def _setup_ipython(ipython: Any = None) -> Any:  # noqa: ANN401
     return ipython
 
 
-def _setup_application(app: Optional[QApplication] = None) -> QApplication:
+def _setup_application(app: QApplication | None = None) -> QApplication:
     # run within python
     if app is None:
         app = QApplication.instance()
@@ -60,7 +59,7 @@ def _setup_application(app: Optional[QApplication] = None) -> QApplication:
     return app
 
 
-def _setup_off_screen(off_screen: Optional[bool] = None) -> bool:  # noqa: FBT001
+def _setup_off_screen(off_screen: bool | None = None) -> bool:  # noqa: FBT001
     if off_screen is None:
         off_screen = pyvista.OFF_SCREEN
     return off_screen

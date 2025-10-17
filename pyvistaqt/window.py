@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from qtpy import QtCore
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QMainWindow
@@ -18,9 +16,9 @@ class MainWindow(QMainWindow):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
-        title: Optional[str] = None,
-        size: Optional[tuple[int, int]] = None,
+        parent: QWidget | None = None,
+        title: str | None = None,
+        size: tuple[int, int] | None = None,
     ) -> None:
         """Initialize the main window."""
         QMainWindow.__init__(self, parent=parent)
