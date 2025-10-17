@@ -592,8 +592,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # no
         assert os.path.isfile(filename + ext)  # noqa: PTH113
 
 
-# vtkWeakReference and vtkFloatArray, only sometimes -- usually PySide2
-# but also sometimes macOS
+# vtkWeakReference and vtkFloatArray, only sometimes -- usually macOS
 @pytest.mark.allow_bad_gc
 def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D103
     plotter = BackgroundPlotter(off_screen=False, title="Testing Window")
