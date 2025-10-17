@@ -1,31 +1,33 @@
-"""This module contains the Qt scene editor."""
+"""This module contains the Qt scene editor."""  # noqa: D404
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 import weakref
-from typing import List
 
-from pyvista import Renderer
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import (
-    QCheckBox,
-    QDialog,
-    QDoubleSpinBox,
-    QHBoxLayout,
-    QLabel,
-    QStackedWidget,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QVBoxLayout,
-    QWidget,
-)
-from vtkmodules.vtkRenderingCore import vtkActor
+from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QDialog
+from qtpy.QtWidgets import QDoubleSpinBox
+from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QStackedWidget
+from qtpy.QtWidgets import QTreeWidget
+from qtpy.QtWidgets import QTreeWidgetItem
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
-from .window import MainWindow
+if TYPE_CHECKING:
+    from pyvista import Renderer
+    from vtkmodules.vtkRenderingCore import vtkActor
+
+    from .window import MainWindow
 
 
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent: MainWindow, renderers: List[Renderer]) -> None:
+    def __init__(self, parent: MainWindow, renderers: list[Renderer]) -> None:
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers
@@ -60,7 +62,7 @@ class Editor(QDialog):
         """Update the internal widget list."""
         self.tree_widget.clear()
         for idx, renderer in enumerate(self.renderers):
-            actors = renderer._actors  # pylint: disable=protected-access
+            actors = renderer.actors  # pylint: disable=protected-access
             widget_idx = self.stacked_widget.addWidget(_get_renderer_widget(renderer))
             top_item = QTreeWidgetItem(self.tree_widget, [f"Renderer {idx}"])
             top_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
@@ -86,7 +88,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
     axes = QCheckBox("Axes")
-    if hasattr(renderer, "axes_widget"):
+    if getattr(renderer, "axes_widget", None):
         axes.setChecked(renderer.axes_widget.GetEnabled())
     else:
         axes.setChecked(False)
@@ -95,7 +97,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     del renderer
 
     # axes
-    def _axes_callback(state: bool) -> None:
+    def _axes_callback(state: bool) -> None:  # noqa: FBT001
         renderer = renderer_ref()
         if renderer is None or renderer.parent.iren is None:  # pragma: no cover
             return
@@ -120,7 +122,7 @@ def _get_actor_widget(actor: vtkActor) -> QWidget:
     # visibility
     set_vis_ref = weakref.ref(actor.SetVisibility)
 
-    def _set_vis(visibility: bool) -> None:  # pragma: no cover
+    def _set_vis(visibility: bool) -> None:  # pragma: no cover  # noqa: FBT001
         set_vis = set_vis_ref()
         if set_vis is not None:
             set_vis(visibility)

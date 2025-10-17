@@ -1,3 +1,52 @@
+[project]
+name = "pyvistaqt"
+description = "pyvista qt plotter"
+authors = [
+    {name = "PyVista Developers", email = "info@pyvista.org"},
+]
+license = {text = "MIT"}
+readme = "README.rst"
+requires-python = ">=3.8"
+keywords = ["vtk", "numpy", "plotting", "mesh", "qt"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
+dependencies = [
+    "pyvista>=0.32.0",
+    "QtPy>=1.9.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+]
+
+[project.urls]
+homepage = "https://github.com/pyvista/pyvistaqt"
+
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["pyvistaqt"]
+
+[tool.setuptools.package-data]
+pyvistaqt = ["data/*.png"]
+
+[tool.setuptools_scm]
+write_to = "pyvistaqt/_version.py"
+version_scheme = "release-branch-semver"
+
 [tool.black]
 line-length = 88
 skip-string-normalization = true
@@ -26,3 +75,41 @@ match = '''
     ).*\.py
 )
 '''
+
+[tool.ruff]
+line-length = 150
+
+[tool.ruff.format]
+docstring-code-format = true
+exclude = [
+  "pyvistaqt/rwi.py",  # should be maintained copy of upstream VTK code
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "COM812",
+  "D203",
+  "D212",
+  "ISC001",
+  "PLR2004",
+]
+exclude = [
+  "pyvistaqt/rwi.py",
+]
+
+[tool.ruff.lint.isort]
+# Sort by name, don't cluster "from" vs "import"
+force-sort-within-sections = true
+# Combines "as" imports on the same line
+combine-as-imports = true
+required-imports = ["from __future__ import annotations"]
+force-single-line = true
+
+[tool.ruff.lint.per-file-ignores]
+"doc/**" = ["INP001"]
+"tests/**" = ["ANN001", "INP001", "S101"]
+
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true

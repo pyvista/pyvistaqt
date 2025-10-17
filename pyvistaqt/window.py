@@ -1,10 +1,13 @@
-"""This module contains a Qt-compatible MainWindow class."""
+"""This module contains a Qt-compatible MainWindow class."""  # noqa: D404
 
-from typing import Optional, Tuple
+from __future__ import annotations
+
+from typing import Optional
 
 from qtpy import QtCore
 from qtpy.QtCore import Signal
-from qtpy.QtWidgets import QMainWindow, QWidget
+from qtpy.QtWidgets import QMainWindow
+from qtpy.QtWidgets import QWidget
 
 
 class MainWindow(QMainWindow):
@@ -17,7 +20,7 @@ class MainWindow(QMainWindow):
         self,
         parent: Optional[QWidget] = None,
         title: Optional[str] = None,
-        size: Optional[Tuple[int, int]] = None,
+        size: Optional[tuple[int, int]] = None,
     ) -> None:
         """Initialize the main window."""
         QMainWindow.__init__(self, parent=parent)
@@ -33,7 +36,7 @@ class MainWindow(QMainWindow):
             return True
         return super().event(event)
 
-    def closeEvent(self, event: QtCore.QEvent) -> None:  # pylint: disable=invalid-name
+    def closeEvent(self, event: QtCore.QEvent) -> None:  # pylint: disable=invalid-name  # noqa: N802
         """Manage the close event."""
         self.signal_close.emit()
         event.accept()

@@ -1,4 +1,7 @@
 name: PR update
+permissions:
+  contents: write
+  pull-requests: write
 
 on:
   push:
@@ -7,14 +10,21 @@ on:
 jobs:
   autoupdate:
     runs-on: ubuntu-latest
+    # Only run on the main repository, not on forks
+    if: github.repository == 'pyvista/pyvistaqt'
     steps:
       - name: Automatically update PR
-        uses: adRise/update-pr-branch@v0.9.1
+        uses: adRise/update-pr-branch@v0.10.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Using a PAT (Personal Access Token) instead of GITHUB_TOKEN
+          # GITHUB_TOKEN doesn't have permission to update PRs from forks
+          # You need to create a PAT and add it as a secret named 'PR_UPDATE_TOKEN'
+          token: ${{ secrets.PR_UPDATE_TOKEN || secrets.GITHUB_TOKEN }}
           base: "main"
           required_approval_count: 1
           require_passed_checks: false
           sort: "created"
           direction: "desc"
           require_auto_merge_enabled: true
+          # Only process PRs with ongoing checks if needed
+          allow_ongoing_checks: false

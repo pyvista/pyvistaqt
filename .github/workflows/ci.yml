@@ -1,4 +1,7 @@
 name: "CI"
+permissions:
+  statuses: write
+  contents: write
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
@@ -14,25 +17,28 @@ on:
 
 jobs:
   pip-pre:
-    name: ubuntu-latest / Python3.9 / ${{ matrix.qt }} / pyvista-main / qtpy-master
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} / Python${{ matrix.python }} / ${{ matrix.qt }} / pyvista-main / qtpy-master
+    runs-on: ${{ matrix.os}}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        qt: ["None", "PySide2", "PySide6", "PyQt5", "PyQt6"]
+        qt: ["None", "PySide6", "PyQt5", "PyQt6"]
+        python: ["3.13"]
+        os: ["ubuntu-latest"]
     defaults:
       run:
         shell: bash
     env:
       ALLOW_PLOTTING: "true"
-      PYTHON_VERSION: "3.9"
+      PYTHON_VERSION: ${{ matrix.python }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pyvista/setup-headless-display-action@main
         with:
           qt: true
           pyvista: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: |
@@ -64,40 +70,28 @@ jobs:
           pytest -v tests/test_qt.py
         name: "Import without Qt"
         if: matrix.qt == 'None'
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
         name: "Upload coverage to CodeCov"
 
   pip:
-    name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}
+    name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}${{ matrix.vtk && ' / vtk'}}${{ matrix.vtk }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-13", "macos-latest", "windows-latest"]
         pyvista: ["0"] # All OSes on latest release
         python-version: ["3.12"]
+        vtk: [""]
         include: # and Linux for older ones
-          - os: "ubuntu-latest"
-            pyvista: "0.34"
-            python-version: "3.10"
-          - os: "ubuntu-latest"
-            pyvista: "0.35"
-            python-version: "3.11"
-          - os: "ubuntu-latest"
-            pyvista: "0.36"
-            python-version: "3.12"
-          - os: "ubuntu-latest"
-            pyvista: "0.37"
-            python-version: "3.12"
-          - os: "ubuntu-latest"
-            pyvista: "0.38"
-            python-version: "3.12"
+          # Keep up to 2 years back for testing
           - os: "ubuntu-latest"
             pyvista: "0.39"
-            python-version: "3.12"
+            python-version: "3.10"
           - os: "ubuntu-latest"
             pyvista: "0.40"
             python-version: "3.12"
@@ -110,6 +104,14 @@ jobs:
           - os: "ubuntu-latest"
             pyvista: "0.43"
             python-version: "3.12"
+          - os: "ubuntu-latest"
+            pyvista: "0.44"
+            python-version: "3.12"
+            vtk: "==9.3.1"
+          - os: "ubuntu-latest"
+            pyvista: "0.45"
+            python-version: "3.13"
+            vtk: "==9.4.2"
 
     defaults:
       run:
@@ -117,18 +119,18 @@ jobs:
     env:
       ALLOW_PLOTTING: "true"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pyvista/setup-headless-display-action@main
         with:
           qt: true
           pyvista: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
         name: "Setup python"
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install -r requirements_test.txt
+          pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" --only-binary vtk
         name: "Install dependencies with pip"
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install Qt binding"
@@ -137,6 +139,9 @@ jobs:
           if [[ "${{ matrix.pyvista }}" != "0" ]] && [[ "${{ matrix.pyvista }}" != "0.44" ]]; then
             pip install "numpy<2"
           fi
+          if [[ "${{ matrix.pyvista }}" != "0" ]] && [[ "${{ matrix.pyvista }}" < "0.45" ]]; then
+            pip install "vtk<9.4"
+          fi
         name: "Install PyVista ${{ matrix.pyvista }}"
       - run: |
           pip install -e .
@@ -144,7 +149,7 @@ jobs:
         name: "Install pyvistaqt"
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
@@ -153,11 +158,12 @@ jobs:
   conda:
     name: ${{ matrix.os }} / conda / ${{ matrix.qt }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-13", "macos-latest", "windows-latest"]
-        qt: ["PyQt5"]
+        qt: ["PySide6"]
         python-version: ["3.12"]
     defaults:
       run:
@@ -165,20 +171,19 @@ jobs:
     env:
       ALLOW_PLOTTING: "true"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pyvista/setup-headless-display-action@main
         with:
           qt: true
           pyvista: false
-      - uses: mamba-org/setup-micromamba@v1
+      - uses: mamba-org/setup-micromamba@v2
         with:
+          # https://github.com/mamba-org/setup-micromamba/issues/225
+          micromamba-version: 1.5.10-0
           environment-file: "environment.yml"
           environment-name: "pyvistaqt-env"
           create-args: >-
-            python=${{ matrix.python-version }}
-      - shell: bash -el {0}
-        run: pip install ${{ matrix.qt }}
-        name: "Install Qt binding"
+            python=${{ matrix.python-version }} ${{ matrix.qt }}
       - shell: bash -el {0}
         run: |
           pip install -e .
@@ -187,7 +192,7 @@ jobs:
       - shell: bash -el {0}
         run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
