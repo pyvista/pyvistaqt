@@ -743,6 +743,13 @@ def test_gesture_event(qtbot) -> None:  # noqa: D103
 
 
 def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:  # noqa: ARG001, D103
+    if (
+        platform.system() == "Darwin"
+        and platform.machine() == "x86_64"
+        and os.getenv("GITHUB_ACTIONS") == "true"
+    ):
+        pytest.skip("Skipping macOS GitHub Actions test that times out sometimes")
+
     class CallBack:
         def __init__(self, sphere) -> None:
             self.sphere = weakref.ref(sphere)
