@@ -133,8 +133,12 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" --only-binary vtk
         name: "Install dependencies with pip"
+      - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0,!=6.10.0" "PyQt6!=6.6.0,!=6.10.0"
+        name: "Install Qt binding on macOS"
+        if: runner.os == 'macOS'
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
-        name: "Install Qt binding"
+        name: "Install Qt binding on non-macOS"
+        if: runner.os != 'macOS'
       - run: |
           pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
           if [[ "${{ matrix.pyvista }}" != "0" ]] && [[ "${{ matrix.pyvista }}" != "0.44" ]]; then
