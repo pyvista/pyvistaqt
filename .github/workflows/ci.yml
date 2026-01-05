@@ -176,7 +176,7 @@ jobs:
         python-version: ["3.12"]
     defaults:
       run:
-        shell: bash
+        shell: bash -el {0}
     env:
       ALLOW_PLOTTING: "true"
     steps:
@@ -196,13 +196,11 @@ jobs:
       - name: Avoid problematic PySide6
         if: matrix.qt == 'PySide6' && runner.os == 'macOS'
         run: conda install "PySide6!=6.10.1"
-      - shell: bash -el {0}
-        run: |
+      - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
-      - shell: bash -el {0}
-        run: pytest -v --cov pyvistaqt --cov-report html
+      - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
       - uses: codecov/codecov-action@v5
         env:
