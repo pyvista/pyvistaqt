@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python
+  - conda
   - codecov
   - ipython
   - mypy
