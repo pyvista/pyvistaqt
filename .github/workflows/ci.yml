@@ -52,9 +52,12 @@ jobs:
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install PyQt6-Qt6"
         if: matrix.qt == 'PyQt6'
+      - run: pip install "PySide6!=6.7.0,!=6.10.1"
+        name: "Install PySide6"
+        if: matrix.qt == 'PySide6' && runner.os == 'macOS'
       - run: pip install "PySide6!=6.7.0"
         name: "Install PySide6"
-        if: matrix.qt == 'PySide6'
+        if: matrix.qt == 'PySide6' && runner.os != 'macOS'
       - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
