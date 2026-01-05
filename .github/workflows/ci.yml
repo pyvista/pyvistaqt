@@ -193,6 +193,9 @@ jobs:
           environment-name: "pyvistaqt-env"
           create-args: >-
             python=${{ matrix.python-version }} ${{ matrix.qt }}
+      - name: Avoid problematic PySide6
+        if: matrix.qt == 'PySide6' && runner.os == 'macOS'
+        run: conda install "PySide6!=6.10.1"
       - shell: bash -el {0}
         run: |
           pip install -e .
