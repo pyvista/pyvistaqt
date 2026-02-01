@@ -5,7 +5,7 @@ imageio-ffmpeg==0.6.0
 lxml==6.0.2
 matplotlib==3.10.8
 meshio==5.3.5
-pytest-sphinx==0.6.3
+pytest-sphinx==0.7.1
 QtPy==2.4.3
 Sphinx==8.2.1
 sphinx-autobuild==2024.10.3
