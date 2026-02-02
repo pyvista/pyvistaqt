@@ -56,7 +56,7 @@ jobs:
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
         name: "Install PyQt6-Qt6"
         if: matrix.qt == 'PyQt6'
-      - run: pip install "PySide6!=6.7.0,!=6.10.1,!=6.10.2"
+      - run: pip install "PySide6!=6.7.0,!=6.10.1"
         name: "Install PySide6"
         if: matrix.qt == 'PySide6' && runner.os == 'macOS'
       - run: pip install "PySide6!=6.7.0"
@@ -138,9 +138,9 @@ jobs:
         name: "Setup python"
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" --only-binary vtk
+          pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" "vtk<9.6" --only-binary vtk
         name: "Install dependencies with pip"
-      - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0,!=6.10.0" "PyQt6!=6.6.0,!=6.10.0,!=6.10.1,!=6.10.2"
+      - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0,!=6.10.0" "PyQt6!=6.6.0,!=6.10.0,!=6.10.1"
         name: "Install Qt binding on macOS"
         if: runner.os == 'macOS'
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0" "PyQt6!=6.6.0"
@@ -199,7 +199,7 @@ jobs:
             python=${{ matrix.python-version }} ${{ matrix.qt }}
       - name: "Avoid problematic PySide6"
         if: matrix.qt == 'PySide6' && runner.os == 'macOS'
-        run: conda install "PySide6!=6.10.1,!=6.10.2"
+        run: conda install "PySide6!=6.10.1"
       - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
