@@ -646,12 +646,9 @@ class BackgroundPlotter(QtInteractor):
             #     been deleted
             #
             # So let's be safe and try/except this in case of a problem.
-            LOG.debug("BackgroundPlotter.close")
-            try:
-                LOG.debug("BackgroundPlotter.close app_window.close()")
+            LOG.debug("BackgroundPlotter.close app_window.close()")
+            with contextlib.suppress(Exception):  # pragma: no cover
                 self.app_window.close()
-            except Exception:  # pragma: no cover # pylint: disable=broad-except  # noqa: S110, BLE001
-                pass
             LOG.debug("BackgroundPlotter.close done")
 
     def _close(self) -> None:
