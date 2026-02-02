@@ -26,6 +26,10 @@ jobs:
         qt: ["None", "PySide6", "PyQt5", "PyQt6"]
         python: ["3.13"]
         os: ["ubuntu-latest"]
+        include:
+          - qt: "PySide6"
+            python: "3.13"
+            os: "macos-latest"
     defaults:
       run:
         shell: bash
