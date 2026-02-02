@@ -140,7 +140,7 @@ jobs:
           python -m pip install --upgrade pip wheel
           VTK="${{ matrix.vtk }}"
           if [[ "$VTK" == "" ]]; then
-            VTK="<9.6"
+            VTK="==9.5.2"  # TODO: Until PyVista release supports 9.6
           fi
           pip install -r requirements_test.txt "vtk$VTK" --only-binary vtk
         name: "Install dependencies with pip"
