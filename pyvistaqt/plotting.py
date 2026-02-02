@@ -409,7 +409,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             return
         if hasattr(self, "render_timer"):
             self.render_timer.stop()
+        LOG.debug("QtInteractor.close BasePlotter.close")
         BasePlotter.close(self)
+        LOG.debug("QtInteractor.close QtRenderWindowInteractor.close")
         QVTKRenderWindowInteractor.close(self)
         # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
         # to resolve the ref to vtkGenericRenderWindowInteractor
@@ -419,6 +421,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         for key in ("_RenderWindow", "renderer"):
             with contextlib.suppress(AttributeError):
                 setattr(self, key, None)
+        LOG.debug("QtInteractor.close done")
 
 
 class BackgroundPlotter(QtInteractor):
@@ -538,11 +541,13 @@ class BackgroundPlotter(QtInteractor):
         _check_type(update_app_icon, "update_app_icon", [bool, type(None)])
 
         # toolbar
+        LOG.debug("BackgroundPlotter init toolbar")
         self._view_action: QAction = None
         self.default_camera_tool_bar: QToolBar = None
         self.saved_camera_positions: list | None = None
         self.saved_cameras_tool_bar: QToolBar = None
         # menu bar
+        LOG.debug("BackgroundPlotter init menubar")
         self.main_menu: QMenuBar = None
         self._edl_action: QAction = None
         self._menu_close_action: QAction = None
@@ -561,15 +566,20 @@ class BackgroundPlotter(QtInteractor):
         # Remove notebook argument in case user passed it
         kwargs.pop("notebook", None)
 
+        LOG.debug("BackgroundPlotter init setup ipython")
         self.ipython = _setup_ipython()
+        LOG.debug("BackgroundPlotter init setup app")
         self.app = _setup_application(app)
+        LOG.debug("BackgroundPlotter init setup offscreen")
         self.off_screen = _setup_off_screen(off_screen)
         if app_window_class is None:
             app_window_class = MainWindow
+        LOG.debug("BackgroundPlotter init app window class %s", app_window_class)
         self.app_window = app_window_class(title=kwargs.get("title", global_theme.title))
         self.frame = QFrame(parent=self.app_window)
         self.frame.setFrameStyle(QFrame.NoFrame)
         vlayout = QVBoxLayout()
+        LOG.debug("BackgroundPlotter init super")
         super().__init__(parent=self.frame, off_screen=off_screen, **kwargs)
         assert not self._closed  # noqa: S101
         vlayout.addWidget(self)
@@ -636,10 +646,10 @@ class BackgroundPlotter(QtInteractor):
             #     been deleted
             #
             # So let's be safe and try/except this in case of a problem.
-            try:  # noqa: SIM105
+            LOG.debug("BackgroundPlotter.close app_window.close()")
+            with contextlib.suppress(Exception):  # pragma: no cover
                 self.app_window.close()
-            except Exception:  # pragma: no cover # pylint: disable=broad-except  # noqa: S110, BLE001
-                pass
+            LOG.debug("BackgroundPlotter.close done")
 
     def _close(self) -> None:
         super().close()
