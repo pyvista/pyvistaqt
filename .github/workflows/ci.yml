@@ -138,7 +138,11 @@ jobs:
         name: "Setup python"
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install -r requirements_test.txt "vtk${{ matrix.vtk }}" "vtk<9.6" --only-binary vtk
+          VTK="${{ matrix.vtk }}"
+          if [[ "$VTK" == "" ]]; then
+            VTK="<9.6"
+          fi
+          pip install -r requirements_test.txt "vtk$VTK" --only-binary vtk
         name: "Install dependencies with pip"
       - run: pip install "PyQt6-Qt6!=6.6.0,!=6.7.0,!=6.10.0" "PyQt6!=6.6.0,!=6.10.0,!=6.10.1"
         name: "Install Qt binding on macOS"
