@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "pyvista>=0.32.0",
+    "pyvista>=0.39.0",  # May 2023
     "QtPy>=1.9.0",
 ]
 dynamic = ["version"]
@@ -110,7 +110,7 @@ force-single-line = true
 
 [tool.ruff.lint.per-file-ignores]
 "doc/**" = ["INP001"]
-"tests/**" = ["ANN001", "INP001", "S101"]
+"tests/**" = ["ANN001", "INP001", "S101", "T201", "PLR0915"]
 
 [tool.ruff.lint.pyupgrade]
 # Preserve types, even if a file imports `from __future__ import annotations`.
