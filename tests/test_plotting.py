@@ -10,7 +10,6 @@ import sys
 import weakref
 
 import numpy as np
-from packaging.version import Version
 import pytest
 import pyvista
 from pyvista.plotting import Renderer
@@ -56,8 +55,6 @@ from pyvistaqt.plotting import QVTKRenderWindowInteractor
 from pyvistaqt.utils import _check_type
 from pyvistaqt.utils import _create_menu_bar
 from pyvistaqt.utils import _setup_application
-
-PV_VERSION = Version(pyvista.__version__)
 
 
 class TstWindow(MainWindow):  # noqa: D101
@@ -853,9 +850,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
 
 
 def allow_bad_gc_old_pyvista(func):  # noqa: ANN201, D103
-    if Version("0.37") > PV_VERSION:
-        return pytest.mark.allow_bad_gc(func)
-    return func
+    return pytest.mark.allow_bad_gc(func)
 
 
 # TODO: Need to fix this allow_bad_gc:  # noqa: FIX002, TD002, TD003
