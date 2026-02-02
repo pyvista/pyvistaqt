@@ -184,7 +184,7 @@ jobs:
         python-version: ["3.12"]
     defaults:
       run:
-        shell: bash -e {0}
+        shell: bash -el {0}
     env:
       ALLOW_PLOTTING: "true"
     steps:
