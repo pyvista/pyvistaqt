@@ -624,8 +624,7 @@ class BackgroundPlotter(QtInteractor):
         """
         super().reset_key_events()
         if self.allow_quit_keypress:
-            # pylint: disable=unnecessary-lambda
-            self.add_key_event("q", lambda: self.close())
+            self.add_key_event("q", self.close)
 
     def scale_axes_dialog(self, show: bool = True) -> ScaleAxesDialog:  # noqa: FBT001, FBT002
         """Open scale axes dialog."""
@@ -848,8 +847,7 @@ class BackgroundPlotter(QtInteractor):
         }
         for key, method in cvec_setters.items():
             self._view_action = self._add_action(self.default_camera_tool_bar, key, method)
-        # pylint: disable=unnecessary-lambda
-        self._add_action(self.default_camera_tool_bar, "Reset", lambda: self.reset_camera())
+        self._add_action(self.default_camera_tool_bar, "Reset", self.reset_camera)
 
         # Saved camera locations toolbar
         self.saved_camera_positions = []
