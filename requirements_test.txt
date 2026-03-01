@@ -4,7 +4,7 @@ pytest==9.0.2
 pytest-cov==7.0.0
 pytest-memprof==0.2.0
 pytest-qt==4.5.0
-pyvista==0.46.5
+pyvista==0.47.1
 QtPy==2.4.3
 scooby==0.11.0
 toml==0.10.2
