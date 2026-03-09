@@ -15,7 +15,7 @@ repos:
         args: ["--config-file", "mypy.ini", "@mypy_checklist.txt"]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         args: ["docs examples examples_flask pyvista tests", "*.py *.rst *.md"]
@@ -41,7 +41,7 @@ repos:
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
+    rev: v0.15.5
     hooks:
       - id: ruff
         args: [--fix, --show-fixes]
