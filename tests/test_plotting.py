@@ -156,7 +156,7 @@ def debug_log_level():  # noqa: ANN201
         LOG.setLevel(old_level)
 
 
-BAD_INTERACTION = platform.system() == "Darwin" and API_NAME in ("PyQt6", "PySide6") and QT_VERSION[:4] == "6.10"
+BAD_INTERACTION = platform.system() == "Darwin" and API_NAME in ("PyQt6", "PySide6") and QT_VERSION[:4] in ("6.10", "6.11")
 
 
 def wait_exposed(qtbot, widget, **kwargs):  # type: ignore[no-untyped-def]  # noqa: ANN201,ANN003
