@@ -195,6 +195,9 @@ jobs:
           create-args: >-
             python=${{ matrix.python-version }} ${{ matrix.qt }}
       - run: |
+          conda install "pyside6<6.10"
+        if: startsWith(matrix.os, 'macos')
+      - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
