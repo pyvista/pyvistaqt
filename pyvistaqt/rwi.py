@@ -127,6 +127,7 @@ if PyQtImpl == "PySide6":
     from PySide6.QtCore import QObject
     from PySide6.QtCore import QSize
     from PySide6.QtCore import QEvent
+    from PySide6.QtCore import __version__ as QT_VERSION
 elif PyQtImpl == "PyQt6":
     if QVTKRWIBase == "QOpenGLWidget":
         from PyQt6.QtOpenGLWidgets import QOpenGLWidget
@@ -140,6 +141,7 @@ elif PyQtImpl == "PyQt6":
     from PyQt6.QtCore import QObject
     from PyQt6.QtCore import QSize
     from PyQt6.QtCore import QEvent
+    from PyQt6.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PyQt5":
     if QVTKRWIBase == "QGLWidget":
         from PyQt5.QtOpenGL import QGLWidget
@@ -153,6 +155,7 @@ elif PyQtImpl == "PyQt5":
     from PyQt5.QtCore import QObject
     from PyQt5.QtCore import QSize
     from PyQt5.QtCore import QEvent
+    from PyQt5.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PySide2":
     if QVTKRWIBase == "QGLWidget":
         from PySide2.QtOpenGL import QGLWidget
@@ -166,6 +169,7 @@ elif PyQtImpl == "PySide2":
     from PySide2.QtCore import QObject
     from PySide2.QtCore import QSize
     from PySide2.QtCore import QEvent
+    from PySide2.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PyQt4":
     if QVTKRWIBase == "QGLWidget":
         from PyQt4.QtOpenGL import QGLWidget
@@ -178,6 +182,7 @@ elif PyQtImpl == "PyQt4":
     from PyQt4.QtCore import QObject
     from PyQt4.QtCore import QSize
     from PyQt4.QtCore import QEvent
+    from PyQt4.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PySide":
     if QVTKRWIBase == "QGLWidget":
         from PySide.QtOpenGL import QGLWidget
@@ -190,6 +195,7 @@ elif PyQtImpl == "PySide":
     from PySide.QtCore import QObject
     from PySide.QtCore import QSize
     from PySide.QtCore import QEvent
+    from PySide.QtCore import QT_VERSION_STR as QT_VERSION
 else:
     raise ImportError("Unknown PyQt implementation " + repr(PyQtImpl))
 
@@ -230,6 +236,8 @@ if PyQtImpl in ('PyQt4', 'PySide'):
     MiddleButton = MouseButton.MidButton
 else:
     MiddleButton = MouseButton.MiddleButton
+
+QT_VERSION_6_10 = tuple(map(int, QT_VERSION.split('.'))) >= (6, 10)
 
 
 def _get_event_pos(ev):
@@ -393,7 +401,10 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
         # do all the necessary qt setup
         self.setAttribute(WidgetAttribute.WA_OpaquePaintEvent)
-        self.setAttribute(WidgetAttribute.WA_PaintOnScreen)
+        # Adapted from
+        # https://gitlab.kitware.com/vtk/vtk/-/merge_requests/12956/diffs?commit_id=3328ae95f80821baf01b8625cebd293e1e55a90f
+        if not (self._RenderWindow.IsA("vtkCocoaRenderWindow") and QT_VERSION_6_10):
+            self.setAttribute(WidgetAttribute.WA_PaintOnScreen)
         self.setMouseTracking(True) # get all mouse events
         self.setFocusPolicy(FocusPolicy.WheelFocus)
         self.setSizePolicy(QSizePolicy(SizePolicy.Expanding, SizePolicy.Expanding))
