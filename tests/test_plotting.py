@@ -155,7 +155,8 @@ def debug_log_level():  # noqa: ANN201
         LOG.setLevel(old_level)
 
 
-# Preserve shim in case things break again
+# Preserve shim in case things break again, see
+# https://github.com/pyvista/pyvistaqt/pull/810
 BAD_INTERACTION = False
 
 

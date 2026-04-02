@@ -237,7 +237,10 @@ if PyQtImpl in ('PyQt4', 'PySide'):
 else:
     MiddleButton = MouseButton.MiddleButton
 
-QT_VERSION_6_10 = tuple(map(int, QT_VERSION.split('.'))) >= (6, 10)
+try:
+    QT_VERSION_6_10 = tuple(map(int, QT_VERSION.split('.'))) >= (6, 10)
+except Exception:  # Couldn't parse properly, shouldn't happen but let's be safe
+    QT_VERSION_6_10 = False
 
 
 def _get_event_pos(ev):
