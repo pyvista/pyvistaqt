@@ -56,6 +56,8 @@ Changes by Eric Larson and Guillaume Favelier, Apr. 2022
  Support for PyQt6
 """
 
+import sys
+
 # Check whether a specific PyQt implementation was chosen
 try:
     import vtkmodules.qt
@@ -127,6 +129,7 @@ if PyQtImpl == "PySide6":
     from PySide6.QtCore import QObject
     from PySide6.QtCore import QSize
     from PySide6.QtCore import QEvent
+    from PySide6.QtCore import __version__ as QT_VERSION
 elif PyQtImpl == "PyQt6":
     if QVTKRWIBase == "QOpenGLWidget":
         from PyQt6.QtOpenGLWidgets import QOpenGLWidget
@@ -140,6 +143,7 @@ elif PyQtImpl == "PyQt6":
     from PyQt6.QtCore import QObject
     from PyQt6.QtCore import QSize
     from PyQt6.QtCore import QEvent
+    from PyQt6.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PyQt5":
     if QVTKRWIBase == "QGLWidget":
         from PyQt5.QtOpenGL import QGLWidget
@@ -153,6 +157,7 @@ elif PyQtImpl == "PyQt5":
     from PyQt5.QtCore import QObject
     from PyQt5.QtCore import QSize
     from PyQt5.QtCore import QEvent
+    from PyQt5.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PySide2":
     if QVTKRWIBase == "QGLWidget":
         from PySide2.QtOpenGL import QGLWidget
@@ -166,6 +171,7 @@ elif PyQtImpl == "PySide2":
     from PySide2.QtCore import QObject
     from PySide2.QtCore import QSize
     from PySide2.QtCore import QEvent
+    from PySide2.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PyQt4":
     if QVTKRWIBase == "QGLWidget":
         from PyQt4.QtOpenGL import QGLWidget
@@ -178,6 +184,7 @@ elif PyQtImpl == "PyQt4":
     from PyQt4.QtCore import QObject
     from PyQt4.QtCore import QSize
     from PyQt4.QtCore import QEvent
+    from PyQt4.QtCore import QT_VERSION_STR as QT_VERSION
 elif PyQtImpl == "PySide":
     if QVTKRWIBase == "QGLWidget":
         from PySide.QtOpenGL import QGLWidget
@@ -190,6 +197,7 @@ elif PyQtImpl == "PySide":
     from PySide.QtCore import QObject
     from PySide.QtCore import QSize
     from PySide.QtCore import QEvent
+    from PySide.QtCore import QT_VERSION_STR as QT_VERSION
 else:
     raise ImportError("Unknown PyQt implementation " + repr(PyQtImpl))
 
@@ -230,6 +238,15 @@ if PyQtImpl in ('PyQt4', 'PySide'):
     MiddleButton = MouseButton.MidButton
 else:
     MiddleButton = MouseButton.MiddleButton
+
+try:
+    _DISABLE_PAINT_IN_PAINT = tuple(map(int, QT_VERSION.split('.')[:2])) >= (6, 10)
+except Exception:  # Couldn't parse properly, shouldn't happen but let's be safe
+    _DISABLE_PAINT_IN_PAINT = False
+_DISABLE_PAINT_IN_PAINT = _DISABLE_PAINT_IN_PAINT and sys.platform == "darwin"
+# now we invert it because the value we want to set for __doPaintEvent is actually False
+# for macOS and Qt >= 6.10
+_IN_PAINT_EVENT_VALUE = not _DISABLE_PAINT_IN_PAINT
 
 
 def _get_event_pos(ev):
@@ -467,7 +484,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     def paintEvent(self, ev):
         if self.__doPaintEvent:
-            self.__doPaintEvent = False
+            self.__doPaintEvent = _IN_PAINT_EVENT_VALUE
             self._Iren.Render()
 
     def resizeEvent(self, ev):
