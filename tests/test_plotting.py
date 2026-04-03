@@ -14,7 +14,6 @@ import pytest
 import pyvista
 from pyvista.plotting import Renderer
 from qtpy import API_NAME
-from qtpy import QT_VERSION
 from qtpy import QtCore
 from qtpy.QtCore import QMimeData
 from qtpy.QtCore import QPoint
@@ -156,7 +155,9 @@ def debug_log_level():  # noqa: ANN201
         LOG.setLevel(old_level)
 
 
-BAD_INTERACTION = platform.system() == "Darwin" and API_NAME in ("PyQt6", "PySide6") and QT_VERSION[:4] in ("6.10", "6.11")
+# Preserve shim in case things break again, see
+# https://github.com/pyvista/pyvistaqt/pull/810
+BAD_INTERACTION = False
 
 
 def wait_exposed(qtbot, widget, **kwargs):  # type: ignore[no-untyped-def]  # noqa: ANN201,ANN003
