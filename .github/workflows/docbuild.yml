@@ -1,7 +1,7 @@
 name: Documentation
 
 permissions:
-  contents: read
+  contents: write
   pages: write
 
 on:
@@ -38,8 +38,7 @@ jobs:
         # Not a PR:
         if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads')
         with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          external_repository: pyvista/pyvistaqt-docs
-          publish_branch: master
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
           publish_dir: ./docs/_build/html
           cname: qtdocs.pyvista.org
