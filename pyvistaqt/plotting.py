@@ -1,4 +1,3 @@
-# pylint: disable=too-many-lines
 """
 This module contains the QtInteractor and BackgroundPlotter.
 
@@ -189,14 +188,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     """
 
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-statements
-
     # Signals must be class attributes
     render_signal = Signal()
     key_press_event_signal = Signal(vtkGenericRenderWindowInteractor, str)
 
-    # pylint: disable=too-many-arguments
     def __init__(  # noqa: C901, PLR0912, PLR0913
         self,
         parent: MainWindow = None,
@@ -209,7 +204,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         auto_update: float | bool = 5.0,  # noqa: FBT001
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
-        # pylint: disable=too-many-branches
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
         self.url: QtCore.QUrl = None
@@ -374,7 +368,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         for view_index in other_views:
             other_plotter.renderers[view_index].camera = renderer.camera
 
-    # pylint: disable=invalid-name
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:  # noqa: N802
         """
         Event is called when something is dropped onto the vtk window.
@@ -391,7 +384,6 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         except OSError as exception:  # pragma: no cover
             warnings.warn(f"Exception when dragging files: {exception!s}")  # noqa: B028
 
-    # pylint: disable=invalid-name,useless-return
     def dropEvent(self, event: QtCore.QEvent) -> None:  # noqa: N802
         """Event is called after dragEnterEvent."""
         try:
@@ -415,9 +407,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         QVTKRenderWindowInteractor.close(self)
         # Qt LeaveEvent requires _Iren so we use _FakeIren instead of None
         # to resolve the ref to vtkGenericRenderWindowInteractor
-        self._Iren = (  # pylint: disable=invalid-name,attribute-defined-outside-init
-            _FakeEventHandler()
-        )
+        self._Iren = _FakeEventHandler()
         for key in ("_RenderWindow", "renderer"):
             with contextlib.suppress(AttributeError):
                 setattr(self, key, None)
@@ -501,14 +491,8 @@ class BackgroundPlotter(QtInteractor):
 
     """
 
-    # pylint: disable=too-many-ancestors
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-statements
-
     ICON_TIME_STEP = 5.0
 
-    # pylint: disable=too-many-arguments
-    # pylint: disable=too-many-locals
     def __init__(  # noqa: PLR0913, PLR0915
         self,
         show: bool = True,  # noqa: FBT001, FBT002
@@ -523,7 +507,6 @@ class BackgroundPlotter(QtInteractor):
         app_window_class: type[MainWindow] | None = None,
         **kwargs: Any,  # noqa: ANN401
     ) -> None:
-        # pylint: disable=too-many-branches
         """Initialize the qt plotter."""
         # avoid recursion of the close() function by setting
         # self._closed=True until the BasePlotter.__init__
@@ -796,7 +779,6 @@ class BackgroundPlotter(QtInteractor):
     def save_camera_position(self) -> None:
         """Save camera position to saved camera menu for recall."""
         if self.saved_camera_positions is not None:
-            # pylint: disable=attribute-defined-outside-init
             self.camera_position: Any
             self.saved_camera_positions.append(self.camera_position)
             ncam = len(self.saved_camera_positions)
@@ -806,7 +788,6 @@ class BackgroundPlotter(QtInteractor):
         if hasattr(self, "saved_cameras_tool_bar"):
 
             def load_camera_position() -> None:
-                # pylint: disable=attribute-defined-outside-init
                 self.camera_position = camera_position
 
             self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
@@ -945,9 +926,6 @@ class MultiPlotter:
 
     """
 
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-arguments
-
     def __init__(  # noqa: PLR0913
         self,
         app: QApplication | None = None,
@@ -1037,8 +1015,6 @@ class MultiPlotter:
 
 
 class _FakeEventHandler:
-    # pylint: disable=too-few-public-methods
-
     def _noop(self, *args: tuple, **kwargs: dict) -> None:
         pass
 

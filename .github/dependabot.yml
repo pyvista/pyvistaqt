@@ -9,11 +9,6 @@ updates:
     labels:
       - "maintenance"
       - "dependencies"
-    groups:
-      trame:
-        patterns:
-          - "trame"
-          - "trame-*"
   - package-ecosystem: "github-actions"
     directory: "/.github/workflows"
     schedule:

@@ -69,3 +69,5 @@ docs/external_examples.rst
 *.swp
 
 pyvistaqt/_version.py
+
+uv.lock

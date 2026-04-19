@@ -1,34 +1,38 @@
-# Simple makefile to simplify repetitive build env management tasks under posix
+# Convenience targets for local development.
+#
+# Tools are run through `uv run` so they resolve from the project environment
+# without requiring the venv to be activated. Override RUN to run directly
+# (e.g. `make lint RUN=`) when tools are already on PATH.
 
-PYCODESTYLE_DIRS ?= ./pyvistaqt/
-PYLINT_DIRS ?= ./pyvistaqt/
-COVERAGE_DIRS ?= ./pyvistaqt/
-COVERAGE_HTML_DIRS ?= ./pyvistaqt/
-COVERAGE_XML_DIRS ?= ./pyvistaqt/
+PACKAGE ?= pyvistaqt
+RUN ?= uv run
 
-EXTRA_PYLINT_OPTIONS ?= -rn -sn --rcfile=.pylintrc
-EXTRA_PYCODESTYLE_OPTIONS ?= --config=.pycodestyle
+all: lint
 
-all: srcstyle
+lint:
+	@echo "Running ruff (lint + format check)"
+	@$(RUN) ruff check $(PACKAGE)
+	@$(RUN) ruff format --check $(PACKAGE)
 
-srcstyle: pylint pycodestyle
+format:
+	@echo "Auto-fixing with ruff"
+	@$(RUN) ruff check --fix $(PACKAGE)
+	@$(RUN) ruff format $(PACKAGE)
 
-pylint:
-	@echo "Running pylint"
-	@pylint $(PYLINT_DIRS) $(EXTRA_PYLINT_OPTIONS)
-
-pycodestyle:
-	@echo "Running pycodestyle"
-	@pycodestyle $(PYCODESTYLE_DIRS) $(EXTRA_PYCODESTYLE_OPTIONS)
+mypy:
+	@echo "Running mypy"
+	@$(RUN) mypy
 
 coverage:
 	@echo "Running coverage"
-	@pytest -v --cov $(COVERAGE_DIRS)
+	@$(RUN) pytest -v --cov $(PACKAGE)
 
 coverage-xml:
 	@echo "Reporting XML coverage"
-	@pytest -v --cov $(COVERAGE_XML_DIRS) --cov-report xml
+	@$(RUN) pytest -v --cov $(PACKAGE) --cov-report xml
 
 coverage-html:
 	@echo "Reporting HTML coverage"
-	@pytest -v --cov $(COVERAGE_HTML_DIRS) --cov-report html
+	@$(RUN) pytest -v --cov $(PACKAGE) --cov-report html
+
+.PHONY: all lint format mypy coverage coverage-xml coverage-html

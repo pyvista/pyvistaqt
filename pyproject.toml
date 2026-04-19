@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "pyvista>=0.39.0",  # May 2023
@@ -28,6 +29,27 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+test = [
+    "ipython==8.39.0",
+    # numpy 2.3+ dropped Python 3.10; keep 2.2.x on 3.10 for resolver compat
+    "numpy==2.4.4; python_version >= '3.11'",
+    "numpy==2.2.6; python_version < '3.11'",
+    "pytest==9.0.3",
+    "pytest-cov==7.1.0",
+    "pytest-memprof==0.2.0",
+    "pytest-qt==4.5.0",
+    # Pull in whatever trame/nest_asyncio stack the installed pyvista needs
+    # for VTKjs export. Each pyvista version pins its own compatible deps.
+    "pyvista[jupyter]",
+    "scooby==0.11.0",
+    "sphinx_gallery==0.20.0",
+]
+docs = [
+    "pydata-sphinx-theme==0.16.1",
+    "Sphinx==8.1.3",  # 8.2+ requires Python 3.11+
+    "sphinx-copybutton==0.5.2",
+    "sphinx-notfound-page==1.1.0",
+]
 dev = [
     "pre-commit",
 ]
@@ -48,35 +70,6 @@ pyvistaqt = ["data/*.png"]
 [tool.setuptools_scm]
 write_to = "pyvistaqt/_version.py"
 version_scheme = "release-branch-semver"
-
-[tool.black]
-line-length = 88
-skip-string-normalization = true
-target-version = ["py39"]
-# `pre-comment` doesn't see skips; `force-exclude` forces it
-# to see these files
-#
-# See:
-#   - https://github.com/psf/black/issues/1584
-force-exclude = '''
-(
-    docs/conf\.py
-  | pyvistaqt/rwi\.py
-  | tests/.*\.py
-  | setup.py
-)
-'''
-
-[tool.pydocstyle]
-match = '''
-(?!
-    (
-      | tests/
-      | docs/
-      | rwi
-    ).*\.py
-)
-'''
 
 [tool.ruff]
 line-length = 150
@@ -115,3 +108,65 @@ force-single-line = true
 [tool.ruff.lint.pyupgrade]
 # Preserve types, even if a file imports `from __future__ import annotations`.
 keep-runtime-typing = true
+
+[tool.pytest.ini_options]
+junit_family = "legacy"
+addopts = "--durations=10 -ra --cov-report= --tb=short"
+filterwarnings = [
+    "error",
+    "ignore::ResourceWarning",
+    # bogus numpy ABI warning (see numpy/#432)
+    "ignore:.*numpy.dtype size changed.*:RuntimeWarning",
+    "ignore:.*numpy.ufunc size changed.*:RuntimeWarning",
+    # from usage of numpy_to_vtk:
+    "ignore:.*`np.bool` is a deprecated alias.*:DeprecationWarning",
+    "ignore:.*`np.int` is a deprecated alias.*:DeprecationWarning",
+    "ignore:.*`np.float` is a deprecated alias.*:DeprecationWarning",
+    "ignore:.*`np.object` is a deprecated alias.*:DeprecationWarning",
+    "ignore:.*`np.long` is a deprecated alias:DeprecationWarning",
+    "ignore:.*Converting `np\\.character` to a dtype is deprecated.*:DeprecationWarning",
+    "ignore:.*ImportDenier.*not found.*:ImportWarning",
+    # PySide6
+    "ignore:Failed to disconnect.*:RuntimeWarning",
+    # ipython
+    "ignore:The default datetime adapter is deprecated.*:DeprecationWarning",
+    # trame-vtk uses VTK 9.6-deprecated APIs (GetData, etc.)
+    "ignore:Call to deprecated method.*:DeprecationWarning",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["pyvistaqt"]
+omit = [
+    "*/setup.py",
+    "*/pyvistaqt/rwi.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "@abstractmethod",
+    "@abstractclassmethod",
+]
+
+[tool.mypy]
+ignore_errors = true
+disallow_untyped_defs = true
+files = [
+    "pyvistaqt/counter.py",
+    "pyvistaqt/dialog.py",
+    "pyvistaqt/editor.py",
+    "pyvistaqt/plotting.py",
+    "pyvistaqt/utils.py",
+    "pyvistaqt/window.py",
+]
+
+[[tool.mypy.overrides]]
+module = ["vtk.*", "vtkmodules.*", "pyvista.*", "qtpy.*", "IPython.*"]
+ignore_missing_imports = true
+
+[tool.codespell]
+skip = "./.ci/*,./.git/*,./.hypothesis/*,./dist/*,./doc/examples/*,./doc/images/*,./docs/_build/*,./docs/images/*,./tests/tinypages/_build/*,.hypothesis*,*.doctree,*.eot,*.gif,*.html,*.inv,*.ipynb,*.jpg,*.js,*.json,*.mp4,*.mypy_cache/*,*.pickle,*.ply,*.png,*.pyc,*.ttf,*.txt,*.vti,*.vtk,*.vtu,*.woff,*.woff2,*.yml,*/_autosummary/*,*~,*cover,doc/_build/*,flycheck*"
+ignore-words-list = "lod,byteorder,flem,parm,doubleclick,revered,PullRequest"
+quiet-level = 3

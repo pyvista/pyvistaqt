@@ -10,8 +10,6 @@ from qtpy.QtCore import Slot
 class Counter(QObject):
     """Counter class with Qt signal/slot."""
 
-    # pylint: disable=too-few-public-methods
-
     signal_finished = Signal()
 
     def __init__(self, count: int) -> None:
