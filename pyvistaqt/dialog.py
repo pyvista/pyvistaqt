@@ -30,11 +30,8 @@ class FileDialog(QFileDialog):
     the dialog was property closed.
     """
 
-    # pylint: disable=too-few-public-methods
-
     dlg_accepted = Signal(str)
 
-    # pylint: disable=too-many-arguments
     def __init__(  # noqa: PLR0913
         self,
         parent: MainWindow = None,
@@ -110,11 +107,11 @@ class DoubleSlider(QSlider):
         """Return the value of the slider."""
         return float(super().value()) / self._max_int * self._value_range + self._min_value
 
-    def setValue(self, value: float) -> None:  # pylint: disable=invalid-name  # noqa: N802
+    def setValue(self, value: float) -> None:  # noqa: N802
         """Set the value of the slider."""
         super().setValue(int((value - self._min_value) / self._value_range * self._max_int))
 
-    def setMinimum(self, value: float) -> None:  # pylint: disable=invalid-name  # noqa: N802
+    def setMinimum(self, value: float) -> None:  # noqa: N802
         """Set the minimum value of the slider."""
         if value > self._max_value:  # pragma: no cover
             msg = "Minimum limit cannot be higher than maximum"
@@ -123,7 +120,7 @@ class DoubleSlider(QSlider):
         self._min_value = value
         self.setValue(self.value())
 
-    def setMaximum(self, value: float) -> None:  # pylint: disable=invalid-name  # noqa: N802
+    def setMaximum(self, value: float) -> None:  # noqa: N802
         """Set the maximum value of the slider."""
         if value < self._min_value:  # pragma: no cover
             msg = "Minimum limit cannot be higher than maximum"
@@ -138,7 +135,6 @@ class DoubleSlider(QSlider):
 class RangeGroup(QHBoxLayout):
     """Range group box widget."""
 
-    # pylint: disable=too-many-arguments,useless-return
     def __init__(
         self,
         parent: MainWindow,
@@ -167,11 +163,11 @@ class RangeGroup(QHBoxLayout):
         self.spinbox.valueChanged.connect(self.update_value)
         self.spinbox.valueChanged.connect(callback)
 
-    def update_spinbox(self, value: float) -> None:  # pylint: disable=unused-argument  # noqa: ARG002
+    def update_spinbox(self, value: float) -> None:  # noqa: ARG002
         """Set the value of the internal spinbox."""
         self.spinbox.setValue(self.slider.value())
 
-    def update_value(self, value: float) -> None:  # pylint: disable=unused-argument  # noqa: ARG002
+    def update_value(self, value: float) -> None:  # noqa: ARG002
         """Update the value of the internal slider."""
         # if self.spinbox.value() < self.minimum:
         #     self.spinbox.setValue(self.minimum)  # noqa: ERA001
@@ -195,8 +191,6 @@ class RangeGroup(QHBoxLayout):
 
 class ScaleAxesDialog(QDialog):
     """Dialog to control axes scaling."""
-
-    # pylint: disable=too-few-public-methods
 
     accepted = Signal(float)
     signal_close = Signal()

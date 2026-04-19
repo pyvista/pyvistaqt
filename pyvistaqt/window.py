@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
             return True
         return super().event(event)
 
-    def closeEvent(self, event: QtCore.QEvent) -> None:  # pylint: disable=invalid-name  # noqa: N802
+    def closeEvent(self, event: QtCore.QEvent) -> None:  # noqa: N802
         """Manage the close event."""
         self.signal_close.emit()
         event.accept()
