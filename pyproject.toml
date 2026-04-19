@@ -31,7 +31,6 @@ dynamic = ["version"]
 [project.optional-dependencies]
 test = [
     "ipython==8.39.0",
-    "nest_asyncio2==1.7.2",
     # numpy 2.3+ dropped Python 3.10; keep 2.2.x on 3.10 for resolver compat
     "numpy==2.4.4; python_version >= '3.11'",
     "numpy==2.2.6; python_version < '3.11'",
@@ -39,11 +38,11 @@ test = [
     "pytest-cov==7.1.0",
     "pytest-memprof==0.2.0",
     "pytest-qt==4.5.0",
+    # Pull in whatever trame/nest_asyncio stack the installed pyvista needs
+    # for VTKjs export. Each pyvista version pins its own compatible deps.
+    "pyvista[jupyter]",
     "scooby==0.11.0",
     "sphinx_gallery==0.20.0",
-    "trame==3.12.0",
-    "trame-vtk==2.11.7",
-    "trame-vuetify==3.2.1",
 ]
 docs = [
     "pydata-sphinx-theme==0.16.1",

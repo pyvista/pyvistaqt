@@ -561,6 +561,11 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting) 
 
 @pytest.mark.allow_bad_gc
 def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # noqa: ARG001, D103
+    # VTKjs export is only guaranteed on current pyvista + VTK.
+    # Older pyvista (< 0.47) still imports the deprecated `nest_asyncio`
+    # package and older VTK may lack APIs that trame-vtk relies on.
+    pytest.importorskip("pyvista", minversion="0.47")
+    pytest.importorskip("vtk", minversion="9.6")
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)  # noqa: PTH112
