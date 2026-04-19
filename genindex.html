@@ -1,0 +1,801 @@
+ 
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; PyVistaQt 0.1.0.dev1+g6bbb14c54 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=97b7cdfc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=67ae665f"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.0.dev1+g6bbb14c54" />
+
+<meta
+  name="description"
+  content="3D plotting and mesh analysis through a streamlined interface for the Visualization Toolkit (VTK)"
+/>
+<meta name="author" content="PyVista Developers" />
+<meta
+  name="keywords"
+  content="python, 3D, visualization, plotting, mesh, meshviewer, vtk, open-source"
+/>
+
+<!-- this contains PyVista's Google analytics code - please don't copy/paste our tracking ID -->
+<script>
+  (function (i, s, o, g, r, a, m) {
+    i["GoogleAnalyticsObject"] = r;
+    ((i[r] =
+      i[r] ||
+      function () {
+        (i[r].q = i[r].q || []).push(arguments);
+      }),
+      (i[r].l = 1 * new Date()));
+    ((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m);
+  })(
+    window,
+    document,
+    "script",
+    "https://www.google-analytics.com/analytics.js",
+    "ga",
+  );
+
+  ga("create", "UA-140243896-3", "auto");
+  ga("send", "pageview");
+</script>
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g6bbb14c54 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g6bbb14c54 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="http://slack.pyvista.org" title="Slack Community" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-slack fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Slack Community</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvista/discussions" title="Support" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-comment fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Support</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Contributing</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="http://slack.pyvista.org" title="Slack Community" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-slack fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Slack Community</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvista/discussions" title="Support" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-comment fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Support</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Contributing</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.add_callback">add_callback() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.add_editor">add_editor() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.add_menu_bar">add_menu_bar() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.add_toolbars">add_toolbars() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter">BackgroundPlotter (class in pyvistaqt)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.clear_camera_positions">clear_camera_positions() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.close">close() (pyvistaqt.BackgroundPlotter method)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.MultiPlotter.close">(pyvistaqt.MultiPlotter method)</a>
+</li>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.close">(pyvistaqt.QtInteractor method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.counters">counters (pyvistaqt.BackgroundPlotter attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.default_camera_tool_bar">default_camera_tool_bar (pyvistaqt.BackgroundPlotter attribute)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.disable">disable() (pyvistaqt.QtInteractor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.dragEnterEvent">dragEnterEvent() (pyvistaqt.QtInteractor method)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.dropEvent">dropEvent() (pyvistaqt.QtInteractor method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.editor">editor (pyvistaqt.BackgroundPlotter attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.enable">enable() (pyvistaqt.QtInteractor method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.gesture_event">gesture_event() (pyvistaqt.QtInteractor method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.ICON_TIME_STEP">ICON_TIME_STEP (pyvistaqt.BackgroundPlotter attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.iren">iren (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.iren">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.key_press_event">key_press_event() (pyvistaqt.QtInteractor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.key_press_event_signal">key_press_event_signal (pyvistaqt.QtInteractor attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.last_image">last_image (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.last_image">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.last_image_depth">last_image_depth (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.last_image_depth">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.last_vtksz">last_vtksz (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.last_vtksz">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.link_views_across_plotters">link_views_across_plotters() (pyvistaqt.QtInteractor method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.main_menu">main_menu (pyvistaqt.BackgroundPlotter attribute)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.mapper">mapper (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.mapper">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.mesh">mesh (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.mesh">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api_reference.html#module-pyvistaqt.plotting">pyvistaqt.plotting</a>
+</li>
+      </ul></li>
+      <li><a href="api_reference.html#pyvistaqt.MultiPlotter">MultiPlotter (class in pyvistaqt)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.mwriter">mwriter (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.mwriter">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    pyvistaqt.plotting
+
+      <ul>
+        <li><a href="api_reference.html#module-pyvistaqt.plotting">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor">QtInteractor (class in pyvistaqt)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.render">render() (pyvistaqt.QtInteractor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.QtInteractor.render_signal">render_signal (pyvistaqt.QtInteractor attribute)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.reset_key_events">reset_key_events() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.save_camera_position">save_camera_position() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.saved_camera_positions">saved_camera_positions (pyvistaqt.BackgroundPlotter attribute)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.saved_cameras_tool_bar">saved_cameras_tool_bar (pyvistaqt.BackgroundPlotter attribute)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.scale_axes_dialog">scale_axes_dialog() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.set_icon">set_icon() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.MultiPlotter.show">show() (pyvistaqt.MultiPlotter method)</a>
+</li>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.staticMetaObject">staticMetaObject (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.staticMetaObject">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.text">text (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.text">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.update_app_icon">update_app_icon() (pyvistaqt.BackgroundPlotter method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.url">url (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.url">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.volume">volume (pyvistaqt.BackgroundPlotter attribute)</a>
+
+      <ul>
+        <li><a href="api_reference.html#pyvistaqt.QtInteractor.volume">(pyvistaqt.QtInteractor attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_reference.html#pyvistaqt.BackgroundPlotter.window_size">window_size (pyvistaqt.BackgroundPlotter property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2017-2026, The PyVista Developers.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

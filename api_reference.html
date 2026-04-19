@@ -1,0 +1,1265 @@
+ 
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API Reference &#8212; PyVistaQt 0.1.0.dev1+g6bbb14c54 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=97b7cdfc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=67ae665f"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api_reference';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.1.0.dev1+g6bbb14c54" />
+
+<meta
+  name="description"
+  content="3D plotting and mesh analysis through a streamlined interface for the Visualization Toolkit (VTK)"
+/>
+<meta name="author" content="PyVista Developers" />
+<meta
+  name="keywords"
+  content="python, 3D, visualization, plotting, mesh, meshviewer, vtk, open-source"
+/>
+
+<!-- this contains PyVista's Google analytics code - please don't copy/paste our tracking ID -->
+<script>
+  (function (i, s, o, g, r, a, m) {
+    i["GoogleAnalyticsObject"] = r;
+    ((i[r] =
+      i[r] ||
+      function () {
+        (i[r].q = i[r].q || []).push(arguments);
+      }),
+      (i[r].l = 1 * new Date()));
+    ((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m);
+  })(
+    window,
+    document,
+    "script",
+    "https://www.google-analytics.com/analytics.js",
+    "ga",
+  );
+
+  ga("create", "UA-140243896-3", "auto");
+  ga("send", "pageview");
+</script>
+
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g6bbb14c54 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g6bbb14c54 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="http://slack.pyvista.org" title="Slack Community" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-slack fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Slack Community</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvista/discussions" title="Support" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-comment fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Support</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Contributing</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    Overview
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="usage.html">
+    Usage
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="http://slack.pyvista.org" title="Slack Community" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-slack fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Slack Community</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvista/discussions" title="Support" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-comment fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Support</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Contributing</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">API Reference</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#background-plotter" id="id1">Background Plotter</a></p></li>
+<li><p><a class="reference internal" href="#multiplotter" id="id2">MultiPlotter</a></p></li>
+<li><p><a class="reference internal" href="#qtinteractor" id="id3">QtInteractor</a></p></li>
+<li><p><a class="reference internal" href="#module-pyvistaqt.plotting" id="id4">Class inheritance</a></p>
+<ul>
+<li><p><a class="reference internal" href="#diagram" id="id5">Diagram</a></p></li>
+<li><p><a class="reference internal" href="#implementation" id="id6">Implementation</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="background-plotter">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Background Plotter</a><a class="headerlink" href="#background-plotter" title="Link to this heading">#</a></h2>
+<p class="rubric">Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.ICON_TIME_STEP" title="pyvistaqt.BackgroundPlotter.ICON_TIME_STEP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ICON_TIME_STEP</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.staticMetaObject" title="pyvistaqt.BackgroundPlotter.staticMetaObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">staticMetaObject</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.window_size" title="pyvistaqt.BackgroundPlotter.window_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">window_size</span></code></a></p></td>
+<td><p>Return render window size.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.add_callback" title="pyvistaqt.BackgroundPlotter.add_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_callback</span></code></a>(func[, interval, count])</p></td>
+<td><p>Add a function that can update the scene in the background.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.add_editor" title="pyvistaqt.BackgroundPlotter.add_editor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_editor</span></code></a>()</p></td>
+<td><p>Add the editor.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.add_menu_bar" title="pyvistaqt.BackgroundPlotter.add_menu_bar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_menu_bar</span></code></a>()</p></td>
+<td><p>Add the main menu bar.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.add_toolbars" title="pyvistaqt.BackgroundPlotter.add_toolbars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_toolbars</span></code></a>()</p></td>
+<td><p>Add the toolbars.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.clear_camera_positions" title="pyvistaqt.BackgroundPlotter.clear_camera_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_camera_positions</span></code></a>()</p></td>
+<td><p>Clear all camera positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.close" title="pyvistaqt.BackgroundPlotter.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Close the plotter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.reset_key_events" title="pyvistaqt.BackgroundPlotter.reset_key_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_key_events</span></code></a>()</p></td>
+<td><p>Reset all of the key press events to their defaults.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.save_camera_position" title="pyvistaqt.BackgroundPlotter.save_camera_position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_camera_position</span></code></a>()</p></td>
+<td><p>Save camera position to saved camera menu for recall.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.scale_axes_dialog" title="pyvistaqt.BackgroundPlotter.scale_axes_dialog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_axes_dialog</span></code></a>([show])</p></td>
+<td><p>Open scale axes dialog.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.set_icon" title="pyvistaqt.BackgroundPlotter.set_icon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_icon</span></code></a>(img)</p></td>
+<td><p>Set the icon image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.BackgroundPlotter.update_app_icon" title="pyvistaqt.BackgroundPlotter.update_app_icon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_app_icon</span></code></a>()</p></td>
+<td><p>Update the app icon if the user is not trying to resize the window.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvistaqt.</span></span><span class="sig-name descname"><span class="pre">BackgroundPlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QApplication.html#PySide6.QtWidgets.QApplication" title="(in PySide v6.11.0)"><span class="pre">QApplication</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">off_screen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_quit_keypress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toolbar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">menu_bar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">editor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_app_icon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_window_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">MainWindow</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyvistaqt.QtInteractor" title="pyvistaqt.plotting.QtInteractor"><code class="xref py py-class docutils literal notranslate"><span class="pre">QtInteractor</span></code></a></p>
+<p>Qt interactive plotter.</p>
+<p>Background plotter for pyvista that allows you to maintain an
+interactive plotting window without blocking the main python
+thread.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show</strong> – Show the plotting window.  If <code class="docutils literal notranslate"><span class="pre">False</span></code>, show this window by
+running <code class="docutils literal notranslate"><span class="pre">show()</span></code></p></li>
+<li><p><strong>app</strong> (<em>optional</em>) – Creates a <cite>QApplication</cite> if left as <cite>None</cite>.</p></li>
+<li><p><strong>window_size</strong> – Window size in pixels.  Defaults to <code class="docutils literal notranslate"><span class="pre">[1024,</span> <span class="pre">768]</span></code></p></li>
+<li><p><strong>off_screen</strong> – Renders off screen when True.  Useful for automated
+screenshots or debug testing.</p></li>
+<li><p><strong>allow_quit_keypress</strong> – Allow user to exit by pressing <code class="docutils literal notranslate"><span class="pre">&quot;q&quot;</span></code>.</p></li>
+<li><p><strong>toolbar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, display the default camera toolbar. Defaults to True.</p></li>
+<li><p><strong>menu_bar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, display the default main menu. Defaults to True.</p></li>
+<li><p><strong>editor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, display the VTK object editor. Defaults to True.</p></li>
+<li><p><strong>update_app_icon</strong> – If True, update_app_icon will be called automatically to update the
+Qt app icon based on the current rendering output. If None, the
+logo of PyVista will be used. If False, no icon will be set.
+Defaults to None.</p></li>
+<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Title of plotting window.</p></li>
+<li><p><strong>multi_samples</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The number of multi-samples used to mitigate aliasing. 4 is a
+good default but 8 will have better results with a potential
+impact on performance.</p></li>
+<li><p><strong>line_smoothing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, enable line smothing</p></li>
+<li><p><strong>point_smoothing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, enable point smothing</p></li>
+<li><p><strong>polygon_smoothing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, enable polygon smothing</p></li>
+<li><p><strong>auto_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Automatic update rate in seconds.  Useful for automatically
+updating the render window when actors are change without
+being automatically <code class="docutils literal notranslate"><span class="pre">Modified</span></code>.  If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, update
+rate will be 1 second.</p></li>
+<li><p><strong>app_window_class</strong> (<em>None</em><em>, </em><em>class</em><em>, </em><em>optional</em>) – A subclass of MainWindow to use when creating the app window.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pyvistaqt</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackgroundPlotter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotter</span> <span class="o">=</span> <span class="n">BackgroundPlotter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Sphere</span><span class="p">())</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.ICON_TIME_STEP">
+<span class="sig-name descname"><span class="pre">ICON_TIME_STEP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5.0</span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.ICON_TIME_STEP" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.add_callback">
+<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.add_callback" title="Link to this definition">#</a></dt>
+<dd><p>Add a function that can update the scene in the background.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> – Function to be called with no arguments.</p></li>
+<li><p><strong>interval</strong> – Time interval between calls to <cite>func</cite> in milliseconds.</p></li>
+<li><p><strong>count</strong> – Number of times <cite>func</cite> will be called. If None,
+<cite>func</cite> will be called until the main window is closed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.add_editor">
+<span class="sig-name descname"><span class="pre">add_editor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.add_editor" title="Link to this definition">#</a></dt>
+<dd><p>Add the editor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.add_menu_bar">
+<span class="sig-name descname"><span class="pre">add_menu_bar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.add_menu_bar" title="Link to this definition">#</a></dt>
+<dd><p>Add the main menu bar.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.add_toolbars">
+<span class="sig-name descname"><span class="pre">add_toolbars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.add_toolbars" title="Link to this definition">#</a></dt>
+<dd><p>Add the toolbars.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.clear_camera_positions">
+<span class="sig-name descname"><span class="pre">clear_camera_positions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.clear_camera_positions" title="Link to this definition">#</a></dt>
+<dd><p>Clear all camera positions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.close" title="Link to this definition">#</a></dt>
+<dd><p>Close the plotter.</p>
+<p>This function closes the window which in turn will
+close the plotter through <cite>signal_close</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.counters">
+<span class="sig-name descname"><span class="pre">counters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Counter</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.counters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.default_camera_tool_bar">
+<span class="sig-name descname"><span class="pre">default_camera_tool_bar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">QToolBar</span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.default_camera_tool_bar" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.editor">
+<span class="sig-name descname"><span class="pre">editor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Editor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.editor" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.iren">
+<span class="sig-name descname"><span class="pre">iren</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">RenderWindowInteractor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.iren" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.last_image">
+<span class="sig-name descname"><span class="pre">last_image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pv.pyvista_ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.last_image" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.last_image_depth">
+<span class="sig-name descname"><span class="pre">last_image_depth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pv.pyvista_ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.last_image_depth" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.last_vtksz">
+<span class="sig-name descname"><span class="pre">last_vtksz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.last_vtksz" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.main_menu">
+<span class="sig-name descname"><span class="pre">main_menu</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">QMenuBar</span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.main_menu" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.mapper">
+<span class="sig-name descname"><span class="pre">mapper</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_BaseMapper</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.mapper" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.mesh">
+<span class="sig-name descname"><span class="pre">mesh</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">MultiBlock</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataSet</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.mesh" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.mwriter">
+<span class="sig-name descname"><span class="pre">mwriter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">imageio.plugins.ffmpeg.Writer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.mwriter" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.reset_key_events">
+<span class="sig-name descname"><span class="pre">reset_key_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.reset_key_events" title="Link to this definition">#</a></dt>
+<dd><p>Reset all of the key press events to their defaults.</p>
+<p>Handles closing configuration for q-key.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.save_camera_position">
+<span class="sig-name descname"><span class="pre">save_camera_position</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.save_camera_position" title="Link to this definition">#</a></dt>
+<dd><p>Save camera position to saved camera menu for recall.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.saved_camera_positions">
+<span class="sig-name descname"><span class="pre">saved_camera_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.saved_camera_positions" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.saved_cameras_tool_bar">
+<span class="sig-name descname"><span class="pre">saved_cameras_tool_bar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">QToolBar</span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.saved_cameras_tool_bar" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.scale_axes_dialog">
+<span class="sig-name descname"><span class="pre">scale_axes_dialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ScaleAxesDialog</span></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.scale_axes_dialog" title="Link to this definition">#</a></dt>
+<dd><p>Open scale axes dialog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.set_icon">
+<span class="sig-name descname"><span class="pre">set_icon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.set_icon" title="Link to this definition">#</a></dt>
+<dd><p>Set the icon image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a><em>, </em><em>shape</em><em> (</em><em>w</em><em>, </em><em>h</em><em>, </em><em>c</em><em>) </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The image. Should be uint8 and square (w == h).
+Can have 3 or 4 color/alpha channels (<code class="docutils literal notranslate"><span class="pre">c</span></code>).
+Can also be a string path that QIcon can load.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Currently string paths can silently fail, so make sure your path
+is something that produces a valid <code class="docutils literal notranslate"><span class="pre">QIcon(img)</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.staticMetaObject">
+<span class="sig-name descname"><span class="pre">staticMetaObject</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PySide6.QtCore.QMetaObject(&quot;BackgroundPlotter&quot;</span> <span class="pre">inherits</span> <span class="pre">&quot;QtInteractor&quot;:</span> <span class="pre">)</span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.staticMetaObject" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.text">
+<span class="sig-name descname"><span class="pre">text</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">CornerAnnotation</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Text</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.text" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.update_app_icon">
+<span class="sig-name descname"><span class="pre">update_app_icon</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.update_app_icon" title="Link to this definition">#</a></dt>
+<dd><p>Update the app icon if the user is not trying to resize the window.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">QtCore.QUrl</span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.url" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.volume">
+<span class="sig-name descname"><span class="pre">volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Volume</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.volume" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvistaqt.BackgroundPlotter.window_size">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">window_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pyvistaqt.BackgroundPlotter.window_size" title="Link to this definition">#</a></dt>
+<dd><p>Return render window size.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="multiplotter">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">MultiPlotter</a><a class="headerlink" href="#multiplotter" title="Link to this heading">#</a></h2>
+<p class="rubric">Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+</tbody>
+</table>
+</div>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.MultiPlotter.close" title="pyvistaqt.MultiPlotter.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Close the multi plotter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.MultiPlotter.show" title="pyvistaqt.MultiPlotter.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a>()</p></td>
+<td><p>Show the multi plotter.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvistaqt.MultiPlotter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvistaqt.</span></span><span class="sig-name descname"><span class="pre">MultiPlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QApplication.html#PySide6.QtWidgets.QApplication" title="(in PySide v6.11.0)"><span class="pre">QApplication</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">off_screen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvistaqt.MultiPlotter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Qt interactive plotter.</p>
+<p>Multi plotter for pyvista that allows to maintain an
+interactive window with multiple plotters without
+blocking the main python thread.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>app</strong> (<em>optional</em>) – Creates a <cite>QApplication</cite> if left as <cite>None</cite>.</p></li>
+<li><p><strong>nrows</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of rows. Defaults to 1.</p></li>
+<li><p><strong>ncols</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of columns. Defaults to 1.</p></li>
+<li><p><strong>show</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Show the plotting window.  If <code class="docutils literal notranslate"><span class="pre">False</span></code>, show this window by
+running <code class="docutils literal notranslate"><span class="pre">show()</span></code></p></li>
+<li><p><strong>window_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>, </em><em>optional</em>) – Window size in pixels.  Defaults to <code class="docutils literal notranslate"><span class="pre">[1024,</span> <span class="pre">768]</span></code></p></li>
+<li><p><strong>off_screen</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Renders off screen when True.  Useful for automated
+screenshots or debug testing.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pyvistaqt</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiPlotter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotter</span> <span class="o">=</span> <span class="n">MultiPlotter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">plotter</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Sphere</span><span class="p">())</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.MultiPlotter.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.MultiPlotter.close" title="Link to this definition">#</a></dt>
+<dd><p>Close the multi plotter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.MultiPlotter.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.MultiPlotter.show" title="Link to this definition">#</a></dt>
+<dd><p>Show the multi plotter.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="qtinteractor">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">QtInteractor</a><a class="headerlink" href="#qtinteractor" title="Link to this heading">#</a></h2>
+<p class="rubric">Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.key_press_event_signal" title="pyvistaqt.QtInteractor.key_press_event_signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key_press_event_signal</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.render_signal" title="pyvistaqt.QtInteractor.render_signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_signal</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.staticMetaObject" title="pyvistaqt.QtInteractor.staticMetaObject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">staticMetaObject</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.close" title="pyvistaqt.QtInteractor.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Quit application.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.disable" title="pyvistaqt.QtInteractor.disable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable</span></code></a>()</p></td>
+<td><p>Disable this renderer's camera from being interactive.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.dragEnterEvent" title="pyvistaqt.QtInteractor.dragEnterEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dragEnterEvent</span></code></a>(event)</p></td>
+<td><p>Event is called when something is dropped onto the vtk window.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.dropEvent" title="pyvistaqt.QtInteractor.dropEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dropEvent</span></code></a>(event)</p></td>
+<td><p>Event is called after dragEnterEvent.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.enable" title="pyvistaqt.QtInteractor.enable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable</span></code></a>()</p></td>
+<td><p>Enable this renderer's camera to be interactive.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.gesture_event" title="pyvistaqt.QtInteractor.gesture_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gesture_event</span></code></a>(event)</p></td>
+<td><p>Handle gesture events.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.key_press_event" title="pyvistaqt.QtInteractor.key_press_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key_press_event</span></code></a>(obj, event)</p></td>
+<td><p>Call <cite>key_press_event</cite> using a signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.link_views_across_plotters" title="pyvistaqt.QtInteractor.link_views_across_plotters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">link_views_across_plotters</span></code></a>(other_plotter[, ...])</p></td>
+<td><p>Link the views' cameras across two plotters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvistaqt.QtInteractor.render" title="pyvistaqt.QtInteractor.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a>()</p></td>
+<td><p>Override the <code class="docutils literal notranslate"><span class="pre">render</span></code> method to handle threading issues.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyvistaqt.</span></span><span class="sig-name descname"><span class="pre">QtInteractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MainWindow</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">off_screen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_smoothing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_smoothing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon_smoothing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_update</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvistaqt.QtInteractor" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePlotter</span></code></p>
+<p>Extend QVTKRenderWindowInteractor class.</p>
+<p>This adds the methods available to pyvista.Plotter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent</strong> – Qt parent.</p></li>
+<li><p><strong>title</strong> – Title of plotting window.</p></li>
+<li><p><strong>multi_samples</strong> – The number of multi-samples used to mitigate aliasing. 4 is a
+good default but 8 will have better results with a potential
+impact on performance.</p></li>
+<li><p><strong>line_smoothing</strong> – If True, enable line smothing</p></li>
+<li><p><strong>point_smoothing</strong> – If True, enable point smothing</p></li>
+<li><p><strong>polygon_smoothing</strong> – If True, enable polygon smothing</p></li>
+<li><p><strong>auto_update</strong> – Number of updates per second.  Useful for automatically
+updating the render window when actors are change without
+being automatically <code class="docutils literal notranslate"><span class="pre">Modified</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.close" title="Link to this definition">#</a></dt>
+<dd><p>Quit application.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.disable">
+<span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.disable" title="Link to this definition">#</a></dt>
+<dd><p>Disable this renderer’s camera from being interactive.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.dragEnterEvent">
+<span class="sig-name descname"><span class="pre">dragEnterEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtGui/QDragEnterEvent.html#PySide6.QtGui.QDragEnterEvent" title="(in PySide v6.11.0)"><span class="pre">QDragEnterEvent</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.dragEnterEvent" title="Link to this definition">#</a></dt>
+<dd><p>Event is called when something is dropped onto the vtk window.</p>
+<p>Only triggers event when event contains file paths that
+exist.  User can drop anything in this window and we only want
+to allow files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.dropEvent">
+<span class="sig-name descname"><span class="pre">dropEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtCore/QEvent.html#PySide6.QtCore.QEvent" title="(in PySide v6.11.0)"><span class="pre">QEvent</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.dropEvent" title="Link to this definition">#</a></dt>
+<dd><p>Event is called after dragEnterEvent.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.enable">
+<span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.enable" title="Link to this definition">#</a></dt>
+<dd><p>Enable this renderer’s camera to be interactive.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.gesture_event">
+<span class="sig-name descname"><span class="pre">gesture_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QGestureEvent.html#PySide6.QtWidgets.QGestureEvent" title="(in PySide v6.11.0)"><span class="pre">QGestureEvent</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.gesture_event" title="Link to this definition">#</a></dt>
+<dd><p>Handle gesture events.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.iren">
+<span class="sig-name descname"><span class="pre">iren</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">RenderWindowInteractor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.iren" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.key_press_event">
+<span class="sig-name descname"><span class="pre">key_press_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.key_press_event" title="Link to this definition">#</a></dt>
+<dd><p>Call <cite>key_press_event</cite> using a signal.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.key_press_event_signal">
+<span class="sig-name descname"><span class="pre">key_press_event_signal</span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.key_press_event_signal" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.last_image">
+<span class="sig-name descname"><span class="pre">last_image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pv.pyvista_ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.last_image" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.last_image_depth">
+<span class="sig-name descname"><span class="pre">last_image_depth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pv.pyvista_ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.last_image_depth" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.last_vtksz">
+<span class="sig-name descname"><span class="pre">last_vtksz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.last_vtksz" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.link_views_across_plotters">
+<span class="sig-name descname"><span class="pre">link_views_across_plotters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other_plotter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">view</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_views</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.link_views_across_plotters" title="Link to this definition">#</a></dt>
+<dd><p>Link the views’ cameras across two plotters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other_plotter</strong> (<a class="reference internal" href="#pyvistaqt.BackgroundPlotter" title="pyvistaqt.BackgroundPlotter"><em>BackgroundPlotter</em></a>) – The plotter whose views will be linked.</p></li>
+<li><p><strong>view</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Link the views in <cite>other_plotter</cite> to the this view index.</p></li>
+<li><p><strong>other_views</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Link these views from <cite>other_plotter</cite> to the reference view. The default
+is None, in which case all views from <cite>other_plotter</cite> will be linked to
+the reference view.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For linking views belonging to a single plotter, please use
+pyvista’s <cite>Plotter.link_views</cite> method.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.mapper">
+<span class="sig-name descname"><span class="pre">mapper</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_BaseMapper</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.mapper" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.mesh">
+<span class="sig-name descname"><span class="pre">mesh</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">MultiBlock</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataSet</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.mesh" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.mwriter">
+<span class="sig-name descname"><span class="pre">mwriter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">imageio.plugins.ffmpeg.Writer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.mwriter" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.render" title="Link to this definition">#</a></dt>
+<dd><p>Override the <code class="docutils literal notranslate"><span class="pre">render</span></code> method to handle threading issues.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.render_signal">
+<span class="sig-name descname"><span class="pre">render_signal</span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.render_signal" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.staticMetaObject">
+<span class="sig-name descname"><span class="pre">staticMetaObject</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PySide6.QtCore.QMetaObject(&quot;QtInteractor&quot;</span> <span class="pre">inherits</span> <span class="pre">&quot;QVTKRenderWindowInteractor&quot;:</span> <span class="pre">Methods:</span>&#160;&#160; <span class="pre">#33</span> <span class="pre">type=Signal,</span> <span class="pre">signature=render_signal()</span>&#160;&#160; <span class="pre">#34</span> <span class="pre">type=Signal,</span> <span class="pre">signature=key_press_event_signal(PyObject,QString),</span> <span class="pre">parameters=PyObject,</span> <span class="pre">QString</span> <span class="pre">)</span></em><a class="headerlink" href="#pyvistaqt.QtInteractor.staticMetaObject" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.text">
+<span class="sig-name descname"><span class="pre">text</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">CornerAnnotation</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Text</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.text" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">QtCore.QUrl</span></em><a class="headerlink" href="#pyvistaqt.QtInteractor.url" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.volume">
+<span class="sig-name descname"><span class="pre">volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Volume</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#pyvistaqt.QtInteractor.volume" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyvistaqt.plotting">
+<span id="class-inheritance"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Class inheritance</a><a class="headerlink" href="#module-pyvistaqt.plotting" title="Link to this heading">#</a></h2>
+<p>This module contains the QtInteractor and BackgroundPlotter.</p>
+<section id="diagram">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Diagram</a><a class="headerlink" href="#diagram" title="Link to this heading">#</a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>BackgroundPlotter
++-- QtInteractor
+    |-- QVTKRenderWindowInteractor
+    |   +-- QWidget
+    +-- BasePlotter
+
+MainWindow
++-- QMainWindow
+</pre></div>
+</div>
+</section>
+<section id="implementation">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Implementation</a><a class="headerlink" href="#implementation" title="Link to this heading">#</a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>BackgroundPlotter.__init__(...)
+|-- self.app_window = MainWindow()
+|-- self.frame = QFrame(parent=self.app_window)
++-- QtInteractor.__init__(parent=self.frame)
+    |-- QVTKRenderWindowInteractor.__init__(parent=parent)
+    |   +-- QWidget.__init__(parent, flags)
+    |-- BasePlotter.__init__(...)
+    +-- self.ren_win = self.GetRenderWindow()
+</pre></div>
+</div>
+<p>Because <code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor</span></code> calls <code class="docutils literal notranslate"><span class="pre">QWidget.__init__</span></code>, this will
+actually trigger <code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> to be called with no arguments.
+This cannot be solved (at least) because using <code class="docutils literal notranslate"><span class="pre">super()</span></code> because
+<code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor.__init__</span></code> does not use <code class="docutils literal notranslate"><span class="pre">super()</span></code>, and also it
+might not be fixable because Qt is doing something in <code class="docutils literal notranslate"><span class="pre">QWidget</span></code> which is
+probably entirely separate from the Python <code class="docutils literal notranslate"><span class="pre">super()</span></code> process.
+We fix this by internally by temporarily monkey-patching
+<code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> with a no-op <code class="docutils literal notranslate"><span class="pre">__init__</span></code>.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#background-plotter">Background Plotter</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.ICON_TIME_STEP"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.ICON_TIME_STEP</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.add_callback"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.add_callback()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.add_editor"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.add_editor()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.add_menu_bar"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.add_menu_bar()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.add_toolbars"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.add_toolbars()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.clear_camera_positions"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.clear_camera_positions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.close"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.close()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.counters"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.counters</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.default_camera_tool_bar"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.default_camera_tool_bar</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.editor"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.editor</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.iren"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.iren</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.last_image"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.last_image</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.last_image_depth"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.last_image_depth</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.last_vtksz"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.last_vtksz</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.main_menu"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.main_menu</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.mapper"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.mapper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.mesh"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.mesh</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.mwriter"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.mwriter</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.reset_key_events"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.reset_key_events()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.save_camera_position"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.save_camera_position()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.saved_camera_positions"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.saved_camera_positions</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.saved_cameras_tool_bar"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.saved_cameras_tool_bar</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.scale_axes_dialog"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.scale_axes_dialog()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.set_icon"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.set_icon()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.staticMetaObject"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.staticMetaObject</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.text"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.text</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.update_app_icon"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.update_app_icon()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.url"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.url</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.volume"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.volume</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.BackgroundPlotter.window_size"><code class="docutils literal notranslate"><span class="pre">BackgroundPlotter.window_size</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiplotter">MultiPlotter</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.MultiPlotter"><code class="docutils literal notranslate"><span class="pre">MultiPlotter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.MultiPlotter.close"><code class="docutils literal notranslate"><span class="pre">MultiPlotter.close()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.MultiPlotter.show"><code class="docutils literal notranslate"><span class="pre">MultiPlotter.show()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#qtinteractor">QtInteractor</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor"><code class="docutils literal notranslate"><span class="pre">QtInteractor</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.close"><code class="docutils literal notranslate"><span class="pre">QtInteractor.close()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.disable"><code class="docutils literal notranslate"><span class="pre">QtInteractor.disable()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.dragEnterEvent"><code class="docutils literal notranslate"><span class="pre">QtInteractor.dragEnterEvent()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.dropEvent"><code class="docutils literal notranslate"><span class="pre">QtInteractor.dropEvent()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.enable"><code class="docutils literal notranslate"><span class="pre">QtInteractor.enable()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.gesture_event"><code class="docutils literal notranslate"><span class="pre">QtInteractor.gesture_event()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.iren"><code class="docutils literal notranslate"><span class="pre">QtInteractor.iren</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.key_press_event"><code class="docutils literal notranslate"><span class="pre">QtInteractor.key_press_event()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.key_press_event_signal"><code class="docutils literal notranslate"><span class="pre">QtInteractor.key_press_event_signal</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.last_image"><code class="docutils literal notranslate"><span class="pre">QtInteractor.last_image</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.last_image_depth"><code class="docutils literal notranslate"><span class="pre">QtInteractor.last_image_depth</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.last_vtksz"><code class="docutils literal notranslate"><span class="pre">QtInteractor.last_vtksz</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.link_views_across_plotters"><code class="docutils literal notranslate"><span class="pre">QtInteractor.link_views_across_plotters()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.mapper"><code class="docutils literal notranslate"><span class="pre">QtInteractor.mapper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.mesh"><code class="docutils literal notranslate"><span class="pre">QtInteractor.mesh</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.mwriter"><code class="docutils literal notranslate"><span class="pre">QtInteractor.mwriter</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.render"><code class="docutils literal notranslate"><span class="pre">QtInteractor.render()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.render_signal"><code class="docutils literal notranslate"><span class="pre">QtInteractor.render_signal</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.staticMetaObject"><code class="docutils literal notranslate"><span class="pre">QtInteractor.staticMetaObject</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.text"><code class="docutils literal notranslate"><span class="pre">QtInteractor.text</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.url"><code class="docutils literal notranslate"><span class="pre">QtInteractor.url</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.volume"><code class="docutils literal notranslate"><span class="pre">QtInteractor.volume</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-pyvistaqt.plotting">Class inheritance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#diagram">Diagram</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/pyvista/pyvistaqt/edit/main/docs//api_reference.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2017-2026, The PyVista Developers.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
