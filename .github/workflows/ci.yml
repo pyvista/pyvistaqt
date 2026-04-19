@@ -2,6 +2,7 @@ name: "CI"
 permissions:
   statuses: write
   contents: write
+  id-token: write
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
@@ -75,10 +76,10 @@ jobs:
         name: "Import without Qt"
         if: matrix.qt == 'None'
       - uses: codecov/codecov-action@v6
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
         name: "Upload coverage to CodeCov"
+        with:
+          use_oidc: true
 
   pip:
     name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}${{ matrix.vtk && ' / vtk'}}${{ matrix.vtk }}
@@ -159,10 +160,10 @@ jobs:
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
       - uses: codecov/codecov-action@v6
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
         name: "Upload coverage to CodeCov"
+        with:
+          use_oidc: true
 
   conda:
     name: ${{ matrix.os }} / conda / ${{ matrix.qt }}
@@ -201,7 +202,7 @@ jobs:
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
       - uses: codecov/codecov-action@v6
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: success()
         name: "Upload coverage to CodeCov"
+        with:
+          use_oidc: true
