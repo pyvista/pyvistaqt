@@ -11,10 +11,6 @@ PyVistaQt
    :target: https://anaconda.org/conda-forge/pyvistaqt
    :alt: conda-forge
 
-.. image:: https://dev.azure.com/pyvista/PyVista/_apis/build/status/pyvista.pyvistaqt?branchName=main
-   :target: https://dev.azure.com/pyvista/PyVista/_build/latest?definitionId=9&branchName=main
-   :alt: Azure Pipelines
-
 .. image:: https://github.com/pyvista/pyvistaqt/actions/workflows/ci.yml/badge.svg?branch=main
    :target: https://github.com/pyvista/pyvistaqt/actions?query=branch:main+event:push
    :alt: GitHub Actions
@@ -27,21 +23,13 @@ PyVistaQt
   :target: https://codecov.io/gh/pyvista/pyvistaqt
   :alt: Codecov
 
-.. image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat
-  :target: https://timothycrosley.github.io/isort
-  :alt: isort
-
-.. image:: https://img.shields.io/badge/%20linter-pylint-%231674b1?style=flat
-  :target: https://github.com/PyCQA/pylint
-  :alt: pylint
+.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+  :target: https://github.com/astral-sh/ruff
+  :alt: Ruff
 
 .. image:: https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat
   :target: https://github.com/python/mypy
   :alt: mypy
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat
-  :target: https://github.com/psf/black
-  :alt: black
 
 ``pyvistaqt`` is a helper module for ``pyvista`` to enable you to
 plot using Qt by placing a vtk-widget into a background renderer.

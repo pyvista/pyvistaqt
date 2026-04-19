@@ -85,13 +85,12 @@ License
 ``pyvistaqt`` is under the MIT license.
 However, Qt bindings have licenses of their own.
 
-Historically, ``pyvistaqt`` has used ``pyqt5``, which is subject
-to the GPL license. See details at
-`Riverbank License FAQ <https://www.riverbankcomputing.com/commercial/license-faq>`_.
-
-``pyvistaqt`` is transitioning to using ``qtpy``
+``pyvistaqt`` uses ``qtpy`` to abstract over the underlying Qt binding:
 
 > QtPy is a small abstraction layer that lets you write applications using a single API call to either PyQt or PySide.
 
-Please refer to the `QtPy documentation <https://github.com/spyder-ide/qtpy>`_
-to learn more.
+This means the Qt binding actually installed at runtime (e.g. ``PyQt5``,
+``PyQt6``, ``PySide2``, ``PySide6``) determines the license obligations
+for the Qt layer of your application. Please refer to the
+`QtPy documentation <https://github.com/spyder-ide/qtpy>`_ and the
+license of the binding you install to learn more.
