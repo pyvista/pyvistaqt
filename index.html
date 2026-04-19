@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>pyvistaqt &#8212; PyVistaQt 0.12.0rc1 documentation</title>
+    <title>pyvistaqt &#8212; PyVistaQt 0.1.0.dev1+g8ecb5db31 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=013d3d55"></script>
+    <script src="_static/documentation_options.js?v=5c82d39c"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="next" title="Usage" href="usage.html" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.12.0rc1" />
+  <meta name="docsearch:version" content="0.1.0.dev1+g8ecb5db31" />
 
 <meta
   name="description"
@@ -154,8 +154,8 @@
       
     
     
-    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.12.0rc1 documentation - Home"/>
-    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.12.0rc1 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g8ecb5db31 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g8ecb5db31 documentation - Home"/>
   
   
 </a></div>
@@ -496,13 +496,13 @@ sphere.</p>
 <h1>License<a class="headerlink" href="#license" title="Link to this heading">#</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> is under the MIT license.
 However, Qt bindings have licenses of their own.</p>
-<p>Historically, <code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> has used <code class="docutils literal notranslate"><span class="pre">pyqt5</span></code>, which is subject
-to the GPL license. See details at
-<a class="reference external" href="https://www.riverbankcomputing.com/commercial/license-faq">Riverbank License FAQ</a>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> is transitioning to using <code class="docutils literal notranslate"><span class="pre">qtpy</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> uses <code class="docutils literal notranslate"><span class="pre">qtpy</span></code> to abstract over the underlying Qt binding:</p>
 <p>&gt; QtPy is a small abstraction layer that lets you write applications using a single API call to either PyQt or PySide.</p>
-<p>Please refer to the <a class="reference external" href="https://github.com/spyder-ide/qtpy">QtPy documentation</a>
-to learn more.</p>
+<p>This means the Qt binding actually installed at runtime (e.g. <code class="docutils literal notranslate"><span class="pre">PyQt5</span></code>,
+<code class="docutils literal notranslate"><span class="pre">PyQt6</span></code>, <code class="docutils literal notranslate"><span class="pre">PySide2</span></code>, <code class="docutils literal notranslate"><span class="pre">PySide6</span></code>) determines the license obligations
+for the Qt layer of your application. Please refer to the
+<a class="reference external" href="https://github.com/spyder-ide/qtpy">QtPy documentation</a> and the
+license of the binding you install to learn more.</p>
 </section>
 
 
