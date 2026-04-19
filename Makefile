@@ -1,33 +1,38 @@
 # Convenience targets for local development.
+#
+# Tools are run through `uv run` so they resolve from the project environment
+# without requiring the venv to be activated. Override RUN to run directly
+# (e.g. `make lint RUN=`) when tools are already on PATH.
 
 PACKAGE ?= pyvistaqt
+RUN ?= uv run
 
 all: lint
 
 lint:
 	@echo "Running ruff (lint + format check)"
-	@ruff check $(PACKAGE)
-	@ruff format --check $(PACKAGE)
+	@$(RUN) ruff check $(PACKAGE)
+	@$(RUN) ruff format --check $(PACKAGE)
 
 format:
 	@echo "Auto-fixing with ruff"
-	@ruff check --fix $(PACKAGE)
-	@ruff format $(PACKAGE)
+	@$(RUN) ruff check --fix $(PACKAGE)
+	@$(RUN) ruff format $(PACKAGE)
 
 mypy:
 	@echo "Running mypy"
-	@mypy
+	@$(RUN) mypy
 
 coverage:
 	@echo "Running coverage"
-	@pytest -v --cov $(PACKAGE)
+	@$(RUN) pytest -v --cov $(PACKAGE)
 
 coverage-xml:
 	@echo "Reporting XML coverage"
-	@pytest -v --cov $(PACKAGE) --cov-report xml
+	@$(RUN) pytest -v --cov $(PACKAGE) --cov-report xml
 
 coverage-html:
 	@echo "Reporting HTML coverage"
-	@pytest -v --cov $(PACKAGE) --cov-report html
+	@$(RUN) pytest -v --cov $(PACKAGE) --cov-report html
 
 .PHONY: all lint format mypy coverage coverage-xml coverage-html
