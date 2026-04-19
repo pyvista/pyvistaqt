@@ -2,6 +2,7 @@ name: "CI"
 permissions:
   statuses: write
   contents: write
+  id-token: write
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
@@ -77,6 +78,8 @@ jobs:
       - uses: codecov/codecov-action@v6
         if: success()
         name: "Upload coverage to CodeCov"
+        with:
+          use_oidc: true
 
   pip:
     name: ${{ matrix.os }} / pip / PyQt6 / pyvista-${{ matrix.pyvista }}${{ matrix.vtk && ' / vtk'}}${{ matrix.vtk }}
@@ -159,6 +162,8 @@ jobs:
       - uses: codecov/codecov-action@v6
         if: success()
         name: "Upload coverage to CodeCov"
+        with:
+          use_oidc: true
 
   conda:
     name: ${{ matrix.os }} / conda / ${{ matrix.qt }}
@@ -199,3 +204,5 @@ jobs:
       - uses: codecov/codecov-action@v6
         if: success()
         name: "Upload coverage to CodeCov"
+        with:
+          use_oidc: true
