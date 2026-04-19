@@ -559,7 +559,6 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting) 
     assert not window.isVisible()
 
 
-@pytest.mark.skip
 @pytest.mark.allow_bad_gc
 def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # noqa: ARG001, D103
     # setup filesystem
