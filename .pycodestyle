@@ -1,8 +1,0 @@
-[pycodestyle]
-ignore = E501,
-         E203,
-         W503
-exclude = tests/*.py,
-          docs/*.py,
-          rwi.py
-filename = pyvistaqt/*.py

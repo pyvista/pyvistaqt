@@ -3,16 +3,10 @@ repos:
     rev: v1.20.1
     hooks:
       - id: mypy
-        # `pass_filenames` is used to overcome the "duplicate module"
-        # error from occuring. We are explicitly passing a 'txt'
-        # file to search. This setting tells `pre-commit` to not do a
-        # search and pass files to check to mypy, like it normally does.
-        #
-        # See:
-        #   - https://github.com/python/mypy/issues/4008#issuecomment-708060733
-        #   - https://pre-commit.com/#hooks-pass_filenames
+        # File list is specified via [tool.mypy].files in pyproject.toml,
+        # so pre-commit should not pass filenames or mypy will see duplicates.
+        # See: https://github.com/python/mypy/issues/4008#issuecomment-708060733
         pass_filenames: false
-        args: ["--config-file", "mypy.ini", "@mypy_checklist.txt"]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.2
@@ -34,14 +28,14 @@ repos:
     hooks:
       - id: check-github-workflows
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v4.0.0-alpha.8"
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.8.3
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.10
+    rev: v0.15.11
     hooks:
       - id: ruff
         args: [--fix, --show-fixes]
