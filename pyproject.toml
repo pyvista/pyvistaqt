@@ -41,7 +41,7 @@ test = [
     # Pull in whatever trame/nest_asyncio stack the installed pyvista needs
     # for VTKjs export. Each pyvista version pins its own compatible deps.
     "pyvista[jupyter]",
-    "scooby==0.11.0",
+    "scooby==0.11.2",
     "sphinx_gallery==0.20.0",
 ]
 docs = [
