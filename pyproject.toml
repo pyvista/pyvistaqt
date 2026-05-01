@@ -42,7 +42,7 @@ test = [
     # for VTKjs export. Each pyvista version pins its own compatible deps.
     "pyvista[jupyter]",
     "scooby==0.11.0",
-    "sphinx_gallery==0.20.0",
+    "sphinx_gallery==0.21.0",
 ]
 docs = [
     "pydata-sphinx-theme==0.16.1",
