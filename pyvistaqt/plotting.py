@@ -708,10 +708,14 @@ class BackgroundPlotter(QtInteractor):
         available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
 
         """
-        try:
-            callback = self.export_vtksz
+        trame = getattr(self, "trame", None)
+        if trame is not None and hasattr(trame, "export_vtksz"):
+            callback = trame.export_vtksz  # pyvista >= 0.49 (trame-pyvista)
             ext = "vtksz"
-        except AttributeError:
+        elif hasattr(self, "export_vtksz"):
+            callback = self.export_vtksz  # pyvista 0.40 - 0.48
+            ext = "vtksz"
+        else:
             callback = self.export_vtkjs  # pre-v0.40
             ext = "vtkjs"
 

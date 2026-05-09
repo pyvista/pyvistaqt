@@ -590,7 +590,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # no
     dlg = plotter._qt_export_vtkjs(show=False)  # FileDialog  # noqa: SLF001
     qtbot.addWidget(dlg)  # register the dialog
 
-    if hasattr(plotter, "export_vtksz"):
+    if hasattr(getattr(plotter, "trame", None), "export_vtksz") or hasattr(plotter, "export_vtksz"):
         ext = ".vtksz"
         filename = str(os.path.join(output_dir, f"tmp{ext}"))  # noqa: PTH118
     else:
@@ -613,7 +613,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # no
     plotter.close()
     assert not window.isVisible()
 
-    if hasattr(plotter, "export_vtksz"):
+    if ext == ".vtksz":
         assert os.path.isfile(filename)  # noqa: PTH113
     else:
         assert os.path.isfile(filename + ext)  # noqa: PTH113
