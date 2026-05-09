@@ -708,9 +708,22 @@ class BackgroundPlotter(QtInteractor):
         available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
 
         """
+        # On pyvista >= 0.49 the trame integration moved to the
+        # ``trame-pyvista`` plugin and ``Plotter.export_vtksz`` is a
+        # deprecated proxy that errors when the plugin is missing.
+        # Force-load the plugin so ``self.trame`` resolves; the Qt
+        # super-classes shadow ``BasePlotter.__getattr__`` so the lazy
+        # entry-point loader does not run on attribute access alone.
+        import contextlib  # noqa: PLC0415
+
+        with contextlib.suppress(ImportError):
+            import trame_pyvista  # noqa: F401, PLC0415
+
         trame = getattr(self, "trame", None)
         if trame is not None and hasattr(trame, "export_vtksz"):
-            callback = trame.export_vtksz  # pyvista >= 0.49 (trame-pyvista)
+            # pyvista >= 0.49 (trame-pyvista). ``filename`` is keyword-only
+            # on trame-pyvista 0.1.0, so wrap the FileDialog callback.
+            callback = lambda fn: trame.export_vtksz(filename=fn)  # noqa: E731
             ext = "vtksz"
         elif hasattr(self, "export_vtksz"):
             callback = self.export_vtksz  # pyvista 0.40 - 0.48
