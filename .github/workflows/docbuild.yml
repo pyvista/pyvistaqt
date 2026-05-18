@@ -41,4 +41,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./docs/_build/html
-          cname: qtdocs.pyvista.org
+          cname: qt.pyvista.org
