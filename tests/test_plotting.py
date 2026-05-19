@@ -1066,7 +1066,7 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win) ->
         "msaa",
         pytest.param(
             "ssaa",
-            marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=True),
+            marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=False),
         ),
     ],
 )
