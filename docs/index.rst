@@ -16,9 +16,9 @@ Overview
    :target: https://opensource.org/licenses/MIT
    :alt: MIT License
 
-The python package ``pyvistaqt`` extends the
+The Python package ``pyvistaqt`` extends the
 functionality of ``pyvista`` through the usage of *Qt*. 
-Since *Qt* applications operates in a separate thread than VTK,
+Since *Qt* applications operate in a separate thread than VTK,
 you can simultaneously have an active VTK plot and a non-blocking Python session.
 
 .. figure:: ./images/user-generated/qt_multiplot.png
@@ -36,12 +36,12 @@ you can simultaneously have an active VTK plot and a non-blocking Python session
 Getting Started
 ***************
 
-Installation using ``pip`` is::
+Installation using ``pip``::
 
     $ pip install pyvistaqt
 
 
-To install this package with ``conda`` run::
+To install this package with ``conda``::
 
     $ conda install -c conda-forge pyvistaqt
 
@@ -69,6 +69,22 @@ sphere.
     plotter = BackgroundPlotter()
     plotter.add_mesh(sphere)
 
+.. important::
+
+   On Linux/Wayland, Qt may currently require forcing the XCB platform
+   plugin for ``pyvistaqt`` to work correctly. You can set
+   ``QT_QPA_PLATFORM=xcb`` directly in your script before importing
+   Qt-related modules:
+
+   .. code:: python
+
+      import os
+
+      os.environ["QT_QPA_PLATFORM"] = "xcb"
+
+      import pyvista as pv
+      from pyvistaqt import BackgroundPlotter
+
 
 .. toctree::
    :maxdepth: 2
@@ -89,7 +105,7 @@ However, Qt bindings have licenses of their own.
 
 > QtPy is a small abstraction layer that lets you write applications using a single API call to either PyQt or PySide.
 
-This means the Qt binding actually installed at runtime (e.g. ``PyQt5``,
+This means the Qt binding actually installed at runtime (e.g., ``PyQt5``,
 ``PyQt6``, ``PySide2``, ``PySide6``) determines the license obligations
 for the Qt layer of your application. Please refer to the
 `QtPy documentation <https://github.com/spyder-ide/qtpy>`_ and the
