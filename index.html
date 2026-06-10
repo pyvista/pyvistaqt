@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>pyvistaqt &#8212; PyVistaQt 0.1.0.dev1+gcd0100034 documentation</title>
+    <title>pyvistaqt &#8212; PyVistaQt 0.1.0.dev1+g7789ce3c9 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
 
-    <script src="_static/documentation_options.js?v=29056c08"></script>
+    <script src="_static/documentation_options.js?v=c71f46d5"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
     <link rel="next" title="Usage" href="usage.html" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1+gcd0100034" />
+  <meta name="docsearch:version" content="0.1.0.dev1+g7789ce3c9" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -161,8 +161,8 @@
       
     
     
-    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+gcd0100034 documentation - Home"/>
-    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+gcd0100034 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g7789ce3c9 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g7789ce3c9 documentation - Home"/>
   
   
 </a></div>
@@ -460,9 +460,9 @@
 </a>
 <a class="reference external image-reference" href="https://opensource.org/licenses/MIT"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
 </a>
-<p>The python package <code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> extends the
+<p>The Python package <code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> extends the
 functionality of <code class="docutils literal notranslate"><span class="pre">pyvista</span></code> through the usage of <em>Qt</em>.
-Since <em>Qt</em> applications operates in a separate thread than VTK,
+Since <em>Qt</em> applications operate in a separate thread than VTK,
 you can simultaneously have an active VTK plot and a non-blocking Python session.</p>
 <figure class="align-default" id="id1">
 <a class="reference internal image-reference" href="_images/qt_multiplot.png"><img alt="_images/qt_multiplot.png" src="_images/qt_multiplot.png" style="width: 450pt;" />
@@ -476,11 +476,11 @@ you can simultaneously have an active VTK plot and a non-blocking Python session
 </section>
 <section id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
-<p>Installation using <code class="docutils literal notranslate"><span class="pre">pip</span></code> is:</p>
+<p>Installation using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install pyvistaqt
 </pre></div>
 </div>
-<p>To install this package with <code class="docutils literal notranslate"><span class="pre">conda</span></code> run:</p>
+<p>To install this package with <code class="docutils literal notranslate"><span class="pre">conda</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda install -c conda-forge pyvistaqt
 </pre></div>
 </div>
@@ -501,6 +501,21 @@ sphere.</p>
 <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">sphere</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>On Linux/Wayland, Qt may currently require forcing the XCB platform
+plugin for <code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> to work correctly. You can set
+<code class="docutils literal notranslate"><span class="pre">QT_QPA_PLATFORM=xcb</span></code> directly in your script before importing
+Qt-related modules:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;QT_QPA_PLATFORM&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;xcb&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvistaqt</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackgroundPlotter</span>
+</pre></div>
+</div>
+</div>
 <div class="toctree-wrapper compound">
 </div>
 </section>
@@ -511,7 +526,7 @@ sphere.</p>
 However, Qt bindings have licenses of their own.</p>
 <p><code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> uses <code class="docutils literal notranslate"><span class="pre">qtpy</span></code> to abstract over the underlying Qt binding:</p>
 <p>&gt; QtPy is a small abstraction layer that lets you write applications using a single API call to either PyQt or PySide.</p>
-<p>This means the Qt binding actually installed at runtime (e.g. <code class="docutils literal notranslate"><span class="pre">PyQt5</span></code>,
+<p>This means the Qt binding actually installed at runtime (e.g., <code class="docutils literal notranslate"><span class="pre">PyQt5</span></code>,
 <code class="docutils literal notranslate"><span class="pre">PyQt6</span></code>, <code class="docutils literal notranslate"><span class="pre">PySide2</span></code>, <code class="docutils literal notranslate"><span class="pre">PySide6</span></code>) determines the license obligations
 for the Qt layer of your application. Please refer to the
 <a class="reference external" href="https://github.com/spyder-ide/qtpy">QtPy documentation</a> and the
