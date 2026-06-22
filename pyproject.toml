@@ -58,7 +58,7 @@ dev = [
 homepage = "https://github.com/pyvista/pyvistaqt"
 
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm>=6.2"]
+requires = ["setuptools>=45", "setuptools_scm>=6.2,!=10.1.1", "vcs_versioning!=2.0.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -124,6 +124,7 @@ filterwarnings = [
     "ignore:.*`np.float` is a deprecated alias.*:DeprecationWarning",
     "ignore:.*`np.object` is a deprecated alias.*:DeprecationWarning",
     "ignore:.*`np.long` is a deprecated alias:DeprecationWarning",
+    "ignore:Setting the shape on a NumPy array[\\S\\s]*:DeprecationWarning",
     "ignore:.*Converting `np\\.character` to a dtype is deprecated.*:DeprecationWarning",
     "ignore:.*ImportDenier.*not found.*:ImportWarning",
     # PySide6
