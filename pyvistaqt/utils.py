@@ -1,13 +1,12 @@
 """This module contains utilities routines."""  # noqa: D404
 
-from __future__ import annotations
-
 from typing import Any
+from typing import cast
 
 import pyvista
 from qtpy.QtWidgets import QApplication
 from qtpy.QtWidgets import QMenuBar
-import scooby  # type: ignore  # noqa: PGH003
+import scooby
 
 
 def _check_type(var: Any, var_name: str, var_types: list[type[Any]]) -> None:  # noqa: ANN401
@@ -50,7 +49,9 @@ def _setup_ipython(ipython: Any = None) -> Any:  # noqa: ANN401
 def _setup_application(app: QApplication | None = None) -> QApplication:
     # run within python
     if app is None:
-        app = QApplication.instance()
+        # QApplication.instance() is typed as returning the QCoreApplication
+        # base class, but for a Qt widgets app it is a QApplication.
+        app = cast("QApplication | None", QApplication.instance())
         if not app:  # pragma: no cover
             app = QApplication(["PyVista"])
     return app

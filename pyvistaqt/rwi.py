@@ -58,17 +58,25 @@ Changes by Eric Larson and Guillaume Favelier, Apr. 2022
 
 import sys
 
-# Check whether a specific PyQt implementation was chosen
-try:
-    import vtkmodules.qt
-    PyQtImpl = vtkmodules.qt.PyQtImpl
-except ImportError:
-    pass
+# qtpy selects and normalizes the Qt binding (PyQt5/PyQt6/PySide2/PySide6).
+from qtpy import API_NAME as PyQtImpl
+from qtpy import QT_VERSION
+from qtpy.QtCore import QEvent
+from qtpy.QtCore import QObject
+from qtpy.QtCore import QSize
+from qtpy.QtCore import Qt
+from qtpy.QtCore import QTimer
+from qtpy.QtGui import QCursor
+from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import QMainWindow
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QWidget
 
-# Check whether a specific QVTKRenderWindowInteractor base
-# class was chosen, can be set to "QGLWidget" in
-# PyQt implementation version lower than Qt6,
-# or "QOpenGLWidget" in Pyside6 and PyQt6
+from vtkmodules.vtkRenderingCore import vtkRenderWindow
+from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
+
+# A specific QVTKRenderWindowInteractor base class can be selected via
+# vtkmodules.qt: "QGLWidget" (Qt < 6) or "QOpenGLWidget" (Qt >= 6).
 QVTKRWIBase = "QWidget"
 try:
     import vtkmodules.qt
@@ -76,168 +84,29 @@ try:
 except ImportError:
     pass
 
-from vtkmodules.vtkRenderingCore import vtkRenderWindow
-from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
-
-if PyQtImpl is None:
-    # Autodetect the PyQt implementation to use
-    try:
-        import PySide6.QtCore
-        PyQtImpl = "PySide6"
-    except ImportError:
-        try:
-            import PyQt6.QtCore
-            PyQtImpl = "PyQt6"
-        except ImportError:
-            try:
-                import PyQt5.QtCore
-                PyQtImpl = "PyQt5"
-            except ImportError:
-                try:
-                    import PySide2.QtCore
-                    PyQtImpl = "PySide2"
-                except ImportError:
-                    try:
-                        import PyQt4.QtCore
-                        PyQtImpl = "PyQt4"
-                    except ImportError:
-                        try:
-                            import PySide.QtCore
-                            PyQtImpl = "PySide"
-                        except ImportError:
-                            raise ImportError("Cannot load either PyQt or PySide")
-
-# Check the compatibility of PyQtImpl and QVTKRWIBase
-if QVTKRWIBase != "QWidget":
-    if PyQtImpl in ["PySide6", "PyQt6"] and QVTKRWIBase == "QOpenGLWidget":
-        pass  # compatible
-    elif PyQtImpl in ["PyQt5", "PySide2","PyQt4", "PySide"] and QVTKRWIBase == "QGLWidget":
-        pass  # compatible
-    else:
-        raise ImportError("Cannot load " + QVTKRWIBase + " from " + PyQtImpl)
-
-if PyQtImpl == "PySide6":
-    if QVTKRWIBase == "QOpenGLWidget":
-        from PySide6.QtOpenGLWidgets import QOpenGLWidget
-    from PySide6.QtWidgets import QWidget
-    from PySide6.QtWidgets import QSizePolicy
-    from PySide6.QtWidgets import QApplication
-    from PySide6.QtWidgets import QMainWindow
-    from PySide6.QtGui import QCursor
-    from PySide6.QtCore import Qt
-    from PySide6.QtCore import QTimer
-    from PySide6.QtCore import QObject
-    from PySide6.QtCore import QSize
-    from PySide6.QtCore import QEvent
-    from PySide6.QtCore import __version__ as QT_VERSION
-elif PyQtImpl == "PyQt6":
-    if QVTKRWIBase == "QOpenGLWidget":
-        from PyQt6.QtOpenGLWidgets import QOpenGLWidget
-    from PyQt6.QtWidgets import QWidget
-    from PyQt6.QtWidgets import QSizePolicy
-    from PyQt6.QtWidgets import QApplication
-    from PyQt6.QtWidgets import QMainWindow
-    from PyQt6.QtGui import QCursor
-    from PyQt6.QtCore import Qt
-    from PyQt6.QtCore import QTimer
-    from PyQt6.QtCore import QObject
-    from PyQt6.QtCore import QSize
-    from PyQt6.QtCore import QEvent
-    from PyQt6.QtCore import QT_VERSION_STR as QT_VERSION
-elif PyQtImpl == "PyQt5":
-    if QVTKRWIBase == "QGLWidget":
-        from PyQt5.QtOpenGL import QGLWidget
-    from PyQt5.QtWidgets import QWidget
-    from PyQt5.QtWidgets import QSizePolicy
-    from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtWidgets import QMainWindow
-    from PyQt5.QtGui import QCursor
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtCore import QTimer
-    from PyQt5.QtCore import QObject
-    from PyQt5.QtCore import QSize
-    from PyQt5.QtCore import QEvent
-    from PyQt5.QtCore import QT_VERSION_STR as QT_VERSION
-elif PyQtImpl == "PySide2":
-    if QVTKRWIBase == "QGLWidget":
-        from PySide2.QtOpenGL import QGLWidget
-    from PySide2.QtWidgets import QWidget
-    from PySide2.QtWidgets import QSizePolicy
-    from PySide2.QtWidgets import QApplication
-    from PySide2.QtWidgets import QMainWindow
-    from PySide2.QtGui import QCursor
-    from PySide2.QtCore import Qt
-    from PySide2.QtCore import QTimer
-    from PySide2.QtCore import QObject
-    from PySide2.QtCore import QSize
-    from PySide2.QtCore import QEvent
-    from PySide2.QtCore import QT_VERSION_STR as QT_VERSION
-elif PyQtImpl == "PyQt4":
-    if QVTKRWIBase == "QGLWidget":
-        from PyQt4.QtOpenGL import QGLWidget
-    from PyQt4.QtGui import QWidget
-    from PyQt4.QtGui import QSizePolicy
-    from PyQt4.QtGui import QApplication
-    from PyQt4.QtGui import QMainWindow
-    from PyQt4.QtCore import Qt
-    from PyQt4.QtCore import QTimer
-    from PyQt4.QtCore import QObject
-    from PyQt4.QtCore import QSize
-    from PyQt4.QtCore import QEvent
-    from PyQt4.QtCore import QT_VERSION_STR as QT_VERSION
-elif PyQtImpl == "PySide":
-    if QVTKRWIBase == "QGLWidget":
-        from PySide.QtOpenGL import QGLWidget
-    from PySide.QtGui import QWidget
-    from PySide.QtGui import QSizePolicy
-    from PySide.QtGui import QApplication
-    from PySide.QtGui import QMainWindow
-    from PySide.QtCore import Qt
-    from PySide.QtCore import QTimer
-    from PySide.QtCore import QObject
-    from PySide.QtCore import QSize
-    from PySide.QtCore import QEvent
-    from PySide.QtCore import QT_VERSION_STR as QT_VERSION
-else:
-    raise ImportError("Unknown PyQt implementation " + repr(PyQtImpl))
-
-# Define types for base class, based on string
 if QVTKRWIBase == "QWidget":
     QVTKRWIBaseClass = QWidget
 elif QVTKRWIBase == "QGLWidget":
+    from qtpy.QtOpenGL import QGLWidget
     QVTKRWIBaseClass = QGLWidget
 elif QVTKRWIBase == "QOpenGLWidget":
+    from qtpy.QtOpenGLWidgets import QOpenGLWidget
     QVTKRWIBaseClass = QOpenGLWidget
 else:
     raise ImportError("Unknown base class for QVTKRenderWindowInteractor " + QVTKRWIBase)
 
-if PyQtImpl == 'PyQt6':
-    CursorShape = Qt.CursorShape
-    WidgetAttribute = Qt.WidgetAttribute
-    FocusPolicy = Qt.FocusPolicy
-    ConnectionType = Qt.ConnectionType
-    Key = Qt.Key
-    SizePolicy = QSizePolicy.Policy
-    EventType = QEvent.Type
-    try:
-        MouseButton = Qt.MouseButton
-        WindowType = Qt.WindowType
-        KeyboardModifier = Qt.KeyboardModifier
-    except AttributeError:
-        # Fallback solution for PyQt6 versions < 6.1.0
-        MouseButton = Qt.MouseButtons
-        WindowType = Qt.WindowFlags
-        KeyboardModifier = Qt.KeyboardModifiers
-else:
-    CursorShape = MouseButton = WindowType = WidgetAttribute = \
-        KeyboardModifier = FocusPolicy = ConnectionType = Key = Qt
-    SizePolicy = QSizePolicy
-    EventType = QEvent
-
-if PyQtImpl in ('PyQt4', 'PySide'):
-    MiddleButton = MouseButton.MidButton
-else:
-    MiddleButton = MouseButton.MiddleButton
+# qtpy exposes Qt6-style scoped enum namespaces for every supported binding.
+CursorShape = Qt.CursorShape
+WidgetAttribute = Qt.WidgetAttribute
+FocusPolicy = Qt.FocusPolicy
+ConnectionType = Qt.ConnectionType
+Key = Qt.Key
+MouseButton = Qt.MouseButton
+WindowType = Qt.WindowType
+KeyboardModifier = Qt.KeyboardModifier
+SizePolicy = QSizePolicy.Policy
+EventType = QEvent.Type
+MiddleButton = MouseButton.MiddleButton
 
 try:
     _DISABLE_PAINT_IN_PAINT = tuple(map(int, QT_VERSION.split('.')[:2])) >= (6, 10)

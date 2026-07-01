@@ -1,7 +1,5 @@
 """This module contains a basic Qt-compatible counter class."""  # noqa: D404
 
-from __future__ import annotations
-
 from qtpy.QtCore import QObject
 from qtpy.QtCore import Signal
 from qtpy.QtCore import Slot

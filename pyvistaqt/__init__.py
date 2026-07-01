@@ -1,6 +1,6 @@
 """PyVista package for 3D plotting and mesh analysis."""  # noqa: EXE002
 
-from __future__ import annotations
+from typing import Any
 
 try:
     from importlib.metadata import version
@@ -18,7 +18,7 @@ except Exception as exc:  # pragma: no cover  # noqa: BLE001
     _exc_msg = exc
 
     class _QtBindingError:
-        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003, ARG002
+        def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401, ARG002
             msg = f"No Qt binding was found, got: {_exc_msg}"
             raise RuntimeError(msg)
 
