@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qt: ["PySide6", "PyQt5", "PyQt6"]
+        qt: ["PySide6", "PyQt6"]
         python: ["3.13", "3.14"]
         os: ["ubuntu-latest"]
         include:
@@ -93,31 +93,36 @@ jobs:
         include:
           # Regression coverage across supported Python, PyVista, and VTK
           # versions. Each entry targets a distinct combination; Qt bindings
-          # rotate so PyQt5/PyQt6/PySide6 each see a released PyVista.
+          # rotate so PyQt6/PySide6 each see a released PyVista.
           - os: "ubuntu-latest"
-            pyvista: "0.39"
+            pyvista: "0.43"
             python-version: "3.10"
             vtk: ""
             qt: "PyQt6"
           - os: "ubuntu-latest"
-            pyvista: "0.42"
-            python-version: "3.11"
-            vtk: ""
-            qt: "PyQt6"
-          - os: "ubuntu-latest"
             pyvista: "0.44"
-            python-version: "3.12"
+            python-version: "3.11"
             vtk: "==9.3.1"
             qt: "PyQt5"
           - os: "ubuntu-latest"
             pyvista: "0.45"
-            python-version: "3.13"
+            python-version: "3.12"
             vtk: "==9.4.2"
             qt: "PyQt6"
           - os: "ubuntu-latest"
             pyvista: "0.46"
             python-version: "3.13"
             vtk: "==9.5.2"
+            qt: "PySide6"
+          - os: "ubuntu-latest"
+            pyvista: "0.47"
+            python-version: "3.13"
+            vtk: "==9.5.2"
+            qt: "PySide6"
+          - os: "ubuntu-latest"
+            pyvista: "0.48"
+            python-version: "3.14"
+            vtk: "==9.6.1"
             qt: "PySide6"
 
     defaults:
