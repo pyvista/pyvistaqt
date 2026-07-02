@@ -53,8 +53,8 @@ a no-op during the ``QVTKRenderWindowInteractor.__init__`` call (see
 with the real arguments.
 """  # noqa: D404
 
-from collections.abc import Generator
 from collections.abc import Callable
+from collections.abc import Generator
 import contextlib
 from functools import wraps
 import logging
