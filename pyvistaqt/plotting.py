@@ -218,7 +218,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     ) -> None:
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
-        self.url: QtCore.QUrl | None = None
+        self._url: QtCore.QUrl | None = None
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
@@ -400,8 +400,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Event is called after dragEnterEvent."""
         try:
             for url in event.mimeData().urls():
-                self.url = url
-                filename = self.url.path()
+                self._url = url
+                filename = self._url.path()
                 if os.path.isfile(filename):  # noqa: PTH113
                     self.add_mesh(pyvista.read(filename))
         except OSError as exception:  # pragma: no cover

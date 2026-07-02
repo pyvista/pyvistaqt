@@ -2,6 +2,7 @@
 
 import contextlib
 import sys
+from types import ModuleType
 from typing import Any
 from typing import cast
 
@@ -10,6 +11,11 @@ from qtpy import QtCore
 from qtpy.QtWidgets import QApplication
 from qtpy.QtWidgets import QMenuBar
 import scooby
+
+try:
+    import termios
+except Exception:  # noqa: BLE001
+    termios: ModuleType | None = None  # type: ignore[assignment]  # non-POSIX (e.g. Windows)
 
 
 def _check_type(var: Any, var_name: str, var_types: list[type[Any]]) -> None:  # noqa: ANN401
@@ -83,15 +89,13 @@ class _TerminalOpostGuard:
     """
 
     def __init__(self, fd: int) -> None:
-        import termios  # noqa: PLC0415
 
         self._fd = fd
-        self._termios = termios
         self._saved: list[Any] | None = None
 
     def enable(self) -> None:
         """Restore ``OPOST``/``ONLCR`` if the terminal is in raw mode."""
-        termios = self._termios
+        assert termios is not None  # noqa:S101
         try:
             attrs = termios.tcgetattr(self._fd)
         except termios.error:  # pragma: no cover
@@ -110,16 +114,15 @@ class _TerminalOpostGuard:
         """Put the terminal back the way the REPL left it."""
         if self._saved is None:
             return
-        with contextlib.suppress(self._termios.error):
-            self._termios.tcsetattr(self._fd, self._termios.TCSANOW, self._saved)
+        assert termios is not None  # noqa:S101
+        with contextlib.suppress(termios.error):
+            termios.tcsetattr(self._fd, termios.TCSANOW, self._saved)
         self._saved = None
 
 
 def _terminal_output_fd() -> int | None:
     """Return the fd of the controlling terminal, or None if not a TTY/POSIX."""
-    try:
-        import termios  # noqa: PLC0415
-    except ImportError:  # pragma: no cover  # non-POSIX (e.g. Windows)
+    if termios is None:  # pragma: no cover  # non-POSIX (e.g. Windows)
         return None
     for stream in (sys.stderr, sys.stdout):
         try:
