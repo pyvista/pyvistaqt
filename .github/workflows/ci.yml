@@ -57,10 +57,8 @@ jobs:
         name: "Install pyvistaqt"
       - run: python pyvistaqt/rwi.py
         name: "Run QVTKRenderWidgetConeExample"
-        if: matrix.qt != 'None'
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
-        if: matrix.qt != 'None'
       - uses: codecov/codecov-action@v7
         if: success()
         name: "Upload coverage to CodeCov"
