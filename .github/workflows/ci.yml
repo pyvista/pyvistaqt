@@ -14,7 +14,7 @@ on:
     branches:
       - "*"
 env:
-  ALLOW_PLOTTING: 'true'
+  ALLOW_PLOTTING: "true"
 
 jobs:
   pip-pre:
