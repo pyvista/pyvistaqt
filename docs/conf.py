@@ -199,7 +199,6 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
     "PySide6": ("https://doc.qt.io/qtforpython-6/", None),
-    "PyQt6": ("https://www.riverbankcomputing.com/static/Docs/PyQt6/", None),
     "numpy": ("https://numpy.org/doc/stable", None),
 }
 
