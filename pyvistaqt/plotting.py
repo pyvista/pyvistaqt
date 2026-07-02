@@ -409,7 +409,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     def close(self) -> None:  # ty: ignore[invalid-method-override]
         """Quit application (intentionally returns None, unlike QWidget.close)."""
-        if self._closed:
+        if getattr(self, "_closed", True):  # if it doesn't exist, error during init
             return
         if hasattr(self, "render_timer"):
             self.render_timer.stop()
