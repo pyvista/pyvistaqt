@@ -107,6 +107,7 @@ from .utils import _create_menu_bar
 from .utils import _setup_application
 from .utils import _setup_ipython
 from .utils import _setup_off_screen
+from .utils import _setup_terminal_output_fix
 from .window import MainWindow
 
 LOG = logging.getLogger("pyvistaqt")
@@ -565,6 +566,7 @@ class BackgroundPlotter(QtInteractor):
         self.ipython = _setup_ipython()
         LOG.debug("BackgroundPlotter init setup app")
         self.app = _setup_application(app)
+        _setup_terminal_output_fix(self.app)
         LOG.debug("BackgroundPlotter init setup offscreen")
         self.off_screen = _setup_off_screen(off_screen)
         if app_window_class is None:
