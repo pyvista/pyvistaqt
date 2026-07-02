@@ -13,8 +13,6 @@ on:
   pull_request:
     branches:
       - "*"
-  schedule:
-    - cron: "0 4 * * *"
 
 jobs:
   pip-pre:
@@ -48,13 +46,11 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install --upgrade -e ".[test]" "${{ matrix.qt }}" --only-binary="${{ matrix.qt }}"
-          pip install --upgrade --progress-bar off https://github.com/pyvista/pyvista/zipball/main https://github.com/spyder-ide/qtpy/zipball/master trame-pyvista
+          pip install --upgrade -e ".[test]" "${{ matrix.qt }}" --only-binary="${{ matrix.qt }}" https://github.com/pyvista/pyvista/zipball/main https://github.com/spyder-ide/qtpy/zipball/master trame-pyvista
         name: "Install dependencies with pip"
       - run: |
-          pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
-        name: "Install pyvistaqt"
+        name: "Check report"
       - run: python pyvistaqt/rwi.py
         name: "Run QVTKRenderWidgetConeExample"
       - run: pytest -v --cov pyvistaqt --cov-report html
@@ -86,7 +82,7 @@ jobs:
           - os: "ubuntu-latest"
             pyvista: "0.43"
             python-version: "3.10"
-            vtk: ""
+            vtk: "==9.2.5"
             qt: "PyQt6"
           - os: "ubuntu-latest"
             pyvista: "0.44"
@@ -131,15 +127,12 @@ jobs:
         name: "Setup python"
       - run: |
           python -m pip install --upgrade pip wheel
-          pip install -e ".[test]" "vtk${{ matrix.vtk }}" "${{ matrix.qt }}" --only-binary="vtk,{{ matrix.qt }}"
+          pip install -e ".[test]"  "pyvista==${{ matrix.pyvista }}.*" "vtk${{ matrix.vtk }}" "${{ matrix.qt }}" --only-binary="vtk,{{ matrix.qt }},pyvista"
         name: "Install dependencies with pip"
       - run: |
-          pip install --upgrade "pyvista==${{ matrix.pyvista }}.*"
-          # PyVista < 0.44 requires numpy < 2
-          if [[ "${{ matrix.pyvista }}" != "0" ]] && [[ "${{ matrix.pyvista }}" < "0.44" ]]; then
-            pip install "numpy<2"
-          fi
-        name: "Install PyVista ${{ matrix.pyvista }}"
+          pip install "numpy<2"
+        if: matrix.pyvista == '0.43'
+        name: "Install old NumPy"
       - run: |
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
