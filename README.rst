@@ -64,11 +64,13 @@ Installation using ``pip`` is::
 
     $ pip install pyvistaqt
 
-
 To install this package with ``conda`` run::
 
     $ conda install -c conda-forge pyvistaqt
 
+You will need a suitable Qt binding (abstraction provided by ``qtpy``),
+so install PySide6 or PyQt6 using ``pip`` or ``conda`` as well.
+PyQt5 is end-of-life so is unsupported (but may still work).
 
 You can also visit `PyPI <https://pypi.org/project/pyvistaqt/>`_ or
 `GitHub <https://github.com/pyvista/pyvistaqt>`_ to download the source.

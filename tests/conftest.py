@@ -1,15 +1,11 @@
 from __future__ import annotations  # noqa: D100
 
 import gc
-import importlib
 import inspect
-import sys
 
 import pytest
 import pyvista
 from pyvista.plotting import system_supports_plotting
-
-import pyvistaqt
 
 NO_PLOTTING = not system_supports_plotting()
 
@@ -20,7 +16,7 @@ def pytest_configure(config) -> None:
     for fixture in ("check_gc",):
         config.addinivalue_line("usefixtures", fixture)
     # Markers
-    for marker in ("allow_bad_gc", "allow_bad_gc_pyside"):
+    for marker in ("allow_bad_gc", "allow_bad_gc_pyside", "slow"):
         config.addinivalue_line("markers", marker)
 
 
@@ -30,15 +26,6 @@ def _is_vtk(obj):  # noqa: ANN202
         return obj.__class__.__name__.startswith("vtk")
     except Exception:  # old Python sometimes no __class__.__name__  # noqa: BLE001
         return False
-
-
-def _check_qt_installed() -> bool:
-    try:
-        from qtpy import QtCore  # noqa: F401, PLC0415
-    except Exception:  # noqa: BLE001
-        return False
-    else:
-        return True
 
 
 @pytest.fixture(autouse=True)
@@ -98,20 +85,3 @@ def plotting() -> None:
     """Require plotting."""
     if NO_PLOTTING:
         pytest.skip(NO_PLOTTING, reason="Requires system to support plotting")
-
-
-@pytest.fixture
-def no_qt(monkeypatch):  # noqa: ANN201
-    """Require plotting."""
-    need_reload = False
-    if _check_qt_installed():
-        need_reload = True
-        monkeypatch.setenv("QT_API", "bad_name")
-        sys.modules.pop("qtpy")
-        importlib.reload(pyvistaqt)
-        assert "qtpy" not in sys.modules
-    yield
-    monkeypatch.undo()
-    if need_reload:
-        importlib.reload(pyvistaqt)
-        assert "qtpy" in sys.modules

@@ -23,7 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "pyvista>=0.39.0",  # May 2023
+    "pyvista>=0.43.7",  # May 2024
     "QtPy>=1.9.0",
 ]
 dynamic = ["version"]
@@ -65,10 +65,9 @@ build-backend = "setuptools.build_meta"
 packages = ["pyvistaqt"]
 
 [tool.setuptools.package-data]
-pyvistaqt = ["data/*.png"]
+pyvistaqt = ["data/*.png", "py.typed"]
 
 [tool.setuptools_scm]
-write_to = "pyvistaqt/_version.py"
 version_scheme = "release-branch-semver"
 
 [tool.ruff]
@@ -98,7 +97,6 @@ exclude = [
 force-sort-within-sections = true
 # Combines "as" imports on the same line
 combine-as-imports = true
-required-imports = ["from __future__ import annotations"]
 force-single-line = true
 
 [tool.ruff.lint.per-file-ignores]
@@ -151,21 +149,15 @@ exclude_lines = [
     "@abstractclassmethod",
 ]
 
-[tool.mypy]
-ignore_errors = true
-disallow_untyped_defs = true
-files = [
-    "pyvistaqt/counter.py",
-    "pyvistaqt/dialog.py",
-    "pyvistaqt/editor.py",
-    "pyvistaqt/plotting.py",
-    "pyvistaqt/utils.py",
-    "pyvistaqt/window.py",
-]
+[tool.ty.environment]
+# check against the minimum supported interpreter (see requires-python)
+python-version = "3.10"
 
-[[tool.mypy.overrides]]
-module = ["vtk.*", "vtkmodules.*", "pyvista.*", "qtpy.*", "IPython.*"]
-ignore_missing_imports = true
+[tool.ty.src]
+include = ["pyvistaqt"]
+# rwi.py is a vendored copy of VTK's QVTKRenderWindowInteractor (it probes
+# every Qt binding), so it is intentionally not type-checked.
+exclude = ["pyvistaqt/rwi.py"]
 
 [tool.codespell]
 skip = "./.ci/*,./.git/*,./.hypothesis/*,./dist/*,./doc/examples/*,./doc/images/*,./docs/_build/*,./docs/images/*,./tests/tinypages/_build/*,.hypothesis*,*.doctree,*.eot,*.gif,*.html,*.inv,*.ipynb,*.jpg,*.js,*.json,*.mp4,*.mypy_cache/*,*.pickle,*.ply,*.png,*.pyc,*.ttf,*.txt,*.vti,*.vtk,*.vtu,*.woff,*.woff2,*.yml,*/_autosummary/*,*~,*cover,doc/_build/*,flycheck*"

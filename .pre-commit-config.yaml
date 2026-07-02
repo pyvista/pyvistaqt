@@ -1,12 +1,20 @@
 repos:
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    rev: v0.0.55
     hooks:
-      - id: mypy
-        # File list is specified via [tool.mypy].files in pyproject.toml,
-        # so pre-commit should not pass filenames or mypy will see duplicates.
-        # See: https://github.com/python/mypy/issues/4008#issuecomment-708060733
-        pass_filenames: false
+      - id: ty
+        # ty runs in an isolated environment, so the project's runtime deps
+        # are declared here for import resolution. pyvistaqt itself and rwi.py
+        # are configured via [tool.ty] in pyproject.toml.
+        additional_dependencies:
+          - pyvista==0.48.4
+          - numpy==2.5.0
+          - qtpy==2.4.3
+          - pyside6==6.11.1
+          - scooby==0.11.2
+          - ipython==8.39.0
+          - trame-pyvista==0.1.1
+        args: [--no-python-downloads, --no-project]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.2

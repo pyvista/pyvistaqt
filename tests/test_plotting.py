@@ -855,15 +855,12 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
     assert not callback_timer.isActive()  # window stops the callback
 
 
-def allow_bad_gc_old_pyvista(func):  # noqa: ANN201, D103
-    return pytest.mark.allow_bad_gc(func)
-
-
 # TODO: Need to fix this allow_bad_gc:  # noqa: FIX002, TD002, TD003
 # - the actors are not cleaned up in the non-empty scene case
 # - the q_key_press leaves a lingering vtkUnsignedCharArray referred to by
 #   a "managedbuffer" object
-@allow_bad_gc_old_pyvista
+@pytest.mark.allow_bad_gc
+@pytest.mark.slow
 @pytest.mark.allow_bad_gc_pyside
 @pytest.mark.parametrize(
     "close_event",
@@ -1057,7 +1054,7 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win) ->
         plotter.close()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "aa",
     [

@@ -1,10 +1,8 @@
 """This module contains the Qt scene editor."""  # noqa: D404
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
 import weakref
 
+from pyvista import Renderer
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDialog
@@ -16,12 +14,9 @@ from qtpy.QtWidgets import QTreeWidget
 from qtpy.QtWidgets import QTreeWidgetItem
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
+from vtkmodules.vtkRenderingCore import vtkActor
 
-if TYPE_CHECKING:
-    from pyvista import Renderer
-    from vtkmodules.vtkRenderingCore import vtkActor
-
-    from .window import MainWindow
+from .window import MainWindow
 
 
 class Editor(QDialog):
@@ -36,9 +31,11 @@ class Editor(QDialog):
         self.tree_widget = QTreeWidget()
         self.tree_widget.setHeaderHidden(True)
         self.stacked_widget = QStackedWidget()
-        self.layout = QHBoxLayout()
-        self.layout.addWidget(self.tree_widget)
-        self.layout.addWidget(self.stacked_widget)
+        # NB: use a local, not ``self.layout``, which would shadow
+        # ``QWidget.layout()``.
+        layout = QHBoxLayout()
+        layout.addWidget(self.tree_widget)
+        layout.addWidget(self.stacked_widget)
 
         def _selection_callback() -> None:
             try:
@@ -52,14 +49,14 @@ class Editor(QDialog):
 
         self.tree_widget.itemSelectionChanged.connect(_selection_callback)
 
-        self.setLayout(self.layout)
+        self.setLayout(layout)
         self.setWindowTitle("Editor")
         self.setModal(True)
 
         self.update()
 
-    def update(self) -> None:
-        """Update the internal widget list."""
+    def update(self) -> None:  # ty: ignore[invalid-method-override]
+        """Update the internal widget list (intentionally shadows QWidget.update)."""
         self.tree_widget.clear()
         for idx, renderer in enumerate(self.renderers):
             actors = renderer.actors
@@ -69,7 +66,11 @@ class Editor(QDialog):
             self.tree_widget.addTopLevelItem(top_item)
             for name, actor in actors.items():
                 if actor is not None:
-                    widget_idx = self.stacked_widget.addWidget(_get_actor_widget(actor))
+                    # pyvista types ``renderer.actors`` values as the broader
+                    # ``vtkProp``; here they are ``vtkActor``.
+                    widget_idx = self.stacked_widget.addWidget(
+                        _get_actor_widget(actor),  # ty: ignore[invalid-argument-type]
+                    )
                     child_item = QTreeWidgetItem(top_item, [name])
                     child_item.setData(0, Qt.ItemDataRole.UserRole, widget_idx)
                     top_item.addChild(child_item)
@@ -88,8 +89,9 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
     axes = QCheckBox("Axes")
-    if getattr(renderer, "axes_widget", None):
-        axes.setChecked(renderer.axes_widget.GetEnabled())
+    axes_widget = getattr(renderer, "axes_widget", None)
+    if axes_widget is not None:
+        axes.setChecked(bool(axes_widget.GetEnabled()))
     else:
         axes.setChecked(False)
 
@@ -99,7 +101,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     # axes
     def _axes_callback(state: bool) -> None:  # noqa: FBT001
         renderer = renderer_ref()
-        if renderer is None or renderer.parent.iren is None:  # pragma: no cover
+        if renderer is None or renderer.parent is None or renderer.parent.iren is None:  # pragma: no cover
             return
         if state:
             renderer.show_axes()
@@ -128,7 +130,7 @@ def _get_actor_widget(actor: vtkActor) -> QWidget:
             set_vis(visibility)
 
     visibility = QCheckBox("Visibility")
-    visibility.setChecked(actor.GetVisibility())
+    visibility.setChecked(bool(actor.GetVisibility()))
     visibility.toggled.connect(_set_vis)
     layout.addWidget(visibility)
 
