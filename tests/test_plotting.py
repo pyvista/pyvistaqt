@@ -52,9 +52,12 @@ from pyvistaqt.editor import Editor
 from pyvistaqt.plotting import Counter
 from pyvistaqt.plotting import QTimer
 from pyvistaqt.plotting import QVTKRenderWindowInteractor
+from pyvistaqt.utils import _TERMINAL_OUTPUT_GUARDS
 from pyvistaqt.utils import _check_type
 from pyvistaqt.utils import _create_menu_bar
 from pyvistaqt.utils import _setup_application
+from pyvistaqt.utils import _setup_terminal_output_fix
+from pyvistaqt.utils import _TerminalOpostGuard
 
 
 class TstWindow(MainWindow):  # noqa: D101
@@ -105,6 +108,47 @@ def test_create_menu_bar(qtbot) -> None:  # noqa: D103
 
 def test_setup_application(qapp) -> None:  # noqa: D103
     _setup_application(qapp)
+
+
+def test_setup_terminal_output_fix_noop_when_not_interactive(qapp) -> None:
+    """The terminal fix must not install itself outside an interactive REPL."""
+    # pytest is not run with ``python -i``, so neither ``sys.ps1`` nor the
+    # interactive flag is set and the guard must be a no-op.
+    assert not hasattr(sys, "ps1")
+    assert not sys.flags.interactive
+    before = len(_TERMINAL_OUTPUT_GUARDS)
+    _setup_terminal_output_fix(qapp)
+    assert len(_TERMINAL_OUTPUT_GUARDS) == before
+
+
+def test_terminal_opost_guard(monkeypatch) -> None:
+    """The guard restores OPOST while events run, then hands the tty back raw."""
+    termios = pytest.importorskip("termios")
+
+    # A terminal in raw mode: output post-processing (index 1 == oflag) cleared.
+    state = [[0, 0, 0, 0, 0, 0, []]]
+
+    def fake_tcgetattr(_fd: int) -> list:
+        return list(state[0])
+
+    def fake_tcsetattr(_fd: int, _when: int, attrs: list) -> None:
+        state[0] = list(attrs)
+
+    monkeypatch.setattr(termios, "tcgetattr", fake_tcgetattr)
+    monkeypatch.setattr(termios, "tcsetattr", fake_tcsetattr)
+
+    guard = _TerminalOpostGuard(fd=1)
+    guard.enable()
+    assert state[0][1] & termios.OPOST  # post-processing turned back on
+    assert state[0][1] & termios.ONLCR
+    guard.restore()
+    assert not state[0][1] & termios.OPOST  # handed back exactly as it was
+
+    # ``enable`` is a no-op when the terminal is already sane.
+    state[0][1] = termios.OPOST | termios.ONLCR
+    guard.enable()
+    guard.restore()  # nothing saved -> no change
+    assert state[0][1] == termios.OPOST | termios.ONLCR
 
 
 def test_file_dialog(tmpdir, qtbot) -> None:  # noqa: D103

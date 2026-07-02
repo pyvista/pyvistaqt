@@ -107,6 +107,7 @@ from .utils import _create_menu_bar
 from .utils import _setup_application
 from .utils import _setup_ipython
 from .utils import _setup_off_screen
+from .utils import _setup_terminal_output_fix
 from .window import MainWindow
 
 LOG = logging.getLogger("pyvistaqt")
@@ -217,7 +218,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     ) -> None:
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
-        self.url: QtCore.QUrl | None = None
+        self._url: QtCore.QUrl | None = None
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
@@ -399,8 +400,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Event is called after dragEnterEvent."""
         try:
             for url in event.mimeData().urls():
-                self.url = url
-                filename = self.url.path()
+                self._url = url
+                filename = self._url.path()
                 if os.path.isfile(filename):  # noqa: PTH113
                     self.add_mesh(pyvista.read(filename))
         except OSError as exception:  # pragma: no cover
@@ -408,7 +409,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
 
     def close(self) -> None:  # ty: ignore[invalid-method-override]
         """Quit application (intentionally returns None, unlike QWidget.close)."""
-        if self._closed:
+        if getattr(self, "_closed", True):  # if it doesn't exist, error during init
             return
         if hasattr(self, "render_timer"):
             self.render_timer.stop()
@@ -565,6 +566,7 @@ class BackgroundPlotter(QtInteractor):
         self.ipython = _setup_ipython()
         LOG.debug("BackgroundPlotter init setup app")
         self.app = _setup_application(app)
+        _setup_terminal_output_fix(self.app)
         LOG.debug("BackgroundPlotter init setup offscreen")
         self.off_screen = _setup_off_screen(off_screen)
         if app_window_class is None:
