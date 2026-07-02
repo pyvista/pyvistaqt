@@ -7,10 +7,7 @@ try:
 
     __version__ = version("pyvistaqt")
 except Exception:  # pragma: no cover  # noqa: BLE001
-    try:
-        from ._version import __version__
-    except ImportError:
-        __version__ = "0.0.0"
+    __version__ = "0.0.0"
 
 try:
     from qtpy import QtCore  # noqa: F401
