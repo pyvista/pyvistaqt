@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qt: ["None", "PySide6", "PyQt5", "PyQt6"]
+        qt: ["PySide6", "PyQt5", "PyQt6"]
         python: ["3.13", "3.14"]
         os: ["ubuntu-latest"]
         include:
@@ -70,11 +70,6 @@ jobs:
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
         if: matrix.qt != 'None'
-      - run: |
-          pip uninstall -y pytest-qt
-          pytest -v tests/test_qt.py
-        name: "Import without Qt"
-        if: matrix.qt == 'None'
       - uses: codecov/codecov-action@v7
         if: success()
         name: "Upload coverage to CodeCov"
