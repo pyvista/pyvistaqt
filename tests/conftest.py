@@ -16,7 +16,7 @@ def pytest_configure(config) -> None:
     for fixture in ("check_gc",):
         config.addinivalue_line("usefixtures", fixture)
     # Markers
-    for marker in ("allow_bad_gc", "allow_bad_gc_pyside"):
+    for marker in ("allow_bad_gc", "allow_bad_gc_pyside", "slow"):
         config.addinivalue_line("markers", marker)
 
 

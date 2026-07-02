@@ -1057,7 +1057,7 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win) ->
         plotter.close()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "aa",
     [

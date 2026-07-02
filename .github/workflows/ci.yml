@@ -168,7 +168,11 @@ jobs:
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
-      - run: pytest -v --cov pyvistaqt --cov-report html
+      - run: |
+          echo "PYTEST_SELECTOR=-m \"not slow\"" | tee -a $GITHUB_ENV
+        name: "Set pytest selector for macOS Intel"
+        if: matrix.os == 'macos-15-intel'
+      - run: pytest -v --cov pyvistaqt --cov-report html $PYTEST_SELECTOR
         name: "Run Tests"
       - uses: codecov/codecov-action@v7
         if: success()
