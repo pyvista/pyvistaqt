@@ -169,7 +169,7 @@ jobs:
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt"
       - run: |
-          echo "PYTEST_SELECTOR=-m \"not slow\"" | tee -a $GITHUB_ENV
+          echo "PYTEST_SELECTOR=-m 'not slow'" | tee -a $GITHUB_ENV
         name: "Set pytest selector for macOS Intel"
         if: matrix.os == 'macos-15-intel'
       - run: pytest -v --cov pyvistaqt --cov-report html $PYTEST_SELECTOR
