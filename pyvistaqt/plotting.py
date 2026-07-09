@@ -1,5 +1,5 @@
 """
-This module contains the QtInteractor, BackgroundPlotter, and MultiPlotter.
+This module contains the QtInteractor and BackgroundPlotter.
 
 Diagram
 ^^^^^^^
@@ -17,14 +17,6 @@ Inheritance:
 
     MainWindow
     +-- QMainWindow
-
-Composition (no inheritance):
-
-.. code-block:: none
-
-    MultiPlotter
-    |-- _window: MainWindow
-    +-- _plotters: list[BackgroundPlotter | None]  (an nrows-by-ncols grid)
 
 Implementation
 ^^^^^^^^^^^^^^
@@ -935,7 +927,7 @@ class MultiPlotter:
     blocking the main python thread.
 
     .. note::
-        ``MultiPlotter`` is deprecated and will be removed in 0.13. Use
+        ``MultiPlotter`` is deprecated and will be removed in 0.14. Use
         ``BackgroundPlotter`` with its ``shape`` argument instead, or embed
         multiple ``QtInteractor`` instances directly in your own ``QLayout``
         for full control.
@@ -956,14 +948,6 @@ class MultiPlotter:
     off_screen : bool, optional
         Renders off screen when True.  Useful for automated
         screenshots or debug testing.
-
-    Examples
-    --------
-    >>> import pyvista as pv
-    >>> from pyvistaqt import MultiPlotter
-    >>> plotter = MultiPlotter()
-    >>> _ = plotter[0, 0].add_mesh(pv.Sphere())
-
     """
 
     def __init__(  # noqa: PLR0913
@@ -979,7 +963,7 @@ class MultiPlotter:
     ) -> None:
         """Initialize the multi plotter."""
         warnings.warn(
-            "MultiPlotter is deprecated and will be removed in 0.13. Use "
+            "MultiPlotter is deprecated and will be removed in 0.14. Use "
             "BackgroundPlotter with its `shape` argument instead, or embed "
             "multiple QtInteractor instances directly in your own QLayout "
             "for full control.",
