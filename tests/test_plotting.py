@@ -985,14 +985,15 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting, en
 
 
 def test_multiplotter(qtbot, plotting) -> None:  # noqa: ARG001, D103
-    mp = MultiPlotter(
-        nrows=1,
-        ncols=2,
-        window_size=(300, 300),
-        show=False,
-        title="Test",
-        off_screen=False,
-    )
+    with pytest.warns(FutureWarning, match="MultiPlotter is deprecated"):
+        mp = MultiPlotter(
+            nrows=1,
+            ncols=2,
+            window_size=(300, 300),
+            show=False,
+            title="Test",
+            off_screen=False,
+        )
     qtbot.addWidget(mp._window)  # noqa: SLF001
     mp[0, 0].add_mesh(pyvista.Cone())
     mp[0, 1].add_mesh(pyvista.Box())
@@ -1008,7 +1009,8 @@ def test_multiplotter(qtbot, plotting) -> None:  # noqa: ARG001, D103
         assert p._closed  # noqa: SLF001
 
     # cover default show=True
-    mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
+    with pytest.warns(FutureWarning, match="MultiPlotter is deprecated"):
+        mp = MultiPlotter(off_screen=False, menu_bar=False, toolbar=False)
     qtbot.addWidget(mp._window)  # noqa: SLF001
     with wait_exposed(qtbot, mp._window):  # noqa: SLF001
         assert mp._window.isVisible()  # noqa: SLF001
