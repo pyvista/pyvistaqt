@@ -278,7 +278,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             # ensures the render window stays updated without consuming too
             # many resources.
             twait = int((auto_update**-1) * 1000.0)
-            self.render_timer.timeout.connect(self.render)
+            self.render_timer.timeout.connect(self._auto_render)
             self.render_timer.start(twait)
 
         if global_theme.depth_peeling["enabled"] and self.enable_depth_peeling():
@@ -292,6 +292,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         LOG.debug("QtInteractor init stop")
 
     def _setup_interactor(self, off_screen: bool) -> None:  # noqa: FBT001
+        self._off_screen = off_screen
         if off_screen:
             self.iren: Any = None
         else:
@@ -323,9 +324,28 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Wrap ``BasePlotter.render``."""
         return BasePlotter.render(self, *args, **kwargs)
 
+    def _auto_render(self) -> None:
+        """
+        Render from the auto-update timer, skipping unsafe window states.
+
+        The render timer keeps ticking for the lifetime of the widget, but it
+        must not render an on-screen interactor whose window is not currently
+        visible (for example, one the user has just closed). Rendering then
+        calls into an unmapped or finalized OpenGL context, which can freeze
+        or crash *other* ``QtInteractor`` windows that share that context.
+        See issue #762.
+        """
+        if not getattr(self, "_off_screen", False) and not self.isVisible():
+            return
+        self.render()
+
     @conditional_decorator(threaded, platform.system() == "Darwin")
     def render(self) -> None:
         """Override the ``render`` method to handle threading issues."""
+        # Never render after the plotter has been closed: the render window has
+        # been finalized and touching its OpenGL context can crash (see #762).
+        if getattr(self, "_closed", False):
+            return None
         self._rendered = True  # Crucial for BasePlotter to know this has rendered
         try:
             return self.render_signal.emit()
@@ -406,6 +426,12 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
                     self.add_mesh(pyvista.read(filename))
         except OSError as exception:  # pragma: no cover
             warnings.warn(f"Exception when dropping files: {exception!s}")  # noqa: B028
+
+    def closeEvent(self, evt: QtGui.QCloseEvent) -> None:  # noqa: N802
+        """Stop the render timer before the widget is finalized (see #762)."""
+        if hasattr(self, "render_timer"):
+            self.render_timer.stop()
+        super().closeEvent(evt)
 
     def close(self) -> None:  # ty: ignore[invalid-method-override]
         """Quit application (intentionally returns None, unlike QWidget.close)."""
