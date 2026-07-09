@@ -440,6 +440,61 @@ def test_qt_interactor(qtbot, plotting, ensure_closed) -> None:  # noqa: ARG001,
     assert vtk_widget._closed  # noqa: SLF001
 
 
+def test_auto_render_skips_hidden_window(qtbot, plotting, ensure_closed) -> None:  # noqa: ARG001
+    """
+    Auto-update timer must not render a hidden on-screen window (see #762).
+
+    When two ``QtInteractor`` windows share an OpenGL context, letting a closed
+    (hidden) window's render timer keep firing renders into an unmapped or
+    finalized GL context, which freezes or crashes the *other* window. The
+    timer callback must therefore skip rendering while the on-screen widget is
+    not visible.
+    """
+    plotter = BackgroundPlotter(show=False, off_screen=False, update_app_icon=False)
+    qtbot.addWidget(plotter.app_window)
+    plotter.render_timer.stop()  # drive _auto_render manually and deterministically
+    plotter.add_mesh(pyvista.Sphere())
+
+    calls = []
+    plotter.render = lambda *args, **kwargs: calls.append(True)  # noqa: ARG005
+
+    # Not shown yet -> not visible -> the timer callback must skip rendering.
+    assert not plotter.isVisible()
+    plotter._auto_render()  # noqa: SLF001
+    assert calls == []
+
+    # Once visible, the timer callback renders normally.
+    with wait_exposed(qtbot, plotter.app_window):
+        plotter.app_window.show()
+    assert plotter.isVisible()
+    plotter._auto_render()  # noqa: SLF001
+    assert calls == [True]
+
+    plotter.close()
+
+
+def test_auto_render_offscreen_and_after_close(qtbot, plotting, ensure_closed) -> None:  # noqa: ARG001
+    """Off-screen still auto-renders; render() is a no-op after close (#762)."""
+    plotter = BackgroundPlotter(show=False, off_screen=True, update_app_icon=False)
+    qtbot.addWidget(plotter.app_window)
+    plotter.render_timer.stop()  # drive _auto_render manually and deterministically
+    plotter.add_mesh(pyvista.Sphere())
+
+    calls = []
+    plotter.render = lambda *args, **kwargs: calls.append(True)  # noqa: ARG005
+    # Off-screen interactors are never "visible" but must still render.
+    assert not plotter.isVisible()
+    plotter._auto_render()  # noqa: SLF001
+    assert calls == [True]
+
+    # After close, the real render() must be a guarded no-op: the render window
+    # has been finalized and touching its GL context can crash.
+    del plotter.render  # restore the real, guarded render()
+    plotter.close()
+    assert plotter._closed  # noqa: SLF001
+    plotter.render()  # must not raise
+
+
 @pytest.mark.parametrize(
     "show_plotter",
     [
