@@ -948,6 +948,7 @@ class MultiPlotter:
     off_screen : bool, optional
         Renders off screen when True.  Useful for automated
         screenshots or debug testing.
+
     """
 
     def __init__(  # noqa: PLR0913
