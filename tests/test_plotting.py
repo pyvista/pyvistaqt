@@ -54,7 +54,9 @@ from pyvistaqt.plotting import QTimer
 from pyvistaqt.plotting import QVTKRenderWindowInteractor
 from pyvistaqt.utils import _TERMINAL_OUTPUT_GUARDS
 from pyvistaqt.utils import _check_type
+from pyvistaqt.utils import _check_wayland
 from pyvistaqt.utils import _create_menu_bar
+from pyvistaqt.utils import _prefer_xcb_on_wayland
 from pyvistaqt.utils import _setup_application
 from pyvistaqt.utils import _setup_terminal_output_fix
 from pyvistaqt.utils import _TerminalOpostGuard
@@ -108,6 +110,86 @@ def test_create_menu_bar(qtbot) -> None:  # noqa: D103
 
 def test_setup_application(qapp) -> None:  # noqa: D103
     _setup_application(qapp)
+
+
+class _FakeApp:
+    """Minimal stand-in for a ``QApplication`` with a chosen platform name."""
+
+    def __init__(self, platform_name: str) -> None:
+        self._platform_name = platform_name
+
+    def platformName(self) -> str:  # noqa: N802
+        return self._platform_name
+
+
+def _patch_qapplication(monkeypatch, instance) -> None:
+    """Make ``pyvistaqt.utils.QApplication.instance()`` return ``instance``."""
+
+    class _FakeQApplication:
+        @staticmethod
+        def instance():  # noqa: ANN205
+            return instance
+
+    monkeypatch.setattr(pyvistaqt.utils, "QApplication", _FakeQApplication)
+
+
+@pytest.mark.parametrize(
+    ("wayland", "display", "pinned", "expected"),
+    [
+        ("wayland-0", ":0", None, "xcb"),  # Wayland + XWayland, not pinned -> xcb
+        ("wayland-0", ":0", "", "xcb"),  # empty override is treated as not pinned
+        ("wayland-0", ":0", "wayland", "wayland"),  # explicit choice is respected
+        ("wayland-0", "", None, None),  # no XWayland to fall back to -> untouched
+        (None, ":0", None, None),  # not a Wayland session -> untouched
+    ],
+)
+def test_prefer_xcb_on_wayland(monkeypatch, wayland, display, pinned, expected) -> None:
+    """``_prefer_xcb_on_wayland`` forces xcb only inside the context, then restores."""
+    _patch_qapplication(monkeypatch, None)  # no QApplication created yet
+    monkeypatch.delenv("QT_QPA_PLATFORM", raising=False)
+    monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
+    monkeypatch.delenv("DISPLAY", raising=False)
+    if wayland is not None:
+        monkeypatch.setenv("WAYLAND_DISPLAY", wayland)
+    if display:
+        monkeypatch.setenv("DISPLAY", display)
+    if pinned is not None:
+        monkeypatch.setenv("QT_QPA_PLATFORM", pinned)
+    original = os.environ.get("QT_QPA_PLATFORM")
+    with _prefer_xcb_on_wayland():
+        assert os.environ.get("QT_QPA_PLATFORM") == expected
+    # the environment is always restored to its original state on exit
+    assert os.environ.get("QT_QPA_PLATFORM") == original
+
+
+def test_prefer_xcb_on_wayland_noop_if_app_exists(monkeypatch) -> None:
+    """Once a QApplication exists the platform plugin is fixed, so do nothing."""
+    _patch_qapplication(monkeypatch, _FakeApp("wayland"))
+    monkeypatch.delenv("QT_QPA_PLATFORM", raising=False)
+    monkeypatch.setenv("WAYLAND_DISPLAY", "wayland-0")
+    monkeypatch.setenv("DISPLAY", ":0")
+    with _prefer_xcb_on_wayland():
+        assert "QT_QPA_PLATFORM" not in os.environ
+    assert "QT_QPA_PLATFORM" not in os.environ
+
+
+def test_check_wayland_raises_on_native_wayland(monkeypatch) -> None:
+    """On-screen setup on a native Wayland plugin fails early with guidance."""
+    _patch_qapplication(monkeypatch, _FakeApp("wayland"))
+    with pytest.raises(RuntimeError, match="native Wayland"):
+        _check_wayland(off_screen=False)
+
+
+def test_check_wayland_allows_offscreen(monkeypatch) -> None:
+    """Off-screen rendering embeds no surface, so it is always allowed."""
+    _patch_qapplication(monkeypatch, _FakeApp("wayland"))
+    _check_wayland(off_screen=True)  # must not raise
+
+
+def test_check_wayland_allows_xcb(monkeypatch) -> None:
+    """The xcb (X11/XWayland) plugin is supported and must not raise."""
+    _patch_qapplication(monkeypatch, _FakeApp("xcb"))
+    _check_wayland(off_screen=False)  # must not raise
 
 
 def test_setup_terminal_output_fix_noop_when_not_interactive(qapp) -> None:

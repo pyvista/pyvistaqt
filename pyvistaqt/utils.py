@@ -1,6 +1,8 @@
 """This module contains utilities routines."""  # noqa: D404
 
+from collections.abc import Generator
 import contextlib
+import os
 import sys
 from types import ModuleType
 from typing import Any
@@ -55,6 +57,44 @@ def _setup_ipython(ipython: Any = None) -> Any:  # noqa: ANN401
     return ipython
 
 
+@contextlib.contextmanager
+def _prefer_xcb_on_wayland() -> Generator[None, None, None]:
+    """
+    Temporarily prefer the XWayland (``xcb``) Qt platform plugin on Wayland.
+
+    VTK's Linux render window is X11-based (``vtkXOpenGLRenderWindow``) and
+    cannot embed into a native Wayland surface, so a native-Wayland
+    ``QApplication`` makes :class:`~pyvistaqt.QtInteractor` abort with a fatal,
+    uncatchable ``X Error ... BadWindow`` as soon as it is realized (see
+    `issue #445 <https://github.com/pyvista/pyvistaqt/issues/445>`_).
+
+    When ``pyvistaqt`` is the one creating the ``QApplication`` and the user has
+    not pinned ``QT_QPA_PLATFORM``, set ``QT_QPA_PLATFORM=xcb`` for the duration
+    of this context if a Wayland session with XWayland is detected, then restore
+    ``os.environ`` to its previous state. Qt only reads the variable while the
+    ``QApplication`` is constructed, so wrap that call; setting
+    ``QT_QPA_PLATFORM`` yourself (e.g. to ``wayland``) opts out.
+    """
+    should_prefer = (
+        QApplication.instance() is None  # too late once the plugin is chosen
+        and not os.environ.get("QT_QPA_PLATFORM")  # respect an explicit choice
+        and bool(os.environ.get("WAYLAND_DISPLAY"))  # a Wayland session
+        and bool(os.environ.get("DISPLAY"))  # with XWayland to fall back to
+    )
+    if not should_prefer:
+        yield
+        return
+    original = os.environ.get("QT_QPA_PLATFORM")
+    os.environ["QT_QPA_PLATFORM"] = "xcb"
+    try:
+        yield
+    finally:
+        if original is None:
+            os.environ.pop("QT_QPA_PLATFORM", None)
+        else:  # an empty-string override was set: put it back verbatim
+            os.environ["QT_QPA_PLATFORM"] = original
+
+
 def _setup_application(app: QApplication | None = None) -> QApplication:
     # run within python
     if app is None:
@@ -62,8 +102,43 @@ def _setup_application(app: QApplication | None = None) -> QApplication:
         # base class, but for a Qt widgets app it is a QApplication.
         app = cast("QApplication | None", QApplication.instance())
         if not app:  # pragma: no cover
-            app = QApplication(["PyVista"])
+            with _prefer_xcb_on_wayland():
+                app = QApplication(["PyVista"])
     return app
+
+
+def _check_wayland(off_screen: bool) -> None:  # noqa: FBT001
+    """
+    Fail early with guidance on an unsupported native-Wayland platform plugin.
+
+    If we reach on-screen setup with a native Wayland ``QApplication`` already
+    created (so :func:`_prefer_xcb_on_wayland` could not intervene), VTK's X11
+    render window will abort the process with ``X Error ... BadWindow``. Raise a
+    clear, catchable error instead (see `issue #445
+    <https://github.com/pyvista/pyvistaqt/issues/445>`_).
+    """
+    if off_screen:  # no window is embedded, so no X11/Wayland surface clash
+        return
+    # QApplication.instance() is typed as the QCoreApplication base class, which
+    # has no platformName(); for a widgets app it is really a QApplication.
+    app = cast("QApplication | None", QApplication.instance())
+    if app is None:  # pragma: no cover
+        return
+    platform_name = app.platformName()
+    if not platform_name.startswith("wayland"):
+        return
+    msg = (
+        "pyvistaqt cannot render on-screen with the native Wayland Qt platform "
+        f"plugin (QApplication.platformName()={platform_name!r}): VTK embeds "
+        "via an X11 render window, which aborts with 'X Error ... BadWindow' on "
+        "a Wayland surface (https://github.com/pyvista/pyvistaqt/issues/445). "
+        "Set the environment variable QT_QPA_PLATFORM=xcb *before* the "
+        "QApplication is created to use XWayland, e.g. at the top of your "
+        "script:\n"
+        "    import os\n"
+        "    os.environ['QT_QPA_PLATFORM'] = 'xcb'"
+    )
+    raise RuntimeError(msg)
 
 
 def _setup_off_screen(off_screen: bool | None = None) -> bool:  # noqa: FBT001
