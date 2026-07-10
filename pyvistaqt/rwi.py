@@ -26,9 +26,56 @@ Key design points mirrored from the C++ adapter:
 - ``vtkGenericOpenGLRenderWindow::Render()`` resets VTK's OpenGL state cache
   and silently skips rendering unless ``IsCurrent()`` is true, so the
   make-current/is-current observers are correctness-critical.
+
+Hard-won invariants (each was found by debugging a real failure; violating any
+of them produces symptoms that are far removed from the cause):
+
+1. Service ``WindowMakeCurrentEvent`` with ``QOpenGLContext.makeCurrent`` on
+   the surface captured in ``initializeGL`` -- never with
+   ``QOpenGLWidget.makeCurrent()``. The widget variant also binds the widget's
+   backing framebuffer *every call*, which corrupts VTK's framebuffer-binding
+   bookkeeping mid-render. Because ``vtkGenericOpenGLRenderWindow::Render()``
+   silently skips rendering (TRACE log only) when ``IsCurrent()`` is false,
+   the corruption manifests as stale/garbled frames and mutually inconsistent
+   pixel readbacks rather than an error.
+2. The GL surface format must be installed process-wide with
+   ``QSurfaceFormat.setDefaultFormat()`` *before the top-level window is
+   created* -- a per-widget ``setFormat()`` makes the widget's context
+   incompatible with the top-level window's share context on Wayland and the
+   widget composites black (reproducible with a plain magenta-clearing
+   ``QOpenGLWidget``; the format *content* is irrelevant). Setting the default
+   in ``__init__`` also covers applications that created the ``QApplication``
+   themselves. The default format additionally requests desktop OpenGL
+   explicitly, since Wayland/EGL may otherwise return a GLES context whose
+   GLSL rejects VTK's ``#version 150`` shaders.
+3. ``paintGL`` must *always* render, unlike C++
+   ``QVTKOpenGLNativeWidget::paintGL`` which skips the VTK render for paints
+   scheduled by a finished render's ``WindowFrameEvent``. pyvista mutates the
+   scene (cameras, actors) without asking the widget to repaint, so a skipped
+   render blits a stale frame (caught by ``test_background_plotting_plots``:
+   the last-active subplot showed a pre-``camera.zoom`` frame). This matches
+   the behavior of the previously vendored ``QVTKRenderWindowInteractor``.
+4. Never call ``QWidget.screen()``: the Python binding can end up owning the
+   returned application-global ``QScreen``, and a later garbage collection
+   then deletes it, crashing much later inside an unrelated
+   ``QMainWindow()`` construction (``QScreen::virtualSiblings`` use after
+   free). VTK only needs the screen size for fullscreen render windows, which
+   do not apply to an embedded widget, so ``SetScreenSize`` is simply not
+   called.
+5. GL resource teardown must happen with our context current. The
+   ``aboutToBeDestroyed`` slot makes the context current itself (Qt's
+   canonical cleanup pattern) before ``Finalize``; ``closeEvent`` must *not*
+   call ``QOpenGLWidget.makeCurrent()`` because it can run while the parent
+   window is being destroyed (via the ``destroyed`` -> ``close`` connection),
+   and ``Finalize`` already drives ``MakeCurrent`` through the observer.
+   Freeing GL objects against the wrong context is driver heap corruption
+   that, like (4), crashes at a distance.
 """
 
+from collections.abc import Callable
 import contextlib
+import ctypes
+from typing import Any
 from typing import ClassVar
 from typing import cast
 
@@ -73,6 +120,55 @@ def _default_format() -> QSurfaceFormat:
     fmt.setStencilBufferSize(0)
     fmt.setSamples(0)  # MSAA happens in VTK's FBOs, not the Qt context
     return fmt
+
+
+class _GLAPI:
+    """
+    Raw OpenGL entry points resolved through ``QOpenGLContext.getProcAddress``.
+
+    PyQt6 wraps neither ``QOpenGLContext.functions()``/``extraFunctions()`` nor
+    the ``QOpenGLFunctions`` classes, so the few raw GL calls the blit needs are
+    resolved through the context (whose loader handles wgl/glX/egl per
+    platform) and called via ctypes. The context must be current both when
+    resolving and when calling.
+    """
+
+    # filled in by __init__ from _SIGNATURES via setattr
+    glBindFramebuffer: Callable[..., Any]
+    glDrawBuffers: Callable[..., Any]
+    glIsEnabled: Callable[..., Any]
+    glEnable: Callable[..., Any]
+    glDisable: Callable[..., Any]
+    glColorMask: Callable[..., Any]
+    glClearColor: Callable[..., Any]
+    glViewport: Callable[..., Any]
+    glClear: Callable[..., Any]
+
+    _SIGNATURES: ClassVar[dict[str, tuple]] = {
+        "glBindFramebuffer": (None, ctypes.c_uint, ctypes.c_uint),
+        "glDrawBuffers": (None, ctypes.c_int, ctypes.POINTER(ctypes.c_uint)),
+        "glIsEnabled": (ctypes.c_ubyte, ctypes.c_uint),
+        "glEnable": (None, ctypes.c_uint),
+        "glDisable": (None, ctypes.c_uint),
+        "glColorMask": (None, ctypes.c_ubyte, ctypes.c_ubyte, ctypes.c_ubyte, ctypes.c_ubyte),
+        "glClearColor": (None, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float),
+        "glViewport": (None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int),
+        "glClear": (None, ctypes.c_uint),
+    }
+
+    def __init__(self, ctx):
+        for name, (res, *args) in self._SIGNATURES.items():
+            ptr = ctx.getProcAddress(name.encode())
+            addr = int(ptr) if ptr is not None else 0
+            if addr == 0:  # all of these are core in any GL >= 3.0 context
+                msg = f"could not resolve OpenGL function {name!r}"
+                raise RuntimeError(msg)
+            setattr(self, name, ctypes.CFUNCTYPE(res, *args)(addr))
+
+    def draw_buffer_attachment0(self):
+        """glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])."""
+        bufs = (ctypes.c_uint * 1)(GL_COLOR_ATTACHMENT0)
+        self.glDrawBuffers(1, bufs)
 
 
 def _get_event_pos(ev):
@@ -130,6 +226,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # Captured in initializeGL; used to service WindowMakeCurrentEvent.
         self._ctx = None
         self._surface = None
+        self._gl = None
         self._in_paint = False  # C++ InPaint
 
         # input-event state (ported from VTK's QVTKRenderWindowInteractor.py)
@@ -185,8 +282,6 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
 
     def _set_symbol_loader(self):
         """Point VTK's GL loader at the platform's getProcAddress."""
-        import ctypes  # noqa: PLC0415
-
         with contextlib.suppress(Exception):
             app = cast("QApplication | None", QApplication.instance())
             if app is None:
@@ -208,11 +303,21 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             return
         self._ctx = self.context()
         self._surface = self._ctx.surface()
+        self._gl = _GLAPI(self._ctx)
         # Connections die with the context object, so a plain connect cannot
         # duplicate across context re-creation.
         self._ctx.aboutToBeDestroyed.connect(self._cleanup_context)
-        if not rw.GetInitialized():
+        # GetInitialized is not wrapped on VTK < 9.3; fall back to always
+        # (re-)initializing there, which VTK's internal guards make a no-op.
+        get_initialized = getattr(rw, "GetInitialized", None)
+        if get_initialized is None or not get_initialized():
             self._set_symbol_loader()
+            # Load the GL function pointers before OpenGLInit: on VTK <= 9.5,
+            # vtkGenericOpenGLRenderWindow::OpenGLInit resets the GL state
+            # cache (raw glGet* calls) BEFORE initializing the context, which
+            # segfaults on unloaded function pointers. VTK >= 9.6 initializes
+            # the context first itself, and this extra call is then a no-op.
+            rw.OpenGLInitContext()
             rw.OpenGLInit()
         # Qt leaves depth testing off and GL_LESS; VTK expects GL_LEQUAL.
         st = rw.GetState()
@@ -239,6 +344,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             rw.SetReadyForRendering(False)
         self._ctx = None
         self._surface = None
+        self._gl = None
 
     def resizeGL(self, w, h):
         # QVTKRenderWindowAdapter::resize: VTK works in device pixels.
@@ -264,11 +370,9 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         super().paintGL()
         rw = self._RenderWindow
         if rw is None or not rw.GetReadyForRendering():
-            ctx = QOpenGLContext.currentContext()
-            if ctx is not None:  # no render window: fill with white (C++ parity)
-                f = ctx.functions()
-                f.glClearColor(1.0, 1.0, 1.0, 1.0)
-                f.glClear(GL_COLOR_BUFFER_BIT)
+            if self._gl is not None:  # no render window: fill with white (C++ parity)
+                self._gl.glClearColor(1.0, 1.0, 1.0, 1.0)
+                self._gl.glClear(GL_COLOR_BUFFER_BIT)
             return
         st = rw.GetState()
         st.Reset()  # Qt touched GL since the last VTK call: resync the cache
@@ -300,12 +404,11 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
     # ---- QVTKRenderWindowAdapter::blit + clearAlpha ---------------------------
     def _blit(self, target_id, rect):
         rw = self._RenderWindow
-        ctx = QOpenGLContext.currentContext()
-        if rw is None or ctx is None:
+        f = self._gl
+        if rw is None or f is None:
             return
-        f = ctx.extraFunctions()
         f.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id)
-        f.glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])
+        f.draw_buffer_attachment0()
         scissor = bool(f.glIsEnabled(GL_SCISSOR_TEST))
         if scissor:  # scissor affects glBlitFramebuffer
             rw.GetState().vtkglDisable(GL_SCISSOR_TEST)

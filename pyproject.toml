@@ -95,7 +95,7 @@ force-single-line = true
 [tool.ruff.lint.per-file-ignores]
 # Qt overrides and VTK-facing methods must use camelCase names, take fixed
 # (often unused) Qt event arguments, and pass raw GL booleans.
-"pyvistaqt/rwi.py" = ["N802", "N803", "ANN", "D102", "D105", "ARG002", "FBT003"]
+"pyvistaqt/rwi.py" = ["N802", "N803", "N815", "ANN", "D102", "D105", "ARG002", "FBT003"]
 "doc/**" = ["INP001"]
 "tests/**" = ["ANN001", "INP001", "S101", "T201", "PLR0915"]
 
