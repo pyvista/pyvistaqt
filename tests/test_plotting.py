@@ -1203,8 +1203,6 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
             is_mesa = "mesa" in gpu_info.split()
             if is_mesa:
                 skip_reason = "FXAA broken on Mesa"
-    elif aa == "ssaa" and sys.platform == "darwin":
-        skip_reason = "Works only sometimes on Darwin"
     if skip_reason:
         print("Skipping test")
         plotter.close()
