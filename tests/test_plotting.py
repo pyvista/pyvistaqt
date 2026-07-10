@@ -1177,7 +1177,13 @@ _skip_darwin_intel = pytest.mark.skipif(
         pytest.param(False, marks=_skip_darwin_intel),
         "fxaa",
         pytest.param("msaa", marks=_skip_darwin_intel),
-        "ssaa",
+        # TODO: SSAA renders correctly now (xpasses), but a ref cycle in  # noqa: FIX002, TD002, TD003
+        # PyVista keeps VTK objects alive and fails the GC check on some CI
+        # configurations (the xfail also covers that teardown error).
+        pytest.param(
+            "ssaa",
+            marks=pytest.mark.xfail(reason="ref cycle in PyVista prevents GC", strict=False),
+        ),
     ],
 )
 def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None:  # noqa: ARG001, C901, D103, PLR0912
