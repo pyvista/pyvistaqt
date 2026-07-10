@@ -75,10 +75,6 @@ line-length = 150
 
 [tool.ruff.format]
 docstring-code-format = true
-exclude = [
-  "pyvistaqt/rwi.py",  # should be maintained copy of upstream VTK code
-]
-
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -87,9 +83,6 @@ ignore = [
   "D212",
   "ISC001",
   "PLR2004",
-]
-exclude = [
-  "pyvistaqt/rwi.py",
 ]
 
 [tool.ruff.lint.isort]
@@ -100,6 +93,9 @@ combine-as-imports = true
 force-single-line = true
 
 [tool.ruff.lint.per-file-ignores]
+# Qt overrides and VTK-facing methods must use camelCase names, take fixed
+# (often unused) Qt event arguments, and pass raw GL booleans.
+"pyvistaqt/rwi.py" = ["N802", "N803", "ANN", "D102", "D105", "ARG002", "FBT003"]
 "doc/**" = ["INP001"]
 "tests/**" = ["ANN001", "INP001", "S101", "T201", "PLR0915"]
 
@@ -138,7 +134,6 @@ branch = true
 source = ["pyvistaqt"]
 omit = [
     "*/setup.py",
-    "*/pyvistaqt/rwi.py",
 ]
 
 [tool.coverage.report]
@@ -155,9 +150,6 @@ python-version = "3.10"
 
 [tool.ty.src]
 include = ["pyvistaqt"]
-# rwi.py is a vendored copy of VTK's QVTKRenderWindowInteractor (it probes
-# every Qt binding), so it is intentionally not type-checked.
-exclude = ["pyvistaqt/rwi.py"]
 
 [tool.codespell]
 skip = "./.ci/*,./.git/*,./.hypothesis/*,./dist/*,./doc/examples/*,./doc/images/*,./docs/_build/*,./docs/images/*,./tests/tinypages/_build/*,.hypothesis*,*.doctree,*.eot,*.gif,*.html,*.inv,*.ipynb,*.jpg,*.js,*.json,*.mp4,*.mypy_cache/*,*.pickle,*.ply,*.png,*.pyc,*.ttf,*.txt,*.vti,*.vtk,*.vtu,*.woff,*.woff2,*.yml,*/_autosummary/*,*~,*cover,doc/_build/*,flycheck*"
