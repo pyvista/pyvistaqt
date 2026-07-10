@@ -1164,13 +1164,19 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win) ->
         plotter.close()
 
 
+_skip_darwin_intel = pytest.mark.skipif(
+    sys.platform == "darwin" and platform.machine() == "x86_64",
+    reason="Takes ~3 minutes per param on macOS Intel CI runners",
+)
+
+
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "aa",
     [
-        False,
+        pytest.param(False, marks=_skip_darwin_intel),
         "fxaa",
-        "msaa",
+        pytest.param("msaa", marks=_skip_darwin_intel),
         pytest.param(
             "ssaa",
             marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=False),
