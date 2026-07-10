@@ -1168,7 +1168,7 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win) ->
         ),
     ],
 )
-def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None:  # noqa: ARG001, C901, D103
+def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None:  # noqa: ARG001, C901, D103, PLR0912
     print("Init")
     plotter = BackgroundPlotter(
         show=True,
@@ -1214,14 +1214,25 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
     print("Waiting")
     with wait_exposed(qtbot, plotter):
         plotter.window().show()
+    if sys.platform == "darwin":
+        # On macOS >= 26, Qt >= 6.10 disables OpenGL process-wide when the GL
+        # context would use the Apple *software* renderer (qtbase a9ca1aef2291:
+        # NSOpenGLContext crashes; GitHub Actions arm64 VMs hit this), so the
+        # QOpenGLWidget never gets a GL context and nothing can render. Where a
+        # software context is still handed out (e.g. Qt 6.11 on the same VMs,
+        # or older macOS), the arm64 software renderer draws with a corrupted
+        # view transform. Either way no meaningful pixel assertion is possible.
+        skip_reason = None
+        if plotter.interactor._ctx is None:  # noqa: SLF001
+            skip_reason = "Qt did not provide a GL context (macOS software GL)"
+        elif platform.machine() == "arm64" and "Apple Software Renderer" in plotter.ren_win.ReportCapabilities():
+            skip_reason = "Apple software GL renders a corrupted view on arm64"
+        if skip_reason:
+            plotter.close()
+            pytest.skip(skip_reason)
     img = np.array(plotter.image)
     non_black = img.any(-1).astype(bool).mean()
     del img
-    # TODO: This is possibly a bug indicative of the view being wrong  # noqa: FIX002, TD002, TD003
-    if sys.platform == "darwin" and platform.machine() == "arm64":
-        ratio = 2.0
-    else:
-        ratio = 1.0
     if not BAD_INTERACTION:
-        assert 0.9 / ratio < non_black < 1.0 / ratio
+        assert 0.9 < non_black < 1.0
     plotter.close()

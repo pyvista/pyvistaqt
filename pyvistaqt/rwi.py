@@ -70,6 +70,24 @@ of them produces symptoms that are far removed from the cause):
    and ``Finalize`` already drives ``MakeCurrent`` through the observer.
    Freeing GL objects against the wrong context is driver heap corruption
    that, like (4), crashes at a distance.
+
+Known platform limitation (macOS, hard-won but not fixable here):
+
+6. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
+   context would use the Apple *software* renderer, because NSOpenGLContext
+   crashes in ``flushBuffer``/``setView:`` there (qtbase commit a9ca1aef2291).
+   Qt warns ``QOpenGLWidget is not supported on this platform.`` and this
+   widget never receives ``initializeGL``/``paintGL`` (``_ctx`` stays None,
+   the widget shows solid white, and ``plotter.image`` reads uninitialized
+   memory). This hits macOS VMs without GPU acceleration, e.g. GitHub Actions
+   arm64 runners. Where a software context *is* still handed out (e.g. Qt
+   6.11 on the same VMs, or macOS < 26), the arm64 software renderer draws
+   with a corrupted view transform (roughly 2x-magnified/shifted subplots).
+   C++ ``QVTKOpenGLNativeWidget`` shares this limitation; the previously
+   vendored native-window interactor did not, because VTK's own
+   ``NSOpenGLContext`` usage avoids the crashing calls. Real (non-VM) Apple
+   GPUs are unaffected. Tests must skip pixel assertions in these
+   environments (see ``test_background_plotting_plots``).
 """
 
 from collections.abc import Callable
