@@ -912,12 +912,17 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
     with wait_exposed(qtbot, window):
         window.show()
     assert window.isVisible()
-    assert update_count[0] in [0, 1]  # macOS sometimes updates (1)
+    # Showing the window can take several seconds on slow CI VMs (macOS
+    # runners especially), during which the 1 s callback timer keeps calling
+    # update_app_icon -- the absolute call count up to here is
+    # timing-dependent. Stop the timer and assert on deltas instead.
+    callback_timer.stop()
+    base_count = update_count[0]
     # don't check _last_update_time for non-inf-ness, won't be updated on Win
     plotter.update_app_icon()  # the timer doesn't call it right away, so do it
-    assert update_count[0] in [1, 2]
-    plotter.update_app_icon()  # should be a no-op
-    assert update_count[0] in [2, 3]
+    assert update_count[0] == base_count + 1
+    plotter.update_app_icon()  # internally a rate-limited no-op, but still called
+    assert update_count[0] == base_count + 2
     with pytest.raises(ValueError, match="ndarray with shape"):
         plotter.set_icon(0.0)
     # Maybe someday manually setting "set_icon" should disable update_app_icon?
@@ -933,12 +938,16 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
     counter = plotter.counters[-1]  # Counter
 
     if not BAD_INTERACTION:
+        # Generous timeouts: 3 ticks of the 200 ms timer nominally take 600 ms
+        # but slow CI VMs (macOS runners especially) can stall the event loop
+        # for seconds at a time.
         print("ensure that self.callback_timer send a signal")
-        with qtbot.wait_signals([callback_timer.timeout], timeout=2000):
+        with qtbot.wait_signals([callback_timer.timeout], timeout=10000):
             pass
         print("ensure that self.counters send a signal")
-        with qtbot.wait_signals([counter.signal_finished], timeout=2000):
-            pass
+        if counter.count > 0:  # signal_finished may have fired during the wait above
+            with qtbot.wait_signals([counter.signal_finished], timeout=10000):
+                pass
         assert not callback_timer.isActive()  # counter stops the callback
 
     plotter.add_callback(mycallback, interval=200)
@@ -947,7 +956,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
 
     if not BAD_INTERACTION:
         print("ensure that self.callback_timer send a signal")
-        with qtbot.wait_signals([callback_timer.timeout], timeout=5000):
+        with qtbot.wait_signals([callback_timer.timeout], timeout=10000):
             pass
 
     plotter.close()
