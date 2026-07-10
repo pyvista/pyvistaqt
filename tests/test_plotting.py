@@ -1177,10 +1177,7 @@ _skip_darwin_intel = pytest.mark.skipif(
         pytest.param(False, marks=_skip_darwin_intel),
         "fxaa",
         pytest.param("msaa", marks=_skip_darwin_intel),
-        pytest.param(
-            "ssaa",
-            marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=False),
-        ),
+        "ssaa",
     ],
 )
 def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None:  # noqa: ARG001, C901, D103, PLR0912
