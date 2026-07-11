@@ -492,6 +492,12 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         if rw is not None:
             rw.Finalize()
 
+    def _remove_observers(self):
+        """Drop VTK's C++-side references to our bound methods."""
+        observers, self._vtk_observers = self._vtk_observers, []
+        for obj, tag in observers:
+            obj.RemoveObserver(tag)
+
     def CreateTimer(self, obj, evt):
         self._Timer.start(10)
 
