@@ -1,12 +1,14 @@
 from __future__ import annotations  # noqa: D100
 
 from contextlib import nullcontext
+import gc
 import logging
 import os
 import os.path as op
 import platform
 import re
 import sys
+import threading
 import weakref
 
 import numpy as np
@@ -221,6 +223,8 @@ def test_mouse_interactions(qtbot, debug_log_level) -> None:  # noqa: D103,ARG00
     plotter.close()
 
 
+# The IPython InteractiveShell singleton keeps the session's objects alive
+@pytest.mark.allow_bad_gc
 def test_ipython(qapp) -> None:  # noqa: ARG001, D103
     IPython = pytest.importorskip("IPython")  # noqa: N806
     cmd = "from pyvistaqt import BackgroundPlotter as Plotter;p = Plotter(show=False, off_screen=False); p.close(); exit()"
@@ -293,25 +297,20 @@ def test_counter(qtbot) -> None:  # noqa: D103
     assert counter.count == 0
 
 
-# TODO: Fix gc on PySide6  # noqa: FIX002, TD002, TD003
 @pytest.mark.parametrize("border", [True, False])
-@pytest.mark.allow_bad_gc_pyside
 def test_subplot_gc(border) -> None:  # noqa: D103
     plotter = BackgroundPlotter(shape=(2, 1), update_app_icon=False, border=border)
     plotter.close()  # TODO: Should automatically close but need it on macOS + PySide6!  # noqa: FIX002, TD002, TD003
 
 
-@pytest.mark.allow_bad_gc_pyside
 def test_editor(qtbot, plotting) -> None:  # noqa: ARG001, D103
     print("test editor=False")
     plotter = BackgroundPlotter(editor=False, off_screen=False)
-    qtbot.addWidget(plotter.app_window)
     assert plotter.editor is None
     plotter.close()
 
     print("test editor closing")
     plotter = BackgroundPlotter(editor=True, off_screen=False)
-    qtbot.addWidget(plotter.app_window)
     assert_hasattr(plotter, "editor", Editor)
     editor = plotter.editor
     assert not editor.isVisible()
@@ -326,7 +325,6 @@ def test_editor(qtbot, plotting) -> None:  # noqa: ARG001, D103
 
     print("editor=True by default")
     plotter = BackgroundPlotter(shape=(2, 1), off_screen=False)
-    qtbot.addWidget(plotter.app_window)
     editor = plotter.editor
     with wait_exposed(qtbot, editor):
         editor.toggle()
@@ -566,6 +564,28 @@ def test_background_plotting_camera(qtbot, plotting) -> None:  # noqa: ARG001, D
     plotter.close()
 
 
+def test_background_plotting_close_gc(qtbot, plotting) -> None:  # noqa: ARG001
+    """
+    A closed BackgroundPlotter must be garbage-collected.
+
+    Regression test: the toolbars/menu/editor hold closures capturing the
+    plotter, kept alive by the app window's Qt objects. ``close()`` schedules
+    the window for deletion so those objects (and their closures) go away,
+    breaking the cycle. Without that, the plotter leaks.
+    """
+    plotter = BackgroundPlotter(off_screen=False, title="Testing Window")
+    plotter.add_mesh(pyvista.Sphere(), scalars=pyvista.Sphere().points[:, 0])
+    plotter.save_camera_position()
+    ref = weakref.ref(plotter)
+    plotter.close()
+    del plotter
+    # process the scheduled (deleteLater) deletions, then collect
+    for _ in range(3):
+        qtbot.wait(10)
+        gc.collect()
+    assert ref() is None
+
+
 @pytest.mark.parametrize("other_views", [None, 0, [0]])
 def test_link_views_across_plotters(other_views) -> None:  # noqa: D103
     def _to_array(camera_position):  # noqa: ANN202
@@ -658,6 +678,8 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting) 
     assert not window.isVisible()
 
 
+# The trame/VTKjs export path attaches a TrameComponent that holds a strong
+# reference to the plotter, so it (and its VTK objects) outlive the test.
 @pytest.mark.allow_bad_gc
 def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # noqa: ARG001, D103
     # VTKjs export is only guaranteed on current pyvista + VTK.
@@ -718,14 +740,20 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # no
         assert os.path.isfile(filename + ext)  # noqa: PTH113
 
 
-# vtkWeakReference and vtkFloatArray, only sometimes -- usually macOS
-@pytest.mark.allow_bad_gc
 def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D103
     plotter = BackgroundPlotter(off_screen=False, title="Testing Window")
     plotter.add_mesh(pyvista.Sphere())
     # perform the orbit:
+    threads_before = set(threading.enumerate())
     plotter.orbit_on_path(threaded=True, step=0.0)
     plotter.close()
+    # Released pyvista's threaded orbit is fire-and-forget and close() does
+    # not stop it (pyvista#8804 does); on macOS every render() also spawns a
+    # thread. A still-running thread's frame holds the plotter, tripping
+    # check_gc on runners slow enough for the orbit to outlive the test
+    # (macOS Intel), so wait for every thread the orbit spawned.
+    for thread in set(threading.enumerate()) - threads_before:
+        thread.join(timeout=10)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
@@ -763,8 +791,6 @@ def test_background_plotting_toolbar(qtbot, plotting) -> None:  # noqa: ARG001, 
     plotter.close()
 
 
-# TODO: _render_passes not GC'ed  # noqa: FIX002, TD002, TD003
-@pytest.mark.allow_bad_gc_pyside
 @pytest.mark.skipif(platform.system() == "Windows", reason="Segfaults on Windows")
 def test_background_plotting_menu_bar(qtbot, plotting) -> None:  # noqa: ARG001, D103
     print("Bad call")
@@ -963,19 +989,13 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
     assert not callback_timer.isActive()  # window stops the callback
 
 
-# TODO: Need to fix this allow_bad_gc:  # noqa: FIX002, TD002, TD003
-# - the actors are not cleaned up in the non-empty scene case
-# - the q_key_press leaves a lingering vtkUnsignedCharArray referred to by
-#   a "managedbuffer" object
-@pytest.mark.allow_bad_gc
 @pytest.mark.slow
-@pytest.mark.allow_bad_gc_pyside
 @pytest.mark.parametrize(
     "close_event",
     [
         "plotter_close",
         "window_close",
-        pytest.param("q_key_press", marks=pytest.mark.allow_bad_gc),
+        pytest.param("q_key_press"),
         "menu_exit",
         "del_finalizer",
     ],

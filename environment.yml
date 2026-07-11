@@ -10,6 +10,7 @@ dependencies:
   - pytest-cov
   - pytest-qt
   - qtpy>=1.9.0
+  - refleak>=0.2.1
   - scooby>=0.5.1
   - pip
   - pip:

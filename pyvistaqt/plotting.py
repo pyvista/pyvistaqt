@@ -670,6 +670,11 @@ class BackgroundPlotter(QtInteractor):
             LOG.debug("BackgroundPlotter.close app_window.close()")
             with contextlib.suppress(Exception):  # pragma: no cover
                 self.app_window.close()
+                # Schedule the window (and its child menus/toolbars/editor)
+                # for deletion. Otherwise those Qt objects outlive the close
+                # and their signal connections keep the closures they hold --
+                # which capture ``self`` -- alive, leaking the whole plotter.
+                self.app_window.deleteLater()
             LOG.debug("BackgroundPlotter.close done")
 
     def _close(self) -> None:
