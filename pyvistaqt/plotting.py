@@ -95,6 +95,7 @@ from .dialog import ScaleAxesDialog
 from .editor import Editor
 from .rwi import QVTKRenderWindowInteractor
 from .utils import _check_type
+from .utils import _check_wayland
 from .utils import _create_menu_bar
 from .utils import _setup_application
 from .utils import _setup_ipython
@@ -211,6 +212,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
         self._url: QtCore.QUrl | None = None
+
+        # Guard against a native-Wayland platform plugin, which makes the
+        # X11-based VTK render window abort with a fatal BadWindow (gh-445).
+        _check_wayland(pyvista.OFF_SCREEN if off_screen is None else off_screen)
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs

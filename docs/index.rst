@@ -71,10 +71,16 @@ sphere.
 
 .. important::
 
-   On Linux/Wayland, Qt may currently require forcing the XCB platform
-   plugin for ``pyvistaqt`` to work correctly. You can set
-   ``QT_QPA_PLATFORM=xcb`` directly in your script before importing
-   Qt-related modules:
+   ``pyvistaqt`` embeds VTK through an X11 render window, which cannot draw
+   into a native Wayland surface. On a Wayland session it therefore needs the
+   XWayland (``xcb``) Qt platform plugin (see
+   `issue #445 <https://github.com/pyvista/pyvistaqt/issues/445>`_).
+
+   When ``pyvistaqt`` creates the ``QApplication`` itself, it now selects
+   ``xcb`` automatically (unless you pin ``QT_QPA_PLATFORM``). If you create
+   the ``QApplication`` yourself, set ``QT_QPA_PLATFORM=xcb`` *before* doing
+   so -- otherwise on-screen plotting raises a ``RuntimeError``. The most
+   portable way is to set it at the very top of your script:
 
    .. code:: python
 
