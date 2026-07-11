@@ -26,6 +26,14 @@ Key design points mirrored from the C++ adapter:
 - ``vtkGenericOpenGLRenderWindow::Render()`` resets VTK's OpenGL state cache
   and silently skips rendering unless ``IsCurrent()`` is true, so the
   make-current/is-current observers are correctness-critical.
+- Deliberate divergence from the C++ widget: raw-GL *query* methods such as
+  ``ReportCapabilities()`` work before the widget is realized (MNE queries the
+  GPU on a not-yet-shown plotter; the old native-window interactor supported
+  this by creating its GLX context on demand). Pre-realization
+  ``WindowMakeCurrentEvent`` is serviced by a throwaway offscreen context and
+  VTK's process-global GL symbols are loaded via a throwaway window, while
+  ``IsCurrent()`` stays False so no VTK *rendering* (and hence no GL resource
+  creation) can happen against that context.
 
 Hard-won invariants (each was found by debugging a real failure; violating any
 of them produces symptoms that are far removed from the cause):
@@ -102,6 +110,7 @@ from qtpy.QtCore import QRect
 from qtpy.QtCore import QSize
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QTimer
+from qtpy.QtGui import QOffscreenSurface
 from qtpy.QtGui import QOpenGLContext
 from qtpy.QtGui import QSurfaceFormat
 from qtpy.QtOpenGLWidgets import QOpenGLWidget
@@ -246,6 +255,13 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         self._surface = None
         self._gl = None
         self._in_paint = False  # C++ InPaint
+        # Lazy offscreen (context, surface) servicing GL queries before the
+        # widget is realized; dropped as soon as initializeGL runs. Creation
+        # is disallowed during teardown: Finalize on a never-realized window
+        # still fires MakeCurrent (ReleaseGraphicsResources -> PushContext),
+        # and creating a GL context while the application is dying is unsafe.
+        self._fallback = None
+        self._fallback_allowed = True
 
         # input-event state (ported from VTK's QVTKRenderWindowInteractor.py)
         self._active_button = Qt.MouseButton.NoButton
@@ -289,6 +305,44 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         """Make VTK's context current WITHOUT touching framebuffer bindings."""
         if self._ctx is not None and self._surface is not None:
             self._ctx.makeCurrent(self._surface)
+            return
+        # Before initializeGL there is no widget context, but raw-GL query
+        # methods like ReportCapabilities() (MakeCurrent + glGetString) were
+        # long supported on a not-yet-shown widget and segfault without a
+        # current context. Service them with a throwaway offscreen context.
+        # IsCurrent() stays False (it compares against the widget context),
+        # so VTK render paths still skip -- no GL *resources* are ever
+        # created against this context.
+        if self._fallback is None:
+            if not self._fallback_allowed:
+                return
+            ctx = QOpenGLContext()
+            ctx.setFormat(_default_format())
+            surface = QOffscreenSurface()
+            surface.setFormat(_default_format())
+            surface.create()
+            if not ctx.create() or not surface.isValid():
+                return  # no GL at all (e.g. macOS software-GL VMs)
+            if not ctx.makeCurrent(surface):
+                return
+            self._fallback = (ctx, surface)
+            # A current context is not enough: VTK calls GL through its own
+            # process-global glad pointers, unloaded until some window runs
+            # OpenGLInitContext. Load them via a throwaway window so the real
+            # one stays uninitialized until initializeGL.
+            tmp = vtkGenericOpenGLRenderWindow()
+            self._set_symbol_loader(tmp)
+            tmp.OpenGLInitContext()
+            return  # the fallback context is already current
+        self._fallback[0].makeCurrent(self._fallback[1])
+
+    def _drop_fallback_context(self):
+        self._fallback_allowed = False
+        if self._fallback is not None:
+            ctx, _surface = self._fallback
+            if QOpenGLContext.currentContext() is ctx:
+                ctx.doneCurrent()
+            self._fallback = None
 
     def _cb_is_current(self, obj, evt):
         # The bool* calldata is not reachable from Python; write the answer
@@ -310,7 +364,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         if not self._in_paint:
             self.update()
 
-    def _set_symbol_loader(self):
+    def _set_symbol_loader(self, rw):
         """Point VTK's GL loader at the platform's getProcAddress."""
         with contextlib.suppress(Exception):
             app = cast("QApplication | None", QApplication.instance())
@@ -323,7 +377,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             else:
                 lib = ctypes.CDLL("libGL.so.1")
                 gpa = ctypes.cast(lib.glXGetProcAddressARB, ctypes.c_void_p).value
-            self._RenderWindow.SetOpenGLSymbolLoader2(int(gpa or 0), 0)
+            rw.SetOpenGLSymbolLoader2(int(gpa or 0), 0)
 
     # ---- QOpenGLWidget overrides ---------------------------------------------
     def initializeGL(self):
@@ -331,6 +385,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         rw = self._RenderWindow
         if rw is None:
             return
+        self._drop_fallback_context()  # the real context takes over
         self._ctx = self.context()
         self._surface = self._ctx.surface()
         self._gl = _GLAPI(self._ctx)
@@ -341,7 +396,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # (re-)initializing there, which VTK's internal guards make a no-op.
         get_initialized = getattr(rw, "GetInitialized", None)
         if get_initialized is None or not get_initialized():
-            self._set_symbol_loader()
+            self._set_symbol_loader(rw)
             # Load the GL function pointers before OpenGLInit: on VTK <= 9.5,
             # vtkGenericOpenGLRenderWindow::OpenGLInit resets the GL state
             # cache (raw glGet* calls) BEFORE initializing the context, which
@@ -385,6 +440,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             rw.Finalize()
             rw.SetReadyForRendering(False)
         self._remove_observers()
+        self._drop_fallback_context()
         self._ctx = None
         self._surface = None
         self._gl = None
@@ -517,6 +573,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # down (parent destroyed -> close) is unsafe.
         self.Finalize()
         self._remove_observers()
+        self._drop_fallback_context()
 
     def close(self):
         result = super().close()  # delivers closeEvent to realized widgets
@@ -525,6 +582,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # calls are idempotent.
         self.Finalize()
         self._remove_observers()
+        self._drop_fallback_context()
         return result
 
     def sizeHint(self):

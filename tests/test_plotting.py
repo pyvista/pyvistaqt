@@ -234,6 +234,19 @@ class SuperWindow(MainWindow):  # noqa: D101
     pass
 
 
+def test_report_capabilities_unrealized(qtbot) -> None:
+    """GPU queries must work on a never-shown plotter (as MNE's _is_osmesa does)."""
+    from qtpy.QtGui import QOpenGLContext  # noqa: PLC0415
+
+    if not QOpenGLContext().create():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    caps = plotter.ren_win.ReportCapabilities()
+    assert "OpenGL" in caps
+    plotter.close()
+
+
 def test_depth_peeling(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
