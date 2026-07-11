@@ -8,6 +8,7 @@ import os.path as op
 import platform
 import re
 import sys
+import threading
 import weakref
 
 import numpy as np
@@ -743,8 +744,16 @@ def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D1
     plotter = BackgroundPlotter(off_screen=False, title="Testing Window")
     plotter.add_mesh(pyvista.Sphere())
     # perform the orbit:
+    threads_before = set(threading.enumerate())
     plotter.orbit_on_path(threaded=True, step=0.0)
     plotter.close()
+    # Released pyvista's threaded orbit is fire-and-forget and close() does
+    # not stop it (pyvista#8804 does); on macOS every render() also spawns a
+    # thread. A still-running thread's frame holds the plotter, tripping
+    # check_gc on runners slow enough for the orbit to outlive the test
+    # (macOS Intel), so wait for every thread the orbit spawned.
+    for thread in set(threading.enumerate()) - threads_before:
+        thread.join(timeout=10)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
