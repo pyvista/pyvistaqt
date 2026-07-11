@@ -1,11 +1,12 @@
 from __future__ import annotations  # noqa: D100
 
 import gc
-import inspect
 
 import pytest
 import pyvista
 from pyvista.plotting import system_supports_plotting
+from refleak.testing import Snapshot
+from refleak.testing import gc_collect_once
 
 NO_PLOTTING = not system_supports_plotting()
 
@@ -16,68 +17,94 @@ def pytest_configure(config) -> None:
     for fixture in ("check_gc",):
         config.addinivalue_line("usefixtures", fixture)
     # Markers
-    for marker in ("allow_bad_gc", "allow_bad_gc_pyside", "slow"):
+    for marker in (
+        "allow_bad_gc: skip the VTK/plotter leak check for this test",
+        "slow: mark a test as slow",
+    ):
         config.addinivalue_line("markers", marker)
 
 
-# Adapted from PyVista
-def _is_vtk(obj):  # noqa: ANN202
+_phase_report_key = pytest.StashKey()
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):  # noqa: ANN201, ARG001
+    """Stash per-phase reports so fixtures can skip GC checks on failure."""
+    outcome = yield
+    rep = outcome.get_result()
+    item.stash.setdefault(_phase_report_key, {})[rep.when] = rep
+
+
+def _test_passed(request) -> bool:
+    report = request.node.stash.get(_phase_report_key, {})
+    return "call" in report and report["call"].outcome == "passed"
+
+
+_vtk_object_base = None
+
+
+def _is_vtk(obj) -> bool:
+    """
+    Check if an object is a VTK object (wrappers and subclasses included).
+
+    An ``isinstance`` check, not a class-name-prefix one: VTK >= 9.6
+    instantiates pythonic override subclasses whose names lack the ``vtk``
+    prefix (``PolyData``, ``VTKAOSArray_vtkFloatArray``, ...).
+    """
+    global _vtk_object_base  # noqa: PLW0603
+    if _vtk_object_base is None:
+        from vtkmodules.vtkCommonCore import vtkObjectBase  # noqa: PLC0415
+
+        _vtk_object_base = vtkObjectBase
+    return isinstance(obj, _vtk_object_base)
+
+
+def _drain_qt_events() -> None:
+    """Flush pending Qt work, including deferred (deleteLater) deletions."""
     try:
-        return obj.__class__.__name__.startswith("vtk")
-    except Exception:  # old Python sometimes no __class__.__name__  # noqa: BLE001
-        return False
+        from qtpy.QtCore import QEvent  # noqa: PLC0415
+        from qtpy.QtWidgets import QApplication  # noqa: PLC0415
+    except Exception:  # noqa: BLE001
+        return
+    app = QApplication.instance()
+    if app is None:
+        return
+    for _ in range(2):
+        app.processEvents()
+        app.sendPostedEvents(None, QEvent.DeferredDelete)
 
 
 @pytest.fixture(autouse=True)
-def check_gc(request):  # noqa: ANN201, C901
-    """Ensure that all VTK objects are garbage-collected by Python."""
-    if "test_ipython" in request.node.name:  # XXX this keeps a ref  # noqa: FIX003, TD001, TD002, TD003, TD004
-        yield
-        return
-    try:
-        from qtpy import API_NAME  # noqa: PLC0415
-    except Exception:  # noqa: BLE001
-        API_NAME = ""  # noqa: N806
+def check_gc(request):  # noqa: ANN201
+    """Ensure that all VTK objects created during a test are GC'ed."""
     marks = {mark.name for mark in request.node.iter_markers()}
     if "allow_bad_gc" in marks:
         yield
         return
-    if "allow_bad_gc_pyside" in marks and API_NAME.lower().startswith("pyside"):
-        yield
-        return
+    from pyvistaqt import QtInteractor  # noqa: PLC0415
+
+    # Snapshots so that leftovers of earlier tests that legitimately skip
+    # this check (e.g. the IPython shell singleton pinning its plotter) are
+    # not blamed on this test.
     gc.collect()
-    before = {id(o) for o in gc.get_objects() if _is_vtk(o)}
+    objs = gc.get_objects()  # scan the heap once, share across snapshots
+    snap_qt = Snapshot(QtInteractor, objs=objs)
+    snap_vtk = Snapshot(_is_vtk, label="VTK", objs=objs)
+    del objs
     yield
     pyvista.close_all()
-    gc.collect()
-    after = [o for o in gc.get_objects() if _is_vtk(o) and id(o) not in before]
-    msg = "Not all objects GCed:\n"
-    for obj in after:
-        cn = obj.__class__.__name__
-        cf = inspect.currentframe()
-        referrers = [v for v in gc.get_referrers(obj) if v is not after and v is not cf]
-        del cf
-        for ri, referrer in enumerate(referrers):
-            if isinstance(referrer, dict):
-                for k, v in referrer.items():
-                    if k is obj:
-                        referrers[ri] = "dict: d key"
-                        del k, v
-                        break
-                    elif v is obj:
-                        referrers[ri] = f"dict: d[{k!r}]"
-                        # raise RuntimeError(referrers[ri])  # noqa: ERA001
-                        del k, v
-                        break
-                    del k, v
-                else:
-                    referrers[ri] = f"dict: len={len(referrer)}"
-            else:
-                referrers[ri] = repr(referrer)
-            del ri, referrer
-        msg += f"{cn}: {referrers}\n"
-        del cn, referrers
-    assert len(after) == 0, msg
+    _drain_qt_events()
+    if not _test_passed(request):
+        return
+    when = f"teardown of {request.node.name}"
+    gc_collect_once(request)
+    objs = gc.get_objects()
+    # No plotter/interactor created during a test may survive it
+    # (BackgroundPlotter is a QtInteractor subclass, so this covers both) ...
+    snap_qt.assert_no_new(when, request=request, objs=objs)
+    # ... and neither may any VTK object created during the test.
+    snap_vtk.assert_no_new(when, request=request, objs=objs)
+    del objs
 
 
 @pytest.fixture
