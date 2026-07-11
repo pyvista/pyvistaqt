@@ -1,5 +1,6 @@
 from __future__ import annotations  # noqa: D100
 
+import contextlib
 from contextlib import nullcontext
 import gc
 import logging
@@ -223,11 +224,9 @@ def test_mouse_interactions(qtbot, debug_log_level) -> None:  # noqa: D103,ARG00
     plotter.close()
 
 
-# The IPython InteractiveShell singleton keeps the session's objects alive
-@pytest.mark.allow_bad_gc
 def test_ipython(qapp) -> None:  # noqa: ARG001, D103
     IPython = pytest.importorskip("IPython")  # noqa: N806
-    cmd = "from pyvistaqt import BackgroundPlotter as Plotter;p = Plotter(show=False, off_screen=False); p.close(); exit()"
+    cmd = "from pyvistaqt import BackgroundPlotter as Plotter;p = Plotter(show=False, off_screen=False); p.close(); del p; exit()"
     IPython.start_ipython(argv=["-c", cmd])
 
 
@@ -678,15 +677,56 @@ def test_background_plotter_export_files(qtbot, tmpdir, show_plotter, plotting) 
     assert not window.isVisible()
 
 
-# The trame/VTKjs export path attaches a TrameComponent that holds a strong
-# reference to the plotter, so it (and its VTK objects) outlive the test.
-@pytest.mark.allow_bad_gc
-def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting) -> None:  # noqa: ARG001, D103
+@pytest.fixture(scope="session")
+def _trame_server(tmp_path_factory) -> None:
+    """
+    Launch the process-lifetime trame server outside any GC snapshot.
+
+    The first vtksz export launches a trame server singleton whose helper
+    keeps a ``vtkWebApplication`` (and its protocol objects) alive for the
+    rest of the process by design; warm it up once so ``check_gc`` does not
+    blame those objects on the first exporting test.
+    """
     # VTKjs export is only guaranteed on current pyvista + VTK.
     # Older pyvista (< 0.47) still imports the deprecated `nest_asyncio`
     # package and older VTK may lack APIs that trame-vtk relies on.
     pytest.importorskip("pyvista", minversion="0.47")
     pytest.importorskip("vtk", minversion="9.6")
+    with contextlib.suppress(ImportError):
+        import trame_pyvista  # noqa: F401, PLC0415
+    plotter = pyvista.Plotter(off_screen=True)
+    plotter.add_mesh(pyvista.Cone())
+    trame = getattr(plotter, "trame", None)
+    if trame is not None and hasattr(trame, "export_vtksz"):
+        trame.export_vtksz(filename=None)  # pyvista >= 0.49 (trame-pyvista)
+    else:
+        plotter.export_vtksz(str(tmp_path_factory.mktemp("trame") / "warmup.vtksz"))
+    plotter.close()
+
+
+@pytest.fixture
+def trame_array_cache(_trame_server, check_gc) -> None:  # noqa: ARG001
+    """
+    Clear trame's serializer cache before ``check_gc``'s teardown check.
+
+    The (session-lifetime) ``SynchronizationContext`` caches every exported
+    data array and only releases them via a 20-second time window, so the
+    exporting test's arrays would otherwise survive it.
+    """
+    yield
+    from trame_vtk.modules.vtk import HELPERS_PER_SERVER  # noqa: PLC0415
+
+    for helper in HELPERS_PER_SERVER.values():
+        protocol = helper._root_protocol  # noqa: SLF001
+        if protocol is None:
+            continue
+        for link_protocol in protocol.getLinkProtocols():
+            context = getattr(link_protocol, "context", None)
+            if context is not None:
+                context.data_array_cache.clear()
+
+
+def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting, trame_array_cache) -> None:  # noqa: ARG001, D103
     # setup filesystem
     output_dir = str(tmpdir.mkdir("tmpdir"))
     assert os.path.isdir(output_dir)  # noqa: PTH112

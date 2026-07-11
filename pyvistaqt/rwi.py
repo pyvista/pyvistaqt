@@ -288,10 +288,20 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         self._Timer = QTimer(self)
         self._Timer.timeout.connect(self.TimerEvent)
 
-        self._Iren.AddObserver('CreateTimerEvent', self.CreateTimer)
-        self._Iren.AddObserver('DestroyTimerEvent', self.DestroyTimer)
-        self._Iren.GetRenderWindow().AddObserver('CursorChangedEvent',
-                                                 self.CursorChangedEvent)
+        # Track (subject, tag) pairs so teardown can remove the observers:
+        # VTK holds a C++-side strong reference to each bound method, which
+        # pins the widget (invisibly to Python's GC) for as long as the
+        # subject lives -- a leak whenever anything (e.g. a trame export)
+        # keeps the render window alive past close.
+        self._vtk_observers = [
+            (self._Iren,
+             self._Iren.AddObserver('CreateTimerEvent', self.CreateTimer)),
+            (self._Iren,
+             self._Iren.AddObserver('DestroyTimerEvent', self.DestroyTimer)),
+            (self._RenderWindow,
+             self._RenderWindow.AddObserver('CursorChangedEvent',
+                                            self.CursorChangedEvent)),
+        ]
 
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
@@ -314,6 +324,12 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         Call internal cleanup method on VTK objects
         '''
         self._RenderWindow.Finalize()
+
+    def _remove_observers(self):
+        """Drop VTK's C++-side references to our bound methods."""
+        observers, self._vtk_observers = self._vtk_observers, []
+        for obj, tag in observers:
+            obj.RemoveObserver(tag)
 
     def CreateTimer(self, obj, evt):
         self._Timer.start(10)
@@ -344,6 +360,16 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 
     def closeEvent(self, evt):
         self.Finalize()
+        self._remove_observers()
+
+    def close(self):
+        result = super().close()  # delivers closeEvent to realized widgets
+        # Qt never delivers closeEvent to a widget that was never realized
+        # (e.g. constructed with show=False), so tear down here as well; both
+        # calls are idempotent.
+        self.Finalize()
+        self._remove_observers()
+        return result
 
     def sizeHint(self):
         return QSize(400, 400)

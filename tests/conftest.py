@@ -17,11 +17,7 @@ def pytest_configure(config) -> None:
     for fixture in ("check_gc",):
         config.addinivalue_line("usefixtures", fixture)
     # Markers
-    for marker in (
-        "allow_bad_gc: skip the VTK/plotter leak check for this test",
-        "slow: mark a test as slow",
-    ):
-        config.addinivalue_line("markers", marker)
+    config.addinivalue_line("markers", "slow: mark a test as slow")
 
 
 _phase_report_key = pytest.StashKey()
@@ -77,15 +73,10 @@ def _drain_qt_events() -> None:
 @pytest.fixture(autouse=True)
 def check_gc(request):  # noqa: ANN201
     """Ensure that all VTK objects created during a test are GC'ed."""
-    marks = {mark.name for mark in request.node.iter_markers()}
-    if "allow_bad_gc" in marks:
-        yield
-        return
     from pyvistaqt import QtInteractor  # noqa: PLC0415
 
-    # Snapshots so that leftovers of earlier tests that legitimately skip
-    # this check (e.g. the IPython shell singleton pinning its plotter) are
-    # not blamed on this test.
+    # Snapshots so that process-lifetime leftovers (e.g. session-scoped
+    # fixtures, the trame server singleton) are not blamed on this test.
     gc.collect()
     objs = gc.get_objects()  # scan the heap once, share across snapshots
     snap_qt = Snapshot(QtInteractor, objs=objs)
