@@ -1,5 +1,7 @@
 """This module contains a Qt-compatible MainWindow class."""  # noqa: D404
 
+import contextlib
+
 from qtpy import QtCore
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QMainWindow
@@ -31,6 +33,26 @@ class MainWindow(QMainWindow):
             self.signal_gesture.emit(event)
             return True
         return super().event(event)
+
+    def close(self) -> bool:
+        """
+        Close the window, tolerating an already-deleted Qt object.
+
+        ``BackgroundPlotter.close`` schedules this window for deferred
+        deletion (``deleteLater``); a later ``close()`` -- e.g. pytest-qt
+        closing registered widgets at teardown -- would then raise from the
+        dead C++ object.
+        """
+        try:
+            return super().close()
+        except RuntimeError:  # C++ object already deleted (PySide/PyQt)
+            return True
+
+    def deleteLater(self) -> None:  # noqa: N802
+        """Schedule deletion, tolerating an already-deleted Qt object (see close)."""
+        # C++ object may already be deleted (PySide/PyQt)
+        with contextlib.suppress(RuntimeError):
+            super().deleteLater()
 
     def closeEvent(self, event: QtCore.QEvent) -> None:  # noqa: N802
         """Manage the close event."""
