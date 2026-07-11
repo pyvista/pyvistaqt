@@ -254,16 +254,28 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         self._save_modifiers = Qt.KeyboardModifier.NoModifier
         self._wheel_delta = 0
 
-        self._RenderWindow.AddObserver("WindowMakeCurrentEvent", self._cb_make_current)  # ty: ignore[invalid-argument-type]
-        self._RenderWindow.AddObserver("WindowIsCurrentEvent", self._cb_is_current)  # ty: ignore[invalid-argument-type]
-        self._RenderWindow.AddObserver("WindowFrameEvent", self._cb_frame)  # ty: ignore[invalid-argument-type]
-        self._RenderWindow.AddObserver("CursorChangedEvent", self.CursorChangedEvent)  # ty: ignore[invalid-argument-type]
+        # Track (subject, tag) pairs so teardown can remove the observers:
+        # VTK holds a C++-side strong reference to each bound method, which
+        # pins the widget (invisibly to Python's GC) for as long as the
+        # subject lives -- a leak whenever anything (e.g. a trame export)
+        # keeps the render window alive past close.
+        self._vtk_observers = []
+        for obj, event, handler in (
+            (self._RenderWindow, "WindowMakeCurrentEvent", self._cb_make_current),
+            (self._RenderWindow, "WindowIsCurrentEvent", self._cb_is_current),
+            (self._RenderWindow, "WindowFrameEvent", self._cb_frame),
+            (self._RenderWindow, "CursorChangedEvent", self.CursorChangedEvent),
+        ):
+            self._vtk_observers.append((obj, obj.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
 
         # VTK interactor timers (vtkGenericRenderWindowInteractor delegates).
         self._Timer = QTimer(self)
         self._Timer.timeout.connect(self.TimerEvent)
-        self._Iren.AddObserver("CreateTimerEvent", self.CreateTimer)  # ty: ignore[invalid-argument-type]
-        self._Iren.AddObserver("DestroyTimerEvent", self.DestroyTimer)  # ty: ignore[invalid-argument-type]
+        for event, handler in (
+            ("CreateTimerEvent", self.CreateTimer),
+            ("DestroyTimerEvent", self.DestroyTimer),
+        ):
+            self._vtk_observers.append((self._Iren, self._Iren.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
 
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
@@ -347,6 +359,18 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         rw.SetOwnContext(0)
         rw.OpenGLInitContext()
 
+    def _remove_observers(self):
+        """
+        Drop VTK's C++-side references to our bound methods.
+
+        Must run after ``Finalize``: its GL teardown is serviced by the
+        make-current/is-current observers. Once removed, the widget is no
+        longer pinned by whatever keeps the VTK render window alive.
+        """
+        observers, self._vtk_observers = self._vtk_observers, []
+        for obj, tag in observers:
+            obj.RemoveObserver(tag)
+
     def _cleanup_context(self):
         """Release VTK's GL resources before the Qt context is destroyed."""
         # Qt's canonical aboutToBeDestroyed pattern: the slot itself must make
@@ -360,6 +384,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         if rw is not None:
             rw.Finalize()
             rw.SetReadyForRendering(False)
+        self._remove_observers()
         self._ctx = None
         self._surface = None
         self._gl = None
@@ -485,6 +510,16 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # QOpenGLWidget.makeCurrent on a widget whose window is being torn
         # down (parent destroyed -> close) is unsafe.
         self.Finalize()
+        self._remove_observers()
+
+    def close(self):
+        result = super().close()  # delivers closeEvent to realized widgets
+        # Qt never delivers closeEvent to a widget that was never realized
+        # (e.g. constructed with show=False), so tear down here as well; both
+        # calls are idempotent.
+        self.Finalize()
+        self._remove_observers()
+        return result
 
     def sizeHint(self):
         return QSize(400, 400)
