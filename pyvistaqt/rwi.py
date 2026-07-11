@@ -344,6 +344,21 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
                 ctx.doneCurrent()
             self._fallback = None
 
+    def _ensure_initialized(self):
+        """
+        Realize the widget offscreen if it was never exposed.
+
+        Rendering APIs (pyvista's ``image``/``screenshot``) must work on a
+        widget that has not painted yet (hidden, or shown without the event
+        loop running). ``QOpenGLWidget.grabFramebuffer`` is Qt's supported
+        way to force initializeGL/paintGL without an exposed window; the old
+        native-window interactor got this for free by creating its GL context
+        on demand.
+        """
+        if self._ctx is None and self._fallback_allowed:
+            with contextlib.suppress(Exception):
+                self.grabFramebuffer()
+
     def _cb_is_current(self, obj, evt):
         # The bool* calldata is not reachable from Python; write the answer
         # into the member the event reads back via SetIsCurrent.

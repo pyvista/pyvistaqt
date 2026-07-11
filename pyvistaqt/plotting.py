@@ -299,9 +299,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         The FBO-backed ``vtkGenericOpenGLRenderWindow`` is only "current" while
         the widget's Qt OpenGL context is, which is generally not the case when
         pyvista's image/screenshot APIs are called from the event loop.
-        ``MakeCurrent`` is serviced by the widget and makes the check pass.
+        ``MakeCurrent`` is serviced by the widget and makes the check pass. A
+        widget that never painted (hidden, or shown without the event loop
+        spinning) has no context to make current yet, so realize it offscreen
+        first.
         """
         if self.render_window is not None:
+            self._ensure_initialized()
             self.render_window.MakeCurrent()
         BasePlotter._check_has_ren_win(self)  # noqa: SLF001
 
@@ -808,8 +812,13 @@ class BackgroundPlotter(QtInteractor):
         """Set the render window size."""
         self.app_window.setBaseSize(*window_size)
         self.app_window.resize(*window_size)
-        # NOTE: setting BasePlotter is unnecessary and Segfaults CI
-        # BasePlotter.window_size.fset(self, window_size)  # noqa: ERA001
+        # The native-window interactor synced VTK's size through X/Cocoa when
+        # the Qt window resized (and calling the BasePlotter setter here
+        # segfaulted CI). The FBO widget only syncs in resizeGL, which needs a
+        # realized widget, so push the size into VTK explicitly: rendering
+        # APIs (image/screenshot) then see the requested size before the
+        # window is ever shown, and resizeGL corrects it on realization.
+        BasePlotter.window_size.fset(self, window_size)
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
