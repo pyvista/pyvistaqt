@@ -174,7 +174,7 @@ def test_file_dialog(tmpdir, qtbot) -> None:  # noqa: D103
 
     # show the dialog
     assert not dialog.isVisible()
-    with qtbot.wait_exposed(dialog):
+    with wait_exposed(qtbot, dialog):
         dialog.show()
     assert dialog.isVisible()
 
@@ -206,10 +206,31 @@ def debug_log_level():  # noqa: ANN201
 # https://github.com/pyvista/pyvistaqt/pull/810
 BAD_INTERACTION = False
 
+_NO_GL: bool | None = None
+
+
+def _no_gl() -> bool:
+    """
+    Return True where Qt cannot provide a GL context (macOS software GL).
+
+    On macOS >= 26 with Qt >= 6.10 the Apple software renderer is refused
+    (QOpenGLWidget is unsupported; see rwi.py invariant #6). Windows there
+    never actually map, so waiting for exposure always times out. Detect it
+    the same way ``test_report_capabilities_unrealized`` does and cache it.
+    """
+    global _NO_GL  # noqa: PLW0603
+    if _NO_GL is None:
+        from qtpy.QtGui import QOpenGLContext  # noqa: PLC0415
+
+        _NO_GL = not QOpenGLContext().create()
+    return _NO_GL
+
 
 def wait_exposed(qtbot, widget, **kwargs):  # type: ignore[no-untyped-def]  # noqa: ANN201,ANN003
     """Wrap qtbot.wait_exposed to skip on bad interaction platforms."""
-    return qtbot.wait_exposed(widget, **kwargs) if not BAD_INTERACTION else nullcontext()
+    if BAD_INTERACTION or _no_gl():
+        return nullcontext()
+    return qtbot.wait_exposed(widget, **kwargs)
 
 
 def test_mouse_interactions(qtbot, debug_log_level) -> None:  # noqa: D103,ARG001
