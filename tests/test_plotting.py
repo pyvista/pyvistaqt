@@ -10,7 +10,6 @@ import platform
 import re
 import sys
 import threading
-import time
 import weakref
 
 import numpy as np
@@ -805,21 +804,18 @@ def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D1
     # not stop it (pyvista#8804 does); on macOS every render() also spawns a
     # thread. A still-running thread's frame holds the plotter, tripping
     # check_gc on runners slow enough for the orbit to outlive the test
-    # (macOS Intel), so wait for every thread the orbit spawned. A thread can
-    # appear in enumerate() before it is joinable (threading._limbo: start()
-    # still in progress on another thread; seen with the orbit thread's
-    # renders on Windows), so poll until none are running or pending instead
-    # of joining a one-shot diff.
-    deadline = time.monotonic() + 10
-    while pending := [
-        t
-        for t in set(threading.enumerate()) - threads_before
-        if t.is_alive() or t.ident is None  # ident is None until started
-    ]:
-        assert time.monotonic() < deadline, pending
-        for thread in pending:
-            if thread.is_alive():
-                thread.join(timeout=1)
+    # (macOS Intel), so wait (best effort) for the threads the orbit spawned.
+    for thread in set(threading.enumerate()) - threads_before:
+        # Only pyvista's render/orbit worker threads (plain Thread) can hold
+        # the plotter; a stray stdlib threading.Timer from test infrastructure
+        # never does and may outlive the wait, so skip it.
+        if isinstance(thread, threading.Timer):
+            continue
+        # A thread can be enumerated before it is joinable (threading._limbo:
+        # start() still in progress on another thread), where join() raises
+        # "cannot join thread before it is started" -- seen on Windows.
+        with contextlib.suppress(RuntimeError):
+            thread.join(timeout=10)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
