@@ -812,13 +812,16 @@ class BackgroundPlotter(QtInteractor):
         """Set the render window size."""
         self.app_window.setBaseSize(*window_size)
         self.app_window.resize(*window_size)
-        # The native-window interactor synced VTK's size through X/Cocoa when
-        # the Qt window resized (and calling the BasePlotter setter here
-        # segfaulted CI). The FBO widget only syncs in resizeGL, which needs a
-        # realized widget, so push the size into VTK explicitly: rendering
-        # APIs (image/screenshot) then see the requested size before the
-        # window is ever shown, and resizeGL corrects it on realization.
-        BasePlotter.window_size.fset(self, window_size)
+        # The FBO widget only syncs VTK's size to the widget in resizeGL,
+        # which needs a realized widget, so seed the size for rendering APIs
+        # (image/screenshot) used before the window is ever shown -- the old
+        # native-window interactor created a correctly-sized window on demand.
+        # Once realized, resizeGL owns the size: pushing here would fight
+        # callers that size the window and the interactor independently (e.g.
+        # MNE's Brain sets the *interactor* to the requested size and grows
+        # the window around it).
+        if self._ctx is None:
+            self.render_window.SetSize(*window_size)
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
