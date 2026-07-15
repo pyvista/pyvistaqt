@@ -211,12 +211,12 @@ _NO_GL: bool | None = None
 
 def _no_gl() -> bool:
     """
-    Return True where Qt cannot provide a GL context (macOS software GL).
+    Return True where Qt cannot provide a GL context at all.
 
     On macOS >= 26 with Qt >= 6.10 the Apple software renderer is refused
-    (QOpenGLWidget is unsupported; see rwi.py invariant #6). Windows there
-    never actually map, so waiting for exposure always times out. Detect it
-    the same way ``test_report_capabilities_unrealized`` does and cache it.
+    outright (QOpenGLWidget is unsupported; see rwi.py invariant #6), so there
+    is no context for tests that need one to inspect. Detect it the same way
+    ``test_report_capabilities_unrealized`` does and cache it.
     """
     global _NO_GL  # noqa: PLW0603
     if _NO_GL is None:
@@ -227,9 +227,20 @@ def _no_gl() -> bool:
 
 
 def wait_exposed(qtbot, widget, **kwargs):  # type: ignore[no-untyped-def]  # noqa: ANN201,ANN003
-    """Wrap qtbot.wait_exposed to skip on bad interaction platforms."""
+    """
+    Wrap qtbot.wait_exposed, tolerating slow compositing.
+
+    pytest-qt defaults to 5 s, which is not enough on a loaded CI VM driving
+    software GL: ``test_background_plotter_export_files[True]`` intermittently
+    timed out waiting for its FileDialog on macOS arm64 while the very same
+    wait passed in the ``[False]`` parametrization and in two other dialog
+    tests of the same run. Exposure does happen there, just late, so wait
+    longer rather than skip -- this costs nothing when the window maps
+    promptly.
+    """
     if BAD_INTERACTION or _no_gl():
         return nullcontext()
+    kwargs.setdefault("timeout", 30000)
     return qtbot.wait_exposed(widget, **kwargs)
 
 
@@ -1037,7 +1048,7 @@ def test_drop_event(tmpdir, qtbot) -> None:  # noqa: D103
     mesh.save(filename)
     assert os.path.isfile(filename)  # noqa: PTH113
     plotter = BackgroundPlotter(update_app_icon=False)
-    with wait_exposed(qtbot, plotter.app_window, timeout=10000):
+    with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
     point = QPointF(0, 0)
     data = QMimeData()
@@ -1076,7 +1087,7 @@ def test_drag_event(tmpdir) -> None:  # noqa: D103
 
 def test_gesture_event(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter(update_app_icon=False)
-    with wait_exposed(qtbot, plotter.app_window, timeout=10000):
+    with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
     gestures = [QPinchGesture()]
     event = QGestureEvent(gestures)
@@ -1221,9 +1232,9 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting, en
     render_blocker.wait()
 
     # ensure that the widgets are showed
-    with wait_exposed(qtbot, window, timeout=10000):
+    with wait_exposed(qtbot, window):
         window.show()
-    with wait_exposed(qtbot, interactor, timeout=10000):
+    with wait_exposed(qtbot, interactor):
         interactor.show()
 
     # check that the widgets are showed properly
