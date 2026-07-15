@@ -304,7 +304,10 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
     def _cb_make_current(self, obj, evt):
         """Make VTK's context current WITHOUT touching framebuffer bindings."""
         if self._ctx is not None and self._surface is not None:
-            self._ctx.makeCurrent(self._surface)
+            try:
+                self._ctx.makeCurrent(self._surface)
+            except RuntimeError:  # C++ context already deleted (PySide/PyQt)
+                self._forget_context()
             return
         # Before initializeGL there is no widget context, but raw-GL query
         # methods like ReportCapabilities() (MakeCurrent + glGetString) were
@@ -343,6 +346,24 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             if QOpenGLContext.currentContext() is ctx:
                 ctx.doneCurrent()
             self._fallback = None
+
+    def _forget_context(self):
+        """
+        Drop references to a Qt context that has already been destroyed.
+
+        ``aboutToBeDestroyed`` is not guaranteed to reach ``_cleanup_context``:
+        when the *parent* window is deleted, the C++ widget and its context go
+        first (severing the connection), and only then does the parent's
+        ``destroyed`` -> ``close`` connection drive ``Finalize`` through the
+        make-current observer, holding a stale wrapper. Forgetting it makes
+        ``IsCurrent()`` report False so VTK skips GL work rather than freeing
+        its objects against whatever context happens to be current -- which,
+        with several widgets alive, would be a sibling's (see invariant 5).
+        """
+        self._drop_fallback_context()
+        self._ctx = None
+        self._surface = None
+        self._gl = None
 
     def _ensure_initialized(self):
         """
@@ -455,10 +476,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             rw.Finalize()
             rw.SetReadyForRendering(False)
         self._remove_observers()
-        self._drop_fallback_context()
-        self._ctx = None
-        self._surface = None
-        self._gl = None
+        self._forget_context()
 
     def resizeGL(self, w, h):
         # QVTKRenderWindowAdapter::resize: VTK works in device pixels.
