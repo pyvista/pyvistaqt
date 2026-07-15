@@ -268,6 +268,47 @@ def test_report_capabilities_unrealized(qtbot) -> None:
     plotter.close()
 
 
+def test_close_after_parent_destroyed(qtbot, qapp, capsys) -> None:
+    """
+    A child interactor must survive its context dying with its parent.
+
+    Deleting the parent window destroys the C++ widget (and its GL context)
+    before the parent's ``destroyed`` -> ``close`` connection runs Finalize
+    through the make-current observer, so ``aboutToBeDestroyed`` never
+    reaches ``_cleanup_context`` and the observer holds a stale wrapper.
+    VTK swallows the resulting RuntimeError, printing a traceback, and then
+    releases its GL objects against whatever context is current instead.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    window = MainWindow()
+    frame = QFrame(parent=window)
+    layout = QVBoxLayout()
+    interactor = QtInteractor(parent=frame)
+    layout.addWidget(interactor.interactor)
+    frame.setLayout(layout)
+    window.setCentralWidget(frame)
+    interactor.add_mesh(pyvista.Sphere())
+    with wait_exposed(qtbot, window):
+        window.show()
+    assert interactor._ctx is not None, "widget never got a GL context"  # noqa: SLF001
+    weak_interactor = weakref.ref(interactor)
+    capsys.readouterr()  # drop anything printed during setup
+
+    # Drop every reference so deleting the window drives the teardown above.
+    window.close()
+    del window, frame, layout, interactor
+    gc.collect()
+    qapp.processEvents()
+
+    err = capsys.readouterr().err
+    assert "already deleted" not in err, err
+    assert "Traceback" not in err, err
+    dead = weak_interactor()
+    # If it outlived the window, the context must at least be forgotten.
+    assert dead is None or dead._ctx is None  # noqa: SLF001
+
+
 def test_depth_peeling(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
