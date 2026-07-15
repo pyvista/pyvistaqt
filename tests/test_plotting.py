@@ -268,6 +268,69 @@ def test_report_capabilities_unrealized(qtbot) -> None:
     plotter.close()
 
 
+def test_screenshot_unrealized(qtbot) -> None:
+    """
+    ``image`` must render at the requested size on a never-shown plotter.
+
+    The old native-window interactor created its GL context (at the requested
+    size) on demand, so rendering APIs worked before the window was ever
+    shown; MNE relies on this. The FBO widget has no context until it paints
+    and only learns its size in ``resizeGL``, so this needs the widget to be
+    realized offscreen *and* the size seeded into VTK first -- two separate
+    regressions that MNE, not pyvistaqt, caught.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    size = (300, 300)
+    plotter = BackgroundPlotter(show=False, off_screen=False, window_size=size)
+    qtbot.addWidget(plotter.app_window)
+    plotter.set_background("black")
+    plotter.add_mesh(pyvista.Sphere(), color="white")
+    assert plotter.interactor._ctx is None, "widget was realized before we asked"  # noqa: SLF001
+
+    img = np.array(plotter.image)  # must not raise, nor come back empty/0x0
+
+    dpr = plotter.interactor.devicePixelRatioF()
+    assert img.shape == (round(size[1] * dpr), round(size[0] * dpr), 3)
+    assert 0.0 < img.any(-1).mean() < 1.0  # the sphere actually rendered
+    plotter.close()
+
+
+def test_close_removes_vtk_observers(qtbot) -> None:
+    """
+    ``close`` must drop VTK's C++-side references to our bound methods.
+
+    VTK holds a strong reference to each observer, which pins the widget
+    invisibly to Python's GC for as long as the render window lives.
+    """
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    ren_win = plotter.ren_win  # close() drops the plotter's own reference
+    assert ren_win.HasObserver("WindowMakeCurrentEvent")
+    plotter.close()
+    for event in ("WindowMakeCurrentEvent", "WindowIsCurrentEvent", "WindowFrameEvent"):
+        assert not ren_win.HasObserver(event), event
+
+
+def test_default_surface_format(qtbot) -> None:
+    """
+    The GL format must be installed process-wide (rwi.py invariant 2).
+
+    A per-widget ``setFormat`` makes the widget's context incompatible with
+    its top-level window's share context on Wayland and the widget silently
+    composites black, so the format has to land on ``setDefaultFormat``.
+    """
+    from qtpy.QtGui import QSurfaceFormat  # noqa: PLC0415
+
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    fmt = QSurfaceFormat.defaultFormat()
+    assert (fmt.majorVersion(), fmt.minorVersion()) >= (3, 2)
+    assert fmt.profile() == QSurfaceFormat.OpenGLContextProfile.CoreProfile
+    assert fmt.renderableType() == QSurfaceFormat.RenderableType.OpenGL
+    plotter.close()
+
+
 def test_close_after_parent_destroyed(qtbot, qapp, capsys) -> None:
     """
     A child interactor must survive its context dying with its parent.
