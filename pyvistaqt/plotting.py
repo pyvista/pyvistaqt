@@ -10,9 +10,8 @@ Inheritance:
 
     BackgroundPlotter
     +-- QtInteractor
-        |-- QVTKRenderWindowInteractor
-        |   +-- QWidget  (the default QVTKRWIBaseClass; QGLWidget or
-        |                 QOpenGLWidget can be selected via vtkmodules.qt)
+        |-- QVTKRenderWindowInteractor  (pyvistaqt.rwi: FBO-based, no native
+        |   +-- QOpenGLWidget            window handle -- Wayland-compatible)
         +-- BasePlotter
 
     MainWindow
@@ -29,20 +28,20 @@ Implementation
     +-- QtInteractor.__init__(parent=self.frame)
         |-- with _no_base_plotter_init():
         |   +-- QVTKRenderWindowInteractor.__init__(parent=parent)
-        |       +-- QWidget.__init__(parent, wflags)
+        |       +-- QOpenGLWidget.__init__(parent)
         |-- BasePlotter.__init__(**kwargs)
         +-- self.ren_win: vtkRenderWindow = self.GetRenderWindow()
 
-Because ``QVTKRenderWindowInteractor.__init__`` calls ``QWidget.__init__``
-and the Qt bindings continue the cooperative ``super()`` chain past the Qt
-classes, this triggers a spurious ``BasePlotter.__init__`` call with no
-arguments. This cannot be solved by using ``super()`` because
-``QVTKRenderWindowInteractor.__init__`` does not use ``super()``, and the
-chaining happens inside Qt's ``QWidget`` initialization, outside of our
-control. We therefore temporarily monkey-patch ``BasePlotter.__init__`` with
-a no-op during the ``QVTKRenderWindowInteractor.__init__`` call (see
-``_no_base_plotter_init``), then call ``BasePlotter.__init__`` explicitly
-with the real arguments.
+Because ``QVTKRenderWindowInteractor.__init__`` calls
+``QOpenGLWidget.__init__`` and the Qt bindings continue the cooperative
+``super()`` chain past the Qt classes, this triggers a spurious
+``BasePlotter.__init__`` call with no arguments. This cannot be solved by
+using ``super()`` because ``QVTKRenderWindowInteractor.__init__`` does not
+use ``super()``, and the chaining happens inside Qt's widget initialization,
+outside of our control. We therefore temporarily monkey-patch
+``BasePlotter.__init__`` with a no-op during the
+``QVTKRenderWindowInteractor.__init__`` call (see ``_no_base_plotter_init``),
+then call ``BasePlotter.__init__`` explicitly with the real arguments.
 """  # noqa: D404
 
 from collections.abc import Callable
@@ -106,12 +105,6 @@ LOG = logging.getLogger("pyvistaqt")
 LOG.setLevel(logging.CRITICAL)
 LOG.addHandler(logging.StreamHandler())
 
-
-# for display bugs due to older intel integrated GPUs, setting
-# vtkmodules.qt.QVTKRWIBase = 'QGLWidget' could help. However, its use
-# is discouraged and does not work well on VTK9+, so let's not bother
-# changing it from the default 'QWidget'.
-# See https://github.com/pyvista/pyvista/pull/693
 
 # LOG is unused at the moment
 # LOG = logging.getLogger(__name__)  # noqa: ERA001
@@ -289,7 +282,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.iren: Any = None
         else:
             self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
-            self.iren.interactor.RemoveObservers("MouseMoveEvent")  # slows window update?  # ty: ignore[unresolved-attribute]
+            # slows window update?
+            self.iren.interactor.RemoveObservers("MouseMoveEvent")  # ty: ignore[unresolved-attribute]
             self.iren.initialize()
             self.enable_trackball_style()
 
@@ -297,6 +291,23 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._observers: dict[None, None] = {}  # Map of events to observers of self.iren
         self.iren.add_observer("KeyPressEvent", self.key_press_event)
         self.reset_key_events()
+
+    def _check_has_ren_win(self) -> None:
+        """
+        Make the render window current before pyvista's is-current check.
+
+        The FBO-backed ``vtkGenericOpenGLRenderWindow`` is only "current" while
+        the widget's Qt OpenGL context is, which is generally not the case when
+        pyvista's image/screenshot APIs are called from the event loop.
+        ``MakeCurrent`` is serviced by the widget and makes the check pass. A
+        widget that never painted (hidden, or shown without the event loop
+        spinning) has no context to make current yet, so realize it offscreen
+        first.
+        """
+        if self.render_window is not None:
+            self._ensure_initialized()
+            self.render_window.MakeCurrent()
+        BasePlotter._check_has_ren_win(self)  # noqa: SLF001
 
     def gesture_event(self, event: QGestureEvent) -> bool:
         """Handle gesture events."""
@@ -801,8 +812,16 @@ class BackgroundPlotter(QtInteractor):
         """Set the render window size."""
         self.app_window.setBaseSize(*window_size)
         self.app_window.resize(*window_size)
-        # NOTE: setting BasePlotter is unnecessary and Segfaults CI
-        # BasePlotter.window_size.fset(self, window_size)  # noqa: ERA001
+        # The FBO widget only syncs VTK's size to the widget in resizeGL,
+        # which needs a realized widget, so seed the size for rendering APIs
+        # (image/screenshot) used before the window is ever shown -- the old
+        # native-window interactor created a correctly-sized window on demand.
+        # Once realized, resizeGL owns the size: pushing here would fight
+        # callers that size the window and the interactor independently (e.g.
+        # MNE's Brain sets the *interactor* to the requested size and grows
+        # the window around it).
+        if self._ctx is None:
+            self.render_window.SetSize(*window_size)
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""

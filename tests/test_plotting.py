@@ -174,7 +174,7 @@ def test_file_dialog(tmpdir, qtbot) -> None:  # noqa: D103
 
     # show the dialog
     assert not dialog.isVisible()
-    with qtbot.wait_exposed(dialog):
+    with wait_exposed(qtbot, dialog):
         dialog.show()
     assert dialog.isVisible()
 
@@ -206,10 +206,42 @@ def debug_log_level():  # noqa: ANN201
 # https://github.com/pyvista/pyvistaqt/pull/810
 BAD_INTERACTION = False
 
+_NO_GL: bool | None = None
+
+
+def _no_gl() -> bool:
+    """
+    Return True where Qt cannot provide a GL context at all.
+
+    On macOS >= 26 with Qt >= 6.10 the Apple software renderer is refused
+    outright (QOpenGLWidget is unsupported; see rwi.py invariant #6), so there
+    is no context for tests that need one to inspect. Detect it the same way
+    ``test_report_capabilities_unrealized`` does and cache it.
+    """
+    global _NO_GL  # noqa: PLW0603
+    if _NO_GL is None:
+        from qtpy.QtGui import QOpenGLContext  # noqa: PLC0415
+
+        _NO_GL = not QOpenGLContext().create()
+    return _NO_GL
+
 
 def wait_exposed(qtbot, widget, **kwargs):  # type: ignore[no-untyped-def]  # noqa: ANN201,ANN003
-    """Wrap qtbot.wait_exposed to skip on bad interaction platforms."""
-    return qtbot.wait_exposed(widget, **kwargs) if not BAD_INTERACTION else nullcontext()
+    """
+    Wrap qtbot.wait_exposed, tolerating slow compositing.
+
+    pytest-qt defaults to 5 s, which is not enough on a loaded CI VM driving
+    software GL: ``test_background_plotter_export_files[True]`` intermittently
+    timed out waiting for its FileDialog on macOS arm64 while the very same
+    wait passed in the ``[False]`` parametrization and in two other dialog
+    tests of the same run. Exposure does happen there, just late, so wait
+    longer rather than skip -- this costs nothing when the window maps
+    promptly.
+    """
+    if BAD_INTERACTION or _no_gl():
+        return nullcontext()
+    kwargs.setdefault("timeout", 30000)
+    return qtbot.wait_exposed(widget, **kwargs)
 
 
 def test_mouse_interactions(qtbot, debug_log_level) -> None:  # noqa: D103,ARG001
@@ -232,6 +264,123 @@ def test_ipython(qapp) -> None:  # noqa: ARG001, D103
 
 class SuperWindow(MainWindow):  # noqa: D101
     pass
+
+
+def test_report_capabilities_unrealized(qtbot) -> None:
+    """GPU queries must work on a never-shown plotter (as MNE's _is_osmesa does)."""
+    from qtpy.QtGui import QOpenGLContext  # noqa: PLC0415
+
+    if not QOpenGLContext().create():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    caps = plotter.ren_win.ReportCapabilities()
+    assert "OpenGL" in caps
+    plotter.close()
+
+
+def test_screenshot_unrealized(qtbot) -> None:
+    """
+    ``image`` must render at the requested size on a never-shown plotter.
+
+    The old native-window interactor created its GL context (at the requested
+    size) on demand, so rendering APIs worked before the window was ever
+    shown; MNE relies on this. The FBO widget has no context until it paints
+    and only learns its size in ``resizeGL``, so this needs the widget to be
+    realized offscreen *and* the size seeded into VTK first -- two separate
+    regressions that MNE, not pyvistaqt, caught.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    size = (300, 300)
+    plotter = BackgroundPlotter(show=False, off_screen=False, window_size=size)
+    qtbot.addWidget(plotter.app_window)
+    plotter.set_background("black")
+    plotter.add_mesh(pyvista.Sphere(), color="white")
+    assert plotter.interactor._ctx is None, "widget was realized before we asked"  # noqa: SLF001
+
+    img = np.array(plotter.image)  # must not raise, nor come back empty/0x0
+
+    dpr = plotter.interactor.devicePixelRatioF()
+    assert img.shape == (round(size[1] * dpr), round(size[0] * dpr), 3)
+    assert 0.0 < img.any(-1).mean() < 1.0  # the sphere actually rendered
+    plotter.close()
+
+
+def test_close_removes_vtk_observers(qtbot) -> None:
+    """
+    ``close`` must drop VTK's C++-side references to our bound methods.
+
+    VTK holds a strong reference to each observer, which pins the widget
+    invisibly to Python's GC for as long as the render window lives.
+    """
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    ren_win = plotter.ren_win  # close() drops the plotter's own reference
+    assert ren_win.HasObserver("WindowMakeCurrentEvent")
+    plotter.close()
+    for event in ("WindowMakeCurrentEvent", "WindowIsCurrentEvent", "WindowFrameEvent"):
+        assert not ren_win.HasObserver(event), event
+
+
+def test_default_surface_format(qtbot) -> None:
+    """
+    The GL format must be installed process-wide (rwi.py invariant 2).
+
+    A per-widget ``setFormat`` makes the widget's context incompatible with
+    its top-level window's share context on Wayland and the widget silently
+    composites black, so the format has to land on ``setDefaultFormat``.
+    """
+    from qtpy.QtGui import QSurfaceFormat  # noqa: PLC0415
+
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    fmt = QSurfaceFormat.defaultFormat()
+    assert (fmt.majorVersion(), fmt.minorVersion()) >= (3, 2)
+    assert fmt.profile() == QSurfaceFormat.OpenGLContextProfile.CoreProfile
+    assert fmt.renderableType() == QSurfaceFormat.RenderableType.OpenGL
+    plotter.close()
+
+
+def test_close_after_parent_destroyed(qtbot, qapp, capsys) -> None:
+    """
+    A child interactor must survive its context dying with its parent.
+
+    Deleting the parent window destroys the C++ widget (and its GL context)
+    before the parent's ``destroyed`` -> ``close`` connection runs Finalize
+    through the make-current observer, so ``aboutToBeDestroyed`` never
+    reaches ``_cleanup_context`` and the observer holds a stale wrapper.
+    VTK swallows the resulting RuntimeError, printing a traceback, and then
+    releases its GL objects against whatever context is current instead.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    window = MainWindow()
+    frame = QFrame(parent=window)
+    layout = QVBoxLayout()
+    interactor = QtInteractor(parent=frame)
+    layout.addWidget(interactor.interactor)
+    frame.setLayout(layout)
+    window.setCentralWidget(frame)
+    interactor.add_mesh(pyvista.Sphere())
+    with wait_exposed(qtbot, window):
+        window.show()
+    assert interactor._ctx is not None, "widget never got a GL context"  # noqa: SLF001
+    weak_interactor = weakref.ref(interactor)
+    capsys.readouterr()  # drop anything printed during setup
+
+    # Drop every reference so deleting the window drives the teardown above.
+    window.close()
+    del window, frame, layout, interactor
+    gc.collect()
+    qapp.processEvents()
+
+    err = capsys.readouterr().err
+    assert "already deleted" not in err, err
+    assert "Traceback" not in err, err
+    dead = weak_interactor()
+    # If it outlived the window, the context must at least be forgotten.
+    assert dead is None or dead._ctx is None  # noqa: SLF001
 
 
 def test_depth_peeling(qtbot) -> None:  # noqa: D103
@@ -791,9 +940,18 @@ def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D1
     # not stop it (pyvista#8804 does); on macOS every render() also spawns a
     # thread. A still-running thread's frame holds the plotter, tripping
     # check_gc on runners slow enough for the orbit to outlive the test
-    # (macOS Intel), so wait for every thread the orbit spawned.
+    # (macOS Intel), so wait (best effort) for the threads the orbit spawned.
     for thread in set(threading.enumerate()) - threads_before:
-        thread.join(timeout=10)
+        # Only pyvista's render/orbit worker threads (plain Thread) can hold
+        # the plotter; a stray stdlib threading.Timer from test infrastructure
+        # never does and may outlive the wait, so skip it.
+        if isinstance(thread, threading.Timer):
+            continue
+        # A thread can be enumerated before it is joinable (threading._limbo:
+        # start() still in progress on another thread), where join() raises
+        # "cannot join thread before it is started" -- seen on Windows.
+        with contextlib.suppress(RuntimeError):
+            thread.join(timeout=10)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
@@ -890,7 +1048,7 @@ def test_drop_event(tmpdir, qtbot) -> None:  # noqa: D103
     mesh.save(filename)
     assert os.path.isfile(filename)  # noqa: PTH113
     plotter = BackgroundPlotter(update_app_icon=False)
-    with wait_exposed(qtbot, plotter.app_window, timeout=10000):
+    with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
     point = QPointF(0, 0)
     data = QMimeData()
@@ -929,7 +1087,7 @@ def test_drag_event(tmpdir) -> None:  # noqa: D103
 
 def test_gesture_event(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter(update_app_icon=False)
-    with wait_exposed(qtbot, plotter.app_window, timeout=10000):
+    with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
     gestures = [QPinchGesture()]
     event = QGestureEvent(gestures)
@@ -978,12 +1136,17 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
     with wait_exposed(qtbot, window):
         window.show()
     assert window.isVisible()
-    assert update_count[0] in [0, 1]  # macOS sometimes updates (1)
+    # Showing the window can take several seconds on slow CI VMs (macOS
+    # runners especially), during which the 1 s callback timer keeps calling
+    # update_app_icon -- the absolute call count up to here is
+    # timing-dependent. Stop the timer and assert on deltas instead.
+    callback_timer.stop()
+    base_count = update_count[0]
     # don't check _last_update_time for non-inf-ness, won't be updated on Win
     plotter.update_app_icon()  # the timer doesn't call it right away, so do it
-    assert update_count[0] in [1, 2]
-    plotter.update_app_icon()  # should be a no-op
-    assert update_count[0] in [2, 3]
+    assert update_count[0] == base_count + 1
+    plotter.update_app_icon()  # internally a rate-limited no-op, but still called
+    assert update_count[0] == base_count + 2
     with pytest.raises(ValueError, match="ndarray with shape"):
         plotter.set_icon(0.0)
     # Maybe someday manually setting "set_icon" should disable update_app_icon?
@@ -999,12 +1162,16 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
     counter = plotter.counters[-1]  # Counter
 
     if not BAD_INTERACTION:
+        # Generous timeouts: 3 ticks of the 200 ms timer nominally take 600 ms
+        # but slow CI VMs (macOS runners especially) can stall the event loop
+        # for seconds at a time.
         print("ensure that self.callback_timer send a signal")
-        with qtbot.wait_signals([callback_timer.timeout], timeout=2000):
+        with qtbot.wait_signals([callback_timer.timeout], timeout=10000):
             pass
         print("ensure that self.counters send a signal")
-        with qtbot.wait_signals([counter.signal_finished], timeout=2000):
-            pass
+        if counter.count > 0:  # signal_finished may have fired during the wait above
+            with qtbot.wait_signals([counter.signal_finished], timeout=10000):
+                pass
         assert not callback_timer.isActive()  # counter stops the callback
 
     plotter.add_callback(mycallback, interval=200)
@@ -1013,7 +1180,7 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
 
     if not BAD_INTERACTION:
         print("ensure that self.callback_timer send a signal")
-        with qtbot.wait_signals([callback_timer.timeout], timeout=5000):
+        with qtbot.wait_signals([callback_timer.timeout], timeout=10000):
             pass
 
     plotter.close()
@@ -1065,9 +1232,9 @@ def test_background_plotting_close(qtbot, close_event, empty_scene, plotting, en
     render_blocker.wait()
 
     # ensure that the widgets are showed
-    with wait_exposed(qtbot, window, timeout=10000):
+    with wait_exposed(qtbot, window):
         window.show()
-    with wait_exposed(qtbot, interactor, timeout=10000):
+    with wait_exposed(qtbot, interactor):
         interactor.show()
 
     # check that the widgets are showed properly
@@ -1215,20 +1382,29 @@ def test_sphinx_gallery_scraping(qtbot, monkeypatch, plotting, tmpdir, n_win) ->
         plotter.close()
 
 
+_skip_darwin_intel = pytest.mark.skipif(
+    sys.platform == "darwin" and platform.machine() == "x86_64",
+    reason="Takes ~3 minutes per param on macOS Intel CI runners",
+)
+
+
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "aa",
     [
-        False,
+        pytest.param(False, marks=_skip_darwin_intel),
         "fxaa",
-        "msaa",
+        pytest.param("msaa", marks=_skip_darwin_intel),
+        # TODO: SSAA renders correctly now (xpasses), but a ref cycle in  # noqa: FIX002, TD002, TD003
+        # PyVista keeps VTK objects alive and fails the GC check on some CI
+        # configurations (the xfail also covers that teardown error).
         pytest.param(
             "ssaa",
-            marks=pytest.mark.xfail(reason="SSAA broken on multiple plots", strict=False),
+            marks=pytest.mark.xfail(reason="ref cycle in PyVista prevents GC", strict=False),
         ),
     ],
 )
-def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None:  # noqa: ARG001, C901, D103
+def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None:  # noqa: ARG001, C901, D103, PLR0912
     print("Init")
     plotter = BackgroundPlotter(
         show=True,
@@ -1254,8 +1430,6 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
             is_mesa = "mesa" in gpu_info.split()
             if is_mesa:
                 skip_reason = "FXAA broken on Mesa"
-    elif aa == "ssaa" and sys.platform == "darwin":
-        skip_reason = "Works only sometimes on Darwin"
     if skip_reason:
         print("Skipping test")
         plotter.close()
@@ -1274,14 +1448,25 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
     print("Waiting")
     with wait_exposed(qtbot, plotter):
         plotter.window().show()
+    if sys.platform == "darwin":
+        # On macOS >= 26, Qt >= 6.10 disables OpenGL process-wide when the GL
+        # context would use the Apple *software* renderer (qtbase a9ca1aef2291:
+        # NSOpenGLContext crashes; GitHub Actions arm64 VMs hit this), so the
+        # QOpenGLWidget never gets a GL context and nothing can render. Where a
+        # software context is still handed out (e.g. Qt 6.11 on the same VMs,
+        # or older macOS), the arm64 software renderer draws with a corrupted
+        # view transform. Either way no meaningful pixel assertion is possible.
+        skip_reason = None
+        if plotter.interactor._ctx is None:  # noqa: SLF001
+            skip_reason = "Qt did not provide a GL context (macOS software GL)"
+        elif platform.machine() == "arm64" and "Apple Software Renderer" in plotter.ren_win.ReportCapabilities():
+            skip_reason = "Apple software GL renders a corrupted view on arm64"
+        if skip_reason:
+            plotter.close()
+            pytest.skip(skip_reason)
     img = np.array(plotter.image)
     non_black = img.any(-1).astype(bool).mean()
     del img
-    # TODO: This is possibly a bug indicative of the view being wrong  # noqa: FIX002, TD002, TD003
-    if sys.platform == "darwin" and platform.machine() == "arm64":
-        ratio = 2.0
-    else:
-        ratio = 1.0
     if not BAD_INTERACTION:
-        assert 0.9 / ratio < non_black < 1.0 / ratio
+        assert 0.9 < non_black < 1.0
     plotter.close()

@@ -1,121 +1,201 @@
-# modified from: https://gitlab.kitware.com/vtk/vtk
-# under the OSI-approved BSD 3-clause License
-# TODO: Mayavi has a potentially different version that might be better or worse
-# coding=utf-8
 """
-A simple VTK widget for PyQt or PySide.
-See http://www.trolltech.com for Qt documentation,
-http://www.riverbankcomputing.co.uk for PyQt, and
-http://pyside.github.io for PySide.
+FBO-based QVTKRenderWindowInteractor (rendering core).
 
-This class is based on the vtkGenericRenderWindowInteractor and is
-therefore fairly powerful.  It should also play nicely with the
-vtk3DWidget code.
+A Python translation of VTK's C++ ``QVTKOpenGLNativeWidget`` +
+``QVTKRenderWindowAdapter`` (GUISupport/Qt, BSD-3-Clause): a ``QOpenGLWidget``
+that drives a ``vtkGenericOpenGLRenderWindow`` rendering into Qt-managed
+framebuffer objects. No native window handle is ever passed to VTK, so the
+widget is display-server agnostic and works natively on Wayland (gh-445).
 
-Created by Prabhu Ramachandran, May 2002
-Based on David Gobbi's QVTKRenderWidget.py
+Key design points mirrored from the C++ adapter:
 
-Changes by Gerard Vermeulen Feb. 2003
- Win32 support.
+- VTK never owns the GL context. ``WindowMakeCurrentEvent`` is serviced with
+  ``QOpenGLContext.makeCurrent(surface)`` -- deliberately *not*
+  ``QOpenGLWidget.makeCurrent()``, which also rebinds the widget's backing
+  framebuffer and would corrupt VTK's framebuffer bindings mid-render.
+- With ``SwapBuffers`` on, ``vtkOpenGLRenderWindow::Frame()`` resolves the
+  frame into VTK's *display* framebuffer; ``FrameBlitModeToNoBlit`` only stops
+  VTK from blitting it anywhere further. ``paintGL`` then blits the display
+  framebuffer into the widget's default FBO (``BlitDisplayFramebuffer``), and
+  clears the target's alpha to 1 so the compositor does not blend the window
+  with whatever is behind it (Mesa/macOS; see paraview/paraview#17159).
+- ``vtkRenderWindow.Render()`` may be called from anywhere (pyvistaqt's render
+  timer and ``BasePlotter`` do this): the render happens immediately into
+  VTK's FBOs and ``WindowFrameEvent`` schedules a repaint that blits the
+  result into the widget's framebuffer.
+- ``vtkGenericOpenGLRenderWindow::Render()`` resets VTK's OpenGL state cache
+  and silently skips rendering unless ``IsCurrent()`` is true, so the
+  make-current/is-current observers are correctness-critical.
+- Deliberate divergence from the C++ widget: raw-GL *query* methods such as
+  ``ReportCapabilities()`` work before the widget is realized (MNE queries the
+  GPU on a not-yet-shown plotter; the old native-window interactor supported
+  this by creating its GLX context on demand). Pre-realization
+  ``WindowMakeCurrentEvent`` is serviced by a throwaway offscreen context and
+  VTK's process-global GL symbols are loaded via a throwaway window, while
+  ``IsCurrent()`` stays False so no VTK *rendering* (and hence no GL resource
+  creation) can happen against that context.
 
-Changes by Gerard Vermeulen, May 2003
- Bug fixes and better integration with the Qt framework.
+Hard-won invariants (each was found by debugging a real failure; violating any
+of them produces symptoms that are far removed from the cause):
 
-Changes by Phil Thompson, Nov. 2006
- Ported to PyQt v4.
- Added support for wheel events.
+1. Service ``WindowMakeCurrentEvent`` with ``QOpenGLContext.makeCurrent`` on
+   the surface captured in ``initializeGL`` -- never with
+   ``QOpenGLWidget.makeCurrent()``. The widget variant also binds the widget's
+   backing framebuffer *every call*, which corrupts VTK's framebuffer-binding
+   bookkeeping mid-render. Because ``vtkGenericOpenGLRenderWindow::Render()``
+   silently skips rendering (TRACE log only) when ``IsCurrent()`` is false,
+   the corruption manifests as stale/garbled frames and mutually inconsistent
+   pixel readbacks rather than an error.
+2. The GL surface format must be installed process-wide with
+   ``QSurfaceFormat.setDefaultFormat()`` *before the top-level window is
+   created* -- a per-widget ``setFormat()`` makes the widget's context
+   incompatible with the top-level window's share context on Wayland and the
+   widget composites black (reproducible with a plain magenta-clearing
+   ``QOpenGLWidget``; the format *content* is irrelevant). Setting the default
+   in ``__init__`` also covers applications that created the ``QApplication``
+   themselves. The default format additionally requests desktop OpenGL
+   explicitly, since Wayland/EGL may otherwise return a GLES context whose
+   GLSL rejects VTK's ``#version 150`` shaders.
+3. ``paintGL`` must *always* render, unlike C++
+   ``QVTKOpenGLNativeWidget::paintGL`` which skips the VTK render for paints
+   scheduled by a finished render's ``WindowFrameEvent``. pyvista mutates the
+   scene (cameras, actors) without asking the widget to repaint, so a skipped
+   render blits a stale frame (caught by ``test_background_plotting_plots``:
+   the last-active subplot showed a pre-``camera.zoom`` frame). This matches
+   the behavior of the previously vendored ``QVTKRenderWindowInteractor``.
+4. Never call ``QWidget.screen()``: the Python binding can end up owning the
+   returned application-global ``QScreen``, and a later garbage collection
+   then deletes it, crashing much later inside an unrelated
+   ``QMainWindow()`` construction (``QScreen::virtualSiblings`` use after
+   free). VTK only needs the screen size for fullscreen render windows, which
+   do not apply to an embedded widget, so ``SetScreenSize`` is simply not
+   called.
+5. GL resource teardown must happen with our context current. The
+   ``aboutToBeDestroyed`` slot makes the context current itself (Qt's
+   canonical cleanup pattern) before ``Finalize``; ``closeEvent`` must *not*
+   call ``QOpenGLWidget.makeCurrent()`` because it can run while the parent
+   window is being destroyed (via the ``destroyed`` -> ``close`` connection),
+   and ``Finalize`` already drives ``MakeCurrent`` through the observer.
+   Freeing GL objects against the wrong context is driver heap corruption
+   that, like (4), crashes at a distance.
 
-Changes by Phil Thompson, Oct. 2007
- Bug fixes.
+Known platform limitation (macOS, hard-won but not fixable here):
 
-Changes by Phil Thompson, Mar. 2008
- Added cursor support.
-
-Changes by Rodrigo Mologni, Sep. 2013 (Credit to Daniele Esposti)
- Bug fix to PySide: Converts PyCObject to void pointer.
-
-Changes by Greg Schussman, Aug. 2014
- The keyPressEvent function now passes keysym instead of None.
-
-Changes by Alex Tsui, Apr. 2015
- Port from PyQt4 to PyQt5.
-
-Changes by Fabian Wenzel, Jan. 2016
- Support for Python3
-
-Changes by Tobias Hänel, Sep. 2018
- Support for PySide2
-
-Changes by Ruben de Bruin, Aug. 2019
- Fixes to the keyPressEvent function
-
-Changes by Chen Jintao, Aug. 2021
- Support for PySide6
-
-Changes by Eric Larson and Guillaume Favelier, Apr. 2022
- Support for PyQt6
+6. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
+   context would use the Apple *software* renderer, because NSOpenGLContext
+   crashes in ``flushBuffer``/``setView:`` there (qtbase commit a9ca1aef2291).
+   Qt warns ``QOpenGLWidget is not supported on this platform.`` and this
+   widget never receives ``initializeGL``/``paintGL`` (``_ctx`` stays None,
+   the widget shows solid white, and ``plotter.image`` reads uninitialized
+   memory). This hits macOS VMs without GPU acceleration, e.g. GitHub Actions
+   arm64 runners. Where a software context *is* still handed out (e.g. Qt
+   6.11 on the same VMs, or macOS < 26), the arm64 software renderer draws
+   with a corrupted view transform (roughly 2x-magnified/shifted subplots).
+   C++ ``QVTKOpenGLNativeWidget`` shares this limitation; the previously
+   vendored native-window interactor did not, because VTK's own
+   ``NSOpenGLContext`` usage avoids the crashing calls. Real (non-VM) Apple
+   GPUs are unaffected. Tests must skip pixel assertions in these
+   environments (see ``test_background_plotting_plots``).
 """
 
-import sys
+from collections.abc import Callable
+import contextlib
+import ctypes
+from typing import Any
+from typing import ClassVar
+from typing import cast
 
-# qtpy selects and normalizes the Qt binding (PyQt5/PyQt6/PySide2/PySide6).
-from qtpy import API_NAME as PyQtImpl
-from qtpy import QT_VERSION
 from qtpy.QtCore import QEvent
-from qtpy.QtCore import QObject
+from qtpy.QtCore import QRect
 from qtpy.QtCore import QSize
 from qtpy.QtCore import Qt
 from qtpy.QtCore import QTimer
-from qtpy.QtGui import QCursor
+from qtpy.QtGui import QOffscreenSurface
+from qtpy.QtGui import QOpenGLContext
+from qtpy.QtGui import QSurfaceFormat
+from qtpy.QtOpenGLWidgets import QOpenGLWidget
 from qtpy.QtWidgets import QApplication
-from qtpy.QtWidgets import QMainWindow
 from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QWidget
-
-from vtkmodules.vtkRenderingCore import vtkRenderWindow
+from vtkmodules.vtkRenderingOpenGL2 import vtkGenericOpenGLRenderWindow
 from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
 
-# A specific QVTKRenderWindowInteractor base class can be selected via
-# vtkmodules.qt: "QGLWidget" (Qt < 6) or "QOpenGLWidget" (Qt >= 6).
-QVTKRWIBase = "QWidget"
-try:
-    import vtkmodules.qt
-    QVTKRWIBase = vtkmodules.qt.QVTKRWIBase
-except ImportError:
-    pass
+# OpenGL enums (PyOpenGL is not a dependency).
+GL_READ_FRAMEBUFFER = 0x8CA8
+GL_DRAW_FRAMEBUFFER = 0x8CA9
+GL_COLOR_ATTACHMENT0 = 0x8CE0
+GL_SCISSOR_TEST = 0x0C11
+GL_COLOR_BUFFER_BIT = 0x00004000
+GL_LINEAR = 0x2601
+GL_DEPTH_TEST = 0x0B71
+GL_LEQUAL = 0x0203
 
-if QVTKRWIBase == "QWidget":
-    QVTKRWIBaseClass = QWidget
-elif QVTKRWIBase == "QGLWidget":
-    from qtpy.QtOpenGL import QGLWidget
-    QVTKRWIBaseClass = QGLWidget
-elif QVTKRWIBase == "QOpenGLWidget":
-    from qtpy.QtOpenGLWidgets import QOpenGLWidget
-    QVTKRWIBaseClass = QOpenGLWidget
-else:
-    raise ImportError("Unknown base class for QVTKRenderWindowInteractor " + QVTKRWIBase)
 
-# qtpy exposes Qt6-style scoped enum namespaces for every supported binding.
-CursorShape = Qt.CursorShape
-WidgetAttribute = Qt.WidgetAttribute
-FocusPolicy = Qt.FocusPolicy
-ConnectionType = Qt.ConnectionType
-Key = Qt.Key
-MouseButton = Qt.MouseButton
-WindowType = Qt.WindowType
-KeyboardModifier = Qt.KeyboardModifier
-SizePolicy = QSizePolicy.Policy
-EventType = QEvent.Type
-MiddleButton = MouseButton.MiddleButton
+def _default_format() -> QSurfaceFormat:
+    """Desktop-GL 3.2 core format (QVTKRenderWindowAdapter::defaultFormat)."""
+    fmt = QSurfaceFormat()
+    # Explicitly request desktop OpenGL: on Wayland/EGL Qt may otherwise hand
+    # back a GLES context, whose GLSL rejects VTK's ``#version 150`` shaders.
+    fmt.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
+    fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+    fmt.setVersion(3, 2)
+    fmt.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
+    fmt.setRedBufferSize(8)
+    fmt.setGreenBufferSize(8)
+    fmt.setBlueBufferSize(8)
+    fmt.setDepthBufferSize(8)
+    fmt.setAlphaBufferSize(8)
+    fmt.setStencilBufferSize(0)
+    fmt.setSamples(0)  # MSAA happens in VTK's FBOs, not the Qt context
+    return fmt
 
-try:
-    _DISABLE_PAINT_IN_PAINT = tuple(map(int, QT_VERSION.split('.')[:2])) >= (6, 10)
-except Exception:  # Couldn't parse properly, shouldn't happen but let's be safe
-    _DISABLE_PAINT_IN_PAINT = False
-_DISABLE_PAINT_IN_PAINT = _DISABLE_PAINT_IN_PAINT and sys.platform == "darwin"
-# now we invert it because the value we want to set for __doPaintEvent is actually False
-# for macOS and Qt >= 6.10
-_IN_PAINT_EVENT_VALUE = not _DISABLE_PAINT_IN_PAINT
+
+class _GLAPI:
+    """
+    Raw OpenGL entry points resolved through ``QOpenGLContext.getProcAddress``.
+
+    PyQt6 wraps neither ``QOpenGLContext.functions()``/``extraFunctions()`` nor
+    the ``QOpenGLFunctions`` classes, so the few raw GL calls the blit needs are
+    resolved through the context (whose loader handles wgl/glX/egl per
+    platform) and called via ctypes. The context must be current both when
+    resolving and when calling.
+    """
+
+    # filled in by __init__ from _SIGNATURES via setattr
+    glBindFramebuffer: Callable[..., Any]
+    glDrawBuffers: Callable[..., Any]
+    glIsEnabled: Callable[..., Any]
+    glEnable: Callable[..., Any]
+    glDisable: Callable[..., Any]
+    glColorMask: Callable[..., Any]
+    glClearColor: Callable[..., Any]
+    glViewport: Callable[..., Any]
+    glClear: Callable[..., Any]
+
+    _SIGNATURES: ClassVar[dict[str, tuple]] = {
+        "glBindFramebuffer": (None, ctypes.c_uint, ctypes.c_uint),
+        "glDrawBuffers": (None, ctypes.c_int, ctypes.POINTER(ctypes.c_uint)),
+        "glIsEnabled": (ctypes.c_ubyte, ctypes.c_uint),
+        "glEnable": (None, ctypes.c_uint),
+        "glDisable": (None, ctypes.c_uint),
+        "glColorMask": (None, ctypes.c_ubyte, ctypes.c_ubyte, ctypes.c_ubyte, ctypes.c_ubyte),
+        "glClearColor": (None, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float),
+        "glViewport": (None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int),
+        "glClear": (None, ctypes.c_uint),
+    }
+
+    def __init__(self, ctx):
+        for name, (res, *args) in self._SIGNATURES.items():
+            ptr = ctx.getProcAddress(name.encode())
+            addr = int(ptr) if ptr is not None else 0
+            if addr == 0:  # all of these are core in any GL >= 3.0 context
+                msg = f"could not resolve OpenGL function {name!r}"
+                raise RuntimeError(msg)
+            setattr(self, name, ctypes.CFUNCTYPE(res, *args)(addr))
+
+    def draw_buffer_attachment0(self):
+        """glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])."""
+        bufs = (ctypes.c_uint * 1)(GL_COLOR_ATTACHMENT0)
+        self.glDrawBuffers(1, bufs)
 
 
 def _get_event_pos(ev):
@@ -125,205 +205,381 @@ def _get_event_pos(ev):
         return ev.x(), ev.y()
 
 
-class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
-
-    """ A QVTKRenderWindowInteractor for Python and Qt.  Uses a
-    vtkGenericRenderWindowInteractor to handle the interactions.  Use
-    GetRenderWindow() to get the vtkRenderWindow.  Create with the
-    keyword stereo=1 in order to generate a stereo-capable window.
-
-    The user interface is summarized in vtkInteractorStyle.h:
-
-    - Keypress j / Keypress t: toggle between joystick (position
-    sensitive) and trackball (motion sensitive) styles. In joystick
-    style, motion occurs continuously as long as a mouse button is
-    pressed. In trackball style, motion occurs when the mouse button
-    is pressed and the mouse pointer moves.
-
-    - Keypress c / Keypress o: toggle between camera and object
-    (actor) modes. In camera mode, mouse events affect the camera
-    position and focal point. In object mode, mouse events affect
-    the actor that is under the mouse pointer.
-
-    - Button 1: rotate the camera around its focal point (if camera
-    mode) or rotate the actor around its origin (if actor mode). The
-    rotation is in the direction defined from the center of the
-    renderer's viewport towards the mouse position. In joystick mode,
-    the magnitude of the rotation is determined by the distance the
-    mouse is from the center of the render window.
-
-    - Button 2: pan the camera (if camera mode) or translate the actor
-    (if object mode). In joystick mode, the direction of pan or
-    translation is from the center of the viewport towards the mouse
-    position. In trackball mode, the direction of motion is the
-    direction the mouse moves. (Note: with 2-button mice, pan is
-    defined as <Shift>-Button 1.)
-
-    - Button 3: zoom the camera (if camera mode) or scale the actor
-    (if object mode). Zoom in/increase scale if the mouse position is
-    in the top half of the viewport; zoom out/decrease scale if the
-    mouse position is in the bottom half. In joystick mode, the amount
-    of zoom is controlled by the distance of the mouse pointer from
-    the horizontal centerline of the window.
-
-    - Keypress 3: toggle the render window into and out of stereo
-    mode.  By default, red-blue stereo pairs are created. Some systems
-    support Crystal Eyes LCD stereo glasses; you have to invoke
-    SetStereoTypeToCrystalEyes() on the rendering window.  Note: to
-    use stereo you also need to pass a stereo=1 keyword argument to
-    the constructor.
-
-    - Keypress e: exit the application.
-
-    - Keypress f: fly to the picked point
-
-    - Keypress p: perform a pick operation. The render window interactor
-    has an internal instance of vtkCellPicker that it uses to pick.
-
-    - Keypress r: reset the camera view along the current view
-    direction. Centers the actors and moves the camera so that all actors
-    are visible.
-
-    - Keypress s: modify the representation of all actors so that they
-    are surfaces.
-
-    - Keypress u: invoke the user-defined function. Typically, this
-    keypress will bring up an interactor that you can type commands in.
-
-    - Keypress w: modify the representation of all actors so that they
-    are wireframe.
-    """
+class QVTKRenderWindowInteractor(QOpenGLWidget):
+    """A ``QOpenGLWidget`` housing a ``vtkGenericOpenGLRenderWindow``."""
 
     # Map between VTK and Qt cursors.
-    _CURSOR_MAP = {
-        0:  CursorShape.ArrowCursor,          # VTK_CURSOR_DEFAULT
-        1:  CursorShape.ArrowCursor,          # VTK_CURSOR_ARROW
-        2:  CursorShape.SizeBDiagCursor,      # VTK_CURSOR_SIZENE
-        3:  CursorShape.SizeFDiagCursor,      # VTK_CURSOR_SIZENWSE
-        4:  CursorShape.SizeBDiagCursor,      # VTK_CURSOR_SIZESW
-        5:  CursorShape.SizeFDiagCursor,      # VTK_CURSOR_SIZESE
-        6:  CursorShape.SizeVerCursor,        # VTK_CURSOR_SIZENS
-        7:  CursorShape.SizeHorCursor,        # VTK_CURSOR_SIZEWE
-        8:  CursorShape.SizeAllCursor,        # VTK_CURSOR_SIZEALL
-        9:  CursorShape.PointingHandCursor,   # VTK_CURSOR_HAND
-        10: CursorShape.CrossCursor,          # VTK_CURSOR_CROSSHAIR
+    _CURSOR_MAP: ClassVar[dict[int, Qt.CursorShape]] = {
+        0: Qt.CursorShape.ArrowCursor,  # VTK_CURSOR_DEFAULT
+        1: Qt.CursorShape.ArrowCursor,  # VTK_CURSOR_ARROW
+        2: Qt.CursorShape.SizeBDiagCursor,  # VTK_CURSOR_SIZENE
+        3: Qt.CursorShape.SizeFDiagCursor,  # VTK_CURSOR_SIZENWSE
+        4: Qt.CursorShape.SizeBDiagCursor,  # VTK_CURSOR_SIZESW
+        5: Qt.CursorShape.SizeFDiagCursor,  # VTK_CURSOR_SIZESE
+        6: Qt.CursorShape.SizeVerCursor,  # VTK_CURSOR_SIZENS
+        7: Qt.CursorShape.SizeHorCursor,  # VTK_CURSOR_SIZEWE
+        8: Qt.CursorShape.SizeAllCursor,  # VTK_CURSOR_SIZEALL
+        9: Qt.CursorShape.PointingHandCursor,  # VTK_CURSOR_HAND
+        10: Qt.CursorShape.CrossCursor,  # VTK_CURSOR_CROSSHAIR
     }
 
     def __init__(self, parent=None, **kw):
-        # the current button
-        self._ActiveButton = MouseButton.NoButton
+        """Initialize the widget and its render window (``rw``/``iren`` kwargs)."""
+        # The GL format must be set as the process-wide default: a per-widget
+        # ``setFormat`` makes the widget's context incompatible with the
+        # top-level window's share context on Wayland and the widget then
+        # composites black (verified: even a plain magenta-clearing
+        # QOpenGLWidget breaks with per-widget setFormat there). Setting the
+        # default is effective as long as the top-level window has not been
+        # created yet, so this works even when the user already made the
+        # QApplication. Same requirement as C++ QVTKOpenGLNativeWidget.
+        QSurfaceFormat.setDefaultFormat(_default_format())
+        QOpenGLWidget.__init__(self, parent)
+        self.setUpdateBehavior(QOpenGLWidget.UpdateBehavior.NoPartialUpdate)
+        self.setMouseTracking(True)  # get all mouse events
+        self.setFocusPolicy(Qt.FocusPolicy.WheelFocus)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
 
-        # private attributes
-        self.__saveX = 0
-        self.__saveY = 0
-        self.__saveModifiers = KeyboardModifier.NoModifier
-        self.__saveButtons = MouseButton.NoButton
-        self.__wheelDelta = 0
-        self.__doPaintEvent = True
+        rw = kw.get("rw")
+        self._RenderWindow = rw if rw is not None else vtkGenericOpenGLRenderWindow()
+        self._RenderWindow.SetReadyForRendering(False)
+        self._RenderWindow.SetFrameBlitModeToNoBlit()
 
-        # do special handling of some keywords:
-        # stereo, rw
+        iren = kw.get("iren")
+        self._Iren = iren if iren is not None else vtkGenericRenderWindowInteractor()
+        # SetRenderWindow also does RenderWindow.SetInteractor(iren)
+        self._Iren.SetRenderWindow(self._RenderWindow)
 
-        try:
-            stereo = bool(kw['stereo'])
-        except KeyError:
-            stereo = False
+        # Captured in initializeGL; used to service WindowMakeCurrentEvent.
+        self._ctx = None
+        self._surface = None
+        self._gl = None
+        self._in_paint = False  # C++ InPaint
+        # Lazy offscreen (context, surface) servicing GL queries before the
+        # widget is realized; dropped as soon as initializeGL runs. Creation
+        # is disallowed during teardown: Finalize on a never-realized window
+        # still fires MakeCurrent (ReleaseGraphicsResources -> PushContext),
+        # and creating a GL context while the application is dying is unsafe.
+        self._fallback = None
+        self._fallback_allowed = True
 
-        try:
-            rw = kw['rw']
-        except KeyError:
-            rw = None
-
-        # create base qt-level widget
-        if QVTKRWIBase == "QWidget":
-            if "wflags" in kw:
-                wflags = kw['wflags']
-            else:
-                wflags = WindowType.Widget  # what Qt.WindowFlags() returns (0)
-            QWidget.__init__(self, parent, wflags | WindowType.MSWindowsOwnDC)
-        elif QVTKRWIBase == "QGLWidget":
-            QGLWidget.__init__(self, parent)
-        elif QVTKRWIBase == "QOpenGLWidget":
-            QOpenGLWidget.__init__(self, parent)
-
-        if rw: # user-supplied render window
-            self._RenderWindow = rw
-        else:
-            self._RenderWindow = vtkRenderWindow()
-
-        WId = self.winId()
-
-        if type(WId).__name__ == 'PyCapsule':
-            from ctypes import pythonapi, c_void_p, py_object, c_char_p
-
-            pythonapi.PyCapsule_GetName.restype = c_char_p
-            pythonapi.PyCapsule_GetName.argtypes = [py_object]
-
-            name = pythonapi.PyCapsule_GetName(WId)
-
-            pythonapi.PyCapsule_GetPointer.restype  = c_void_p
-            pythonapi.PyCapsule_GetPointer.argtypes = [py_object, c_char_p]
-
-            WId = pythonapi.PyCapsule_GetPointer(WId, name)
-
-        self._RenderWindow.SetWindowInfo(str(int(WId)))
-
-        if stereo: # stereo mode
-            self._RenderWindow.StereoCapableWindowOn()
-            self._RenderWindow.SetStereoTypeToCrystalEyes()
-
-        try:
-            self._Iren = kw['iren']
-        except KeyError:
-            self._Iren = vtkGenericRenderWindowInteractor()
-            self._Iren.SetRenderWindow(self._RenderWindow)
-
-        # do all the necessary qt setup
-        self.setAttribute(WidgetAttribute.WA_OpaquePaintEvent)
-        self.setAttribute(WidgetAttribute.WA_PaintOnScreen)
-        self.setMouseTracking(True) # get all mouse events
-        self.setFocusPolicy(FocusPolicy.WheelFocus)
-        self.setSizePolicy(QSizePolicy(SizePolicy.Expanding, SizePolicy.Expanding))
-
-        self._Timer = QTimer(self)
-        self._Timer.timeout.connect(self.TimerEvent)
+        # input-event state (ported from VTK's QVTKRenderWindowInteractor.py)
+        self._active_button = Qt.MouseButton.NoButton
+        self._save_x = 0
+        self._save_y = 0
+        self._save_modifiers = Qt.KeyboardModifier.NoModifier
+        self._wheel_delta = 0
 
         # Track (subject, tag) pairs so teardown can remove the observers:
         # VTK holds a C++-side strong reference to each bound method, which
         # pins the widget (invisibly to Python's GC) for as long as the
         # subject lives -- a leak whenever anything (e.g. a trame export)
         # keeps the render window alive past close.
-        self._vtk_observers = [
-            (self._Iren,
-             self._Iren.AddObserver('CreateTimerEvent', self.CreateTimer)),
-            (self._Iren,
-             self._Iren.AddObserver('DestroyTimerEvent', self.DestroyTimer)),
-            (self._RenderWindow,
-             self._RenderWindow.AddObserver('CursorChangedEvent',
-                                            self.CursorChangedEvent)),
-        ]
+        self._vtk_observers = []
+        for obj, event, handler in (
+            (self._RenderWindow, "WindowMakeCurrentEvent", self._cb_make_current),
+            (self._RenderWindow, "WindowIsCurrentEvent", self._cb_is_current),
+            (self._RenderWindow, "WindowFrameEvent", self._cb_frame),
+            (self._RenderWindow, "CursorChangedEvent", self.CursorChangedEvent),
+        ):
+            self._vtk_observers.append((obj, obj.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
+
+        # VTK interactor timers (vtkGenericRenderWindowInteractor delegates).
+        self._Timer = QTimer(self)
+        self._Timer.timeout.connect(self.TimerEvent)
+        for event, handler in (
+            ("CreateTimerEvent", self.CreateTimer),
+            ("DestroyTimerEvent", self.DestroyTimer),
+        ):
+            self._vtk_observers.append((self._Iren, self._Iren.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
 
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
         # slot for proper cleanup of VTK objects.
-        if self.parent():
-            self.parent().destroyed.connect(self.close, ConnectionType.DirectConnection)
+        qparent = self.parent()
+        if qparent is not None:
+            qparent.destroyed.connect(self.close, Qt.ConnectionType.DirectConnection)
 
-    def __getattr__(self, attr):
-        """Makes the object behave like a vtkGenericRenderWindowInteractor"""
-        if attr == '__vtk__':
-            return lambda t=self._Iren: t
-        elif hasattr(self._Iren, attr):
-            return getattr(self._Iren, attr)
+    # ---- render-window observers (QVTKRenderWindowAdapter) -------------------
+    def _cb_make_current(self, obj, evt):
+        """Make VTK's context current WITHOUT touching framebuffer bindings."""
+        if self._ctx is not None and self._surface is not None:
+            try:
+                self._ctx.makeCurrent(self._surface)
+            except RuntimeError:  # C++ context already deleted (PySide/PyQt)
+                self._forget_context()
+            return
+        # Before initializeGL there is no widget context, but raw-GL query
+        # methods like ReportCapabilities() (MakeCurrent + glGetString) were
+        # long supported on a not-yet-shown widget and segfault without a
+        # current context. Service them with a throwaway offscreen context.
+        # IsCurrent() stays False (it compares against the widget context),
+        # so VTK render paths still skip -- no GL *resources* are ever
+        # created against this context.
+        if self._fallback is None:
+            if not self._fallback_allowed:
+                return
+            ctx = QOpenGLContext()
+            ctx.setFormat(_default_format())
+            surface = QOffscreenSurface()
+            surface.setFormat(_default_format())
+            surface.create()
+            if not ctx.create() or not surface.isValid():
+                return  # no GL at all (e.g. macOS software-GL VMs)
+            if not ctx.makeCurrent(surface):
+                return
+            self._fallback = (ctx, surface)
+            # A current context is not enough: VTK calls GL through its own
+            # process-global glad pointers, unloaded until some window runs
+            # OpenGLInitContext. Load them via a throwaway window so the real
+            # one stays uninitialized until initializeGL.
+            tmp = vtkGenericOpenGLRenderWindow()
+            self._set_symbol_loader(tmp)
+            tmp.OpenGLInitContext()
+            return  # the fallback context is already current
+        self._fallback[0].makeCurrent(self._fallback[1])
+
+    def _drop_fallback_context(self):
+        self._fallback_allowed = False
+        if self._fallback is not None:
+            ctx, _surface = self._fallback
+            if QOpenGLContext.currentContext() is ctx:
+                ctx.doneCurrent()
+            self._fallback = None
+
+    def _forget_context(self):
+        """
+        Drop references to a Qt context that has already been destroyed.
+
+        ``aboutToBeDestroyed`` is not guaranteed to reach ``_cleanup_context``:
+        when the *parent* window is deleted, the C++ widget and its context go
+        first (severing the connection), and only then does the parent's
+        ``destroyed`` -> ``close`` connection drive ``Finalize`` through the
+        make-current observer, holding a stale wrapper. Forgetting it makes
+        ``IsCurrent()`` report False so VTK skips GL work rather than freeing
+        its objects against whatever context happens to be current -- which,
+        with several widgets alive, would be a sibling's (see invariant 5).
+        """
+        self._drop_fallback_context()
+        self._ctx = None
+        self._surface = None
+        self._gl = None
+
+    def _ensure_initialized(self):
+        """
+        Realize the widget offscreen if it was never exposed.
+
+        Rendering APIs (pyvista's ``image``/``screenshot``) must work on a
+        widget that has not painted yet (hidden, or shown without the event
+        loop running). ``QOpenGLWidget.grabFramebuffer`` is Qt's supported
+        way to force initializeGL/paintGL without an exposed window; the old
+        native-window interactor got this for free by creating its GL context
+        on demand.
+        """
+        if self._ctx is None and self._fallback_allowed:
+            with contextlib.suppress(Exception):
+                self.grabFramebuffer()
+
+    def _cb_is_current(self, obj, evt):
+        # The bool* calldata is not reachable from Python; write the answer
+        # into the member the event reads back via SetIsCurrent.
+        rw = self._RenderWindow
+        if rw is None:
+            return
+        cur = QOpenGLContext.currentContext()
+        rw.SetIsCurrent(self._ctx is not None and cur is self._ctx)
+
+    def _cb_frame(self, obj, evt):
+        """Schedule the blit of a just-finished VTK render to the widget."""
+        rw = self._RenderWindow
+        if rw is None:
+            return
+        if rw.GetDoubleBuffer() and not rw.GetSwapBuffers():
+            # rendered to the back buffer only: not meant to be shown yet
+            return
+        if not self._in_paint:
+            self.update()
+
+    def _set_symbol_loader(self, rw):
+        """Point VTK's GL loader at the platform's getProcAddress."""
+        with contextlib.suppress(Exception):
+            app = cast("QApplication | None", QApplication.instance())
+            if app is None:
+                return
+            pname = app.platformName()
+            if pname.startswith("wayland"):
+                lib = ctypes.CDLL("libEGL.so.1")
+                gpa = ctypes.cast(lib.eglGetProcAddress, ctypes.c_void_p).value
+            else:
+                lib = ctypes.CDLL("libGL.so.1")
+                gpa = ctypes.cast(lib.glXGetProcAddressARB, ctypes.c_void_p).value
+            rw.SetOpenGLSymbolLoader2(int(gpa or 0), 0)
+
+    # ---- QOpenGLWidget overrides ---------------------------------------------
+    def initializeGL(self):
+        super().initializeGL()
+        rw = self._RenderWindow
+        if rw is None:
+            return
+        self._drop_fallback_context()  # the real context takes over
+        self._ctx = self.context()
+        self._surface = self._ctx.surface()
+        self._gl = _GLAPI(self._ctx)
+        # Connections die with the context object, so a plain connect cannot
+        # duplicate across context re-creation.
+        self._ctx.aboutToBeDestroyed.connect(self._cleanup_context)
+        # GetInitialized is not wrapped on VTK < 9.3; fall back to always
+        # (re-)initializing there, which VTK's internal guards make a no-op.
+        get_initialized = getattr(rw, "GetInitialized", None)
+        if get_initialized is None or not get_initialized():
+            self._set_symbol_loader(rw)
+            # Load the GL function pointers before OpenGLInit: on VTK <= 9.5,
+            # vtkGenericOpenGLRenderWindow::OpenGLInit resets the GL state
+            # cache (raw glGet* calls) BEFORE initializing the context, which
+            # segfaults on unloaded function pointers. VTK >= 9.6 initializes
+            # the context first itself, and this extra call is then a no-op.
+            rw.OpenGLInitContext()
+            rw.OpenGLInit()
+        # Qt leaves depth testing off and GL_LESS; VTK expects GL_LEQUAL.
+        st = rw.GetState()
+        st.Reset()
+        st.vtkglDepthFunc(GL_LEQUAL)
+        st.vtkglEnable(GL_DEPTH_TEST)
+        rw.SetForceMaximumHardwareLineWidth(1)
+        rw.SetReadyForRendering(True)
+        rw.SetOwnContext(0)
+        rw.OpenGLInitContext()
+
+    def _remove_observers(self):
+        """
+        Drop VTK's C++-side references to our bound methods.
+
+        Must run after ``Finalize``: its GL teardown is serviced by the
+        make-current/is-current observers. Once removed, the widget is no
+        longer pinned by whatever keeps the VTK render window alive.
+        """
+        observers, self._vtk_observers = self._vtk_observers, []
+        for obj, tag in observers:
+            obj.RemoveObserver(tag)
+
+    def _cleanup_context(self):
+        """Release VTK's GL resources before the Qt context is destroyed."""
+        # Qt's canonical aboutToBeDestroyed pattern: the slot itself must make
+        # the (still alive) context current before releasing GL resources,
+        # otherwise the driver frees objects against whatever context happens
+        # to be current -- heap corruption that crashes much later.
+        if self._ctx is not None and self._surface is not None:
+            with contextlib.suppress(Exception):
+                self._ctx.makeCurrent(self._surface)
+        rw = self._RenderWindow
+        if rw is not None:
+            rw.Finalize()
+            rw.SetReadyForRendering(False)
+        self._remove_observers()
+        self._forget_context()
+
+    def resizeGL(self, w, h):
+        # QVTKRenderWindowAdapter::resize: VTK works in device pixels.
+        rw = self._RenderWindow
+        if rw is None:
+            return
+        dpr = self.devicePixelRatioF()
+        dw = max(1, round(w * dpr))
+        dh = max(1, round(h * dpr))
+        iren = rw.GetInteractor()
+        if iren is not None:
+            iren.UpdateSize(dw, dh)
+            iren.InvokeEvent("ConfigureEvent")
         else:
-            raise AttributeError(self.__class__.__name__ +
-                  " has no attribute named " + attr)
+            rw.SetSize(dw, dh)
+        # NOTE: no self.screen()/SetScreenSize here. VTK only uses the screen
+        # size for fullscreen render windows (not applicable to a widget), and
+        # PySide's wrapper for QWidget.screen() can end up owning -- and later
+        # deleting -- the application's QScreen, crashing on next screen use.
+        rw.SetDPI(round(72 * dpr))
+
+    def paintGL(self):
+        super().paintGL()
+        rw = self._RenderWindow
+        if rw is None or not rw.GetReadyForRendering():
+            if self._gl is not None:  # no render window: fill with white (C++ parity)
+                self._gl.glClearColor(1.0, 1.0, 1.0, 1.0)
+                self._gl.glClear(GL_COLOR_BUFFER_BIT)
+            return
+        st = rw.GetState()
+        st.Reset()  # Qt touched GL since the last VTK call: resync the cache
+        st.Push()
+        st.vtkglDepthFunc(GL_LEQUAL)
+        # Unlike C++ QVTKOpenGLNativeWidget (which skips the VTK render when the
+        # paint was scheduled by a finished render's WindowFrameEvent), always
+        # render: pyvista mutates the scene (cameras, actors) without asking the
+        # widget to repaint, so a skipped render here shows a stale frame. This
+        # matches the vendored QVTKRenderWindowInteractor's paintEvent behavior.
+        if not self._in_paint:
+            self._in_paint = True
+            try:
+                iren = rw.GetInteractor()
+                if iren is not None:
+                    iren.Render()
+                else:
+                    rw.Render()
+            finally:
+                self._in_paint = False
+        # Rendering may change the current context (progress events triggering
+        # other widgets): restore the widget's context AND backing FBO binding.
+        self.makeCurrent()
+        dpr = self.devicePixelRatioF()
+        rect = QRect(0, 0, max(1, round(self.width() * dpr)), max(1, round(self.height() * dpr)))
+        self._blit(self.defaultFramebufferObject(), rect)
+        st.Pop()
+
+    # ---- QVTKRenderWindowAdapter::blit + clearAlpha ---------------------------
+    def _blit(self, target_id, rect):
+        rw = self._RenderWindow
+        f = self._gl
+        if rw is None or f is None:
+            return
+        f.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target_id)
+        f.draw_buffer_attachment0()
+        scissor = bool(f.glIsEnabled(GL_SCISSOR_TEST))
+        if scissor:  # scissor affects glBlitFramebuffer
+            rw.GetState().vtkglDisable(GL_SCISSOR_TEST)
+            f.glDisable(GL_SCISSOR_TEST)
+        w, h = rw.GetSize()
+        # Blits VTK's display framebuffer into the currently bound draw FBO;
+        # only the read binding is pushed/popped internally.
+        rw.BlitDisplayFramebuffer(0, 0, 0, w, h, rect.x(), rect.y(), rect.width(), rect.height(), GL_COLOR_BUFFER_BIT, GL_LINEAR)
+        # clearAlpha: alpha < 1 makes compositors blend the window with what is
+        # behind it. The raw-GL state dirt is healed by the state Reset that
+        # both paintGL and vtkGenericOpenGLRenderWindow::Render perform.
+        f.glColorMask(False, False, False, True)
+        f.glClearColor(0.0, 0.0, 0.0, 1.0)
+        f.glViewport(rect.x(), rect.y(), rect.width(), rect.height())
+        f.glClear(GL_COLOR_BUFFER_BIT)
+        f.glColorMask(True, True, True, True)
+        if scissor:
+            rw.GetState().vtkglEnable(GL_SCISSOR_TEST)
+            f.glEnable(GL_SCISSOR_TEST)
+
+    # ---- interface expected by QtInteractor / pyvista -------------------------
+    def __getattr__(self, attr):
+        """Behave like the vtkGenericRenderWindowInteractor for unknown attrs."""
+        iren = self.__dict__.get("_Iren")
+        if iren is not None and hasattr(iren, attr):
+            return getattr(iren, attr)
+        msg = f"{type(self).__name__} has no attribute {attr!r}"
+        raise AttributeError(msg)
+
+    def GetRenderWindow(self):
+        return self._RenderWindow
+
+    def Render(self):
+        self.update()
 
     def Finalize(self):
-        '''
-        Call internal cleanup method on VTK objects
-        '''
-        self._RenderWindow.Finalize()
+        rw = self._RenderWindow
+        if rw is not None:
+            rw.Finalize()
 
     def _remove_observers(self):
         """Drop VTK's C++-side references to our bound methods."""
@@ -339,28 +595,18 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         return 1
 
     def TimerEvent(self):
-        self._Iren.TimerEvent()
-
-    def CursorChangedEvent(self, obj, evt):
-        """Called when the CursorChangedEvent fires on the render window."""
-        # This indirection is needed since when the event fires, the current
-        # cursor is not yet set so we defer this by which time the current
-        # cursor should have been set.
-        QTimer.singleShot(0, self.ShowCursor)
-
-    def HideCursor(self):
-        """Hides the cursor."""
-        self.setCursor(CursorShape.BlankCursor)
-
-    def ShowCursor(self):
-        """Shows the cursor."""
-        vtk_cursor = self._Iren.GetRenderWindow().GetCurrentCursor()
-        qt_cursor = self._CURSOR_MAP.get(vtk_cursor, CursorShape.ArrowCursor)
-        self.setCursor(qt_cursor)
+        iren = self.__dict__.get("_Iren")
+        if iren is not None and hasattr(iren, "TimerEvent"):
+            iren.TimerEvent()
 
     def closeEvent(self, evt):
+        # No explicit makeCurrent here: Finalize's GL teardown drives the
+        # render window's own MakeCurrent (serviced by _cb_make_current), and
+        # QOpenGLWidget.makeCurrent on a widget whose window is being torn
+        # down (parent destroyed -> close) is unsafe.
         self.Finalize()
         self._remove_observers()
+        self._drop_fallback_context()
 
     def close(self):
         result = super().close()  # delivers closeEvent to realized widgets
@@ -369,362 +615,361 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
         # calls are idempotent.
         self.Finalize()
         self._remove_observers()
+        self._drop_fallback_context()
         return result
 
     def sizeHint(self):
         return QSize(400, 400)
 
-    def paintEngine(self):
-        return None
+    # ---- cursor plumbing (from VTK's QVTKRenderWindowInteractor.py) ----------
+    def CursorChangedEvent(self, obj, evt):
+        """Handle CursorChangedEvent fired by the render window."""
+        # Deferred: when the event fires the current cursor is not yet set.
+        QTimer.singleShot(0, self.ShowCursor)
 
-    def paintEvent(self, ev):
-        if self.__doPaintEvent:
-            self.__doPaintEvent = _IN_PAINT_EVENT_VALUE
-            self._Iren.Render()
+    def HideCursor(self):
+        self.setCursor(Qt.CursorShape.BlankCursor)
 
-    def resizeEvent(self, ev):
-        scale = self._getPixelRatio()
-        w = int(round(scale*self.width()))
-        h = int(round(scale*self.height()))
-        # Next 2 lines are specific to PyVistaQt because we set it to None elsewhere:
-        if self._RenderWindow is None:
+    def ShowCursor(self):
+        rw = self._RenderWindow
+        if rw is None:
             return
-        self._RenderWindow.SetDPI(int(round(72*scale)))
-        vtkRenderWindow.SetSize(self._RenderWindow, w, h)
-        self._Iren.SetSize(w, h)
-        self._Iren.ConfigureEvent()
-        self.__doPaintEvent = True
-        self.update()
+        vtk_cursor = rw.GetCurrentCursor()
+        qt_cursor = self._CURSOR_MAP.get(vtk_cursor, Qt.CursorShape.ArrowCursor)
+        self.setCursor(qt_cursor)
 
+    # ---- input events (from VTK's QVTKRenderWindowInteractor.py) -------------
     def _GetKeyCharAndKeySym(self, ev):
-        """ Convert a Qt key into a char and a vtk keysym.
-
-        This is essentially copied from the c++ implementation in
-        GUISupport/Qt/QVTKInteractorAdapter.cxx.
-        """
+        """Convert a Qt key event into a char and a vtk keysym."""
         # if there is a char, convert its ASCII code to a VTK keysym
         try:
-            keyChar = ev.text()[0]
-            keySym = _keysyms_for_ascii[ord(keyChar)]
+            key_char = ev.text()[0]
+            key_sym = _KEYSYMS_FOR_ASCII[ord(key_char)]
         except IndexError:
-            keyChar = '\0'
-            keySym = None
-
-        # next, try converting Qt key code to a VTK keysym
-        if keySym is None:
-            try:
-                keySym = _keysyms[ev.key()]
-            except KeyError:
-                keySym = None
-
+            key_char = "\0"
+            key_sym = None
+        # next, try converting the Qt key code to a VTK keysym
+        if key_sym is None:
+            key_sym = _KEYSYMS.get(ev.key())
         # use "None" as a fallback
-        if keySym is None:
-            keySym = "None"
-
-        return keyChar, keySym
+        if key_sym is None:
+            key_sym = "None"
+        return key_char, key_sym
 
     def _GetCtrlShift(self, ev):
         ctrl = shift = False
-
-        if hasattr(ev, 'modifiers'):
-            if ev.modifiers() & KeyboardModifier.ShiftModifier:
-                shift = True
-            if ev.modifiers() & KeyboardModifier.ControlModifier:
-                ctrl = True
-        else:
-            if self.__saveModifiers & KeyboardModifier.ShiftModifier:
-                shift = True
-            if self.__saveModifiers & KeyboardModifier.ControlModifier:
-                ctrl = True
-
+        modifiers = ev.modifiers() if hasattr(ev, "modifiers") else self._save_modifiers
+        if modifiers & Qt.KeyboardModifier.ShiftModifier:
+            shift = True
+        if modifiers & Qt.KeyboardModifier.ControlModifier:
+            ctrl = True
         return ctrl, shift
 
-    @staticmethod
-    def _getPixelRatio():
-        if PyQtImpl in ["PyQt5", "PySide2", "PySide6", "PyQt6"]:
-            # Source: https://stackoverflow.com/a/40053864/3388962
-            pos = QCursor.pos()
-            for screen in QApplication.screens():
-                rect = screen.geometry()
-                if rect.contains(pos):
-                    return screen.devicePixelRatio()
-            # Should never happen, but try to find a good fallback.
-            return QApplication.instance().devicePixelRatio()
-        else:
-            # Qt4 seems not to provide any cross-platform means to get the
-            # pixel ratio.
-            return 1.
-
-    def _setEventInformation(self, x, y, ctrl, shift,
-                             key, repeat=0, keysum=None):
-        scale = self._getPixelRatio()
-        self._Iren.SetEventInformation(int(round(x*scale)),
-                                       int(round((self.height()-y-1)*scale)),
-                                       ctrl, shift, key, repeat, keysum)
+    def _setEventInformation(self, x, y, ctrl, shift, key, repeat=0, keysum=None):  # noqa: PLR0913
+        # VTK's y axis points up and coordinates are in device pixels.
+        scale = self.devicePixelRatioF()
+        self._Iren.SetEventInformation(
+            round(x * scale),
+            round((self.height() - y - 1) * scale),
+            ctrl,
+            shift,
+            key,
+            repeat,
+            keysum,  # ty: ignore[invalid-argument-type]  # stubs reject None (nullptr is fine)
+        )
 
     def enterEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY,
-                                  ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(self._save_x, self._save_y, ctrl, shift, chr(0), 0, None)
         self._Iren.EnterEvent()
 
     def leaveEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY,
-                                  ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(self._save_x, self._save_y, ctrl, shift, chr(0), 0, None)
         self._Iren.LeaveEvent()
 
     def mousePressEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
-        repeat = 0
-        if ev.type() == EventType.MouseButtonDblClick:
-            repeat = 1
+        repeat = 1 if ev.type() == QEvent.Type.MouseButtonDblClick else 0
         x, y = _get_event_pos(ev)
-        self._setEventInformation(x, y,
-                                  ctrl, shift, chr(0), repeat, None)
-
-        self._ActiveButton = ev.button()
-
-        if self._ActiveButton == MouseButton.LeftButton:
+        self._setEventInformation(x, y, ctrl, shift, chr(0), repeat, None)
+        self._active_button = ev.button()
+        if self._active_button == Qt.MouseButton.LeftButton:
             self._Iren.LeftButtonPressEvent()
-        elif self._ActiveButton == MouseButton.RightButton:
+        elif self._active_button == Qt.MouseButton.RightButton:
             self._Iren.RightButtonPressEvent()
-        elif self._ActiveButton == MiddleButton:
+        elif self._active_button == Qt.MouseButton.MiddleButton:
             self._Iren.MiddleButtonPressEvent()
 
     def mouseReleaseEvent(self, ev):
         ctrl, shift = self._GetCtrlShift(ev)
         x, y = _get_event_pos(ev)
-        self._setEventInformation(x, y,
-                                  ctrl, shift, chr(0), 0, None)
-
-        if self._ActiveButton == MouseButton.LeftButton:
+        self._setEventInformation(x, y, ctrl, shift, chr(0), 0, None)
+        if self._active_button == Qt.MouseButton.LeftButton:
             self._Iren.LeftButtonReleaseEvent()
-        elif self._ActiveButton == MouseButton.RightButton:
+        elif self._active_button == Qt.MouseButton.RightButton:
             self._Iren.RightButtonReleaseEvent()
-        elif self._ActiveButton == MiddleButton:
+        elif self._active_button == Qt.MouseButton.MiddleButton:
             self._Iren.MiddleButtonReleaseEvent()
 
     def mouseMoveEvent(self, ev):
-        self.__saveModifiers = ev.modifiers()
-        self.__saveButtons = ev.buttons()
+        self._save_modifiers = ev.modifiers()
         x, y = _get_event_pos(ev)
-        self.__saveX = x
-        self.__saveY = y
-
+        self._save_x = x
+        self._save_y = y
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(x, y,
-                                  ctrl, shift, chr(0), 0, None)
+        self._setEventInformation(x, y, ctrl, shift, chr(0), 0, None)
         self._Iren.MouseMoveEvent()
 
     def keyPressEvent(self, ev):
-        key, keySym = self._GetKeyCharAndKeySym(ev)
+        key, key_sym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY,
-                                  ctrl, shift, key, 0, keySym)
+        self._setEventInformation(self._save_x, self._save_y, ctrl, shift, key, 0, key_sym)
         self._Iren.KeyPressEvent()
         self._Iren.CharEvent()
 
     def keyReleaseEvent(self, ev):
-        key, keySym = self._GetKeyCharAndKeySym(ev)
+        key, key_sym = self._GetKeyCharAndKeySym(ev)
         ctrl, shift = self._GetCtrlShift(ev)
-        self._setEventInformation(self.__saveX, self.__saveY,
-                                  ctrl, shift, key, 0, keySym)
+        self._setEventInformation(self._save_x, self._save_y, ctrl, shift, key, 0, key_sym)
         self._Iren.KeyReleaseEvent()
 
     def wheelEvent(self, ev):
-        if hasattr(ev, 'delta'):
-            self.__wheelDelta += ev.delta()
+        if hasattr(ev, "delta"):  # Qt4 compat kept from the vendored source
+            self._wheel_delta += ev.delta()
         else:
-            self.__wheelDelta += ev.angleDelta().y()
-
-        if self.__wheelDelta >= 120:
+            self._wheel_delta += ev.angleDelta().y()
+        if self._wheel_delta >= 120:
             self._Iren.MouseWheelForwardEvent()
-            self.__wheelDelta = 0
-        elif self.__wheelDelta <= -120:
+            self._wheel_delta = 0
+        elif self._wheel_delta <= -120:
             self._Iren.MouseWheelBackwardEvent()
-            self.__wheelDelta = 0
-
-    def GetRenderWindow(self):
-        return self._RenderWindow
-
-    def Render(self):
-        self.__doPaintEvent = True
-        self.update()
+            self._wheel_delta = 0
 
 
-# In PyVistaQt we run this example so we need to add non-blocking conditionals
-def QVTKRenderWidgetConeExample(block=False):
-    """A simple example that uses the QVTKRenderWindowInteractor class."""
+# keysym tables from VTK's QVTKRenderWindowInteractor.py
+_KEYSYMS_FOR_ASCII = (
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    "Tab",
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    "space",
+    "exclam",
+    "quotedbl",
+    "numbersign",
+    "dollar",
+    "percent",
+    "ampersand",
+    "quoteright",
+    "parenleft",
+    "parenright",
+    "asterisk",
+    "plus",
+    "comma",
+    "minus",
+    "period",
+    "slash",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "colon",
+    "semicolon",
+    "less",
+    "equal",
+    "greater",
+    "question",
+    "at",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    "bracketleft",
+    "backslash",
+    "bracketright",
+    "asciicircum",
+    "underscore",
+    "quoteleft",
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z",
+    "braceleft",
+    "bar",
+    "braceright",
+    "asciitilde",
+    "Delete",
+)
 
-    from vtkmodules.vtkFiltersSources import vtkConeSource
-    from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper, vtkRenderer
-    # load implementations for rendering and interaction factory classes
-    import vtkmodules.vtkRenderingOpenGL2
-    import vtkmodules.vtkInteractionStyle
-
-    # every QT app needs an app
-    app = QApplication.instance()
-    if not app:  # pragma: no cover
-        app = QApplication(["PyVista"])
-
-    window = QMainWindow()
-
-    # create the widget
-    widget = QVTKRenderWindowInteractor(window)
-    window.setCentralWidget(widget)
-    # if you don't want the 'q' key to exit comment this.
-    widget.AddObserver("ExitEvent", lambda o, e, a=app: a.quit())
-
-    ren = vtkRenderer()
-    widget.GetRenderWindow().AddRenderer(ren)
-
-    cone = vtkConeSource()
-    cone.SetResolution(8)
-
-    coneMapper = vtkPolyDataMapper()
-    coneMapper.SetInputConnection(cone.GetOutputPort())
-
-    coneActor = vtkActor()
-    coneActor.SetMapper(coneMapper)
-
-    ren.AddActor(coneActor)
-
-    # show the widget
-    window.show()
-
-    widget.Initialize()
-    widget.Start()
-
-    # start event processing
-    # Source: https://doc.qt.io/qtforpython/porting_from2.html
-    # 'exec_' is deprecated and will be removed in the future.
-    # Use 'exec' instead.
-    if block:
-        try:
-            app.exec()
-        except AttributeError:
-            app.exec_()
-
-
-_keysyms_for_ascii = (
-    None, None, None, None, None, None, None, None,
-    None, "Tab", None, None, None, None, None, None,
-    None, None, None, None, None, None, None, None,
-    None, None, None, None, None, None, None, None,
-    "space", "exclam", "quotedbl", "numbersign",
-    "dollar", "percent", "ampersand", "quoteright",
-    "parenleft", "parenright", "asterisk", "plus",
-    "comma", "minus", "period", "slash",
-    "0", "1", "2", "3", "4", "5", "6", "7",
-    "8", "9", "colon", "semicolon", "less", "equal", "greater", "question",
-    "at", "A", "B", "C", "D", "E", "F", "G",
-    "H", "I", "J", "K", "L", "M", "N", "O",
-    "P", "Q", "R", "S", "T", "U", "V", "W",
-    "X", "Y", "Z", "bracketleft",
-    "backslash", "bracketright", "asciicircum", "underscore",
-    "quoteleft", "a", "b", "c", "d", "e", "f", "g",
-    "h", "i", "j", "k", "l", "m", "n", "o",
-    "p", "q", "r", "s", "t", "u", "v", "w",
-    "x", "y", "z", "braceleft", "bar", "braceright", "asciitilde", "Delete",
-    )
-
-_keysyms = {
-    Key.Key_Backspace: 'BackSpace',
-    Key.Key_Tab: 'Tab',
-    Key.Key_Backtab: 'Tab',
-    # Key.Key_Clear : 'Clear',
-    Key.Key_Return: 'Return',
-    Key.Key_Enter: 'Return',
-    Key.Key_Shift: 'Shift_L',
-    Key.Key_Control: 'Control_L',
-    Key.Key_Alt: 'Alt_L',
-    Key.Key_Pause: 'Pause',
-    Key.Key_CapsLock: 'Caps_Lock',
-    Key.Key_Escape: 'Escape',
-    Key.Key_Space: 'space',
-    # Key.Key_Prior : 'Prior',
-    # Key.Key_Next : 'Next',
-    Key.Key_End: 'End',
-    Key.Key_Home: 'Home',
-    Key.Key_Left: 'Left',
-    Key.Key_Up: 'Up',
-    Key.Key_Right: 'Right',
-    Key.Key_Down: 'Down',
-    Key.Key_SysReq: 'Snapshot',
-    Key.Key_Insert: 'Insert',
-    Key.Key_Delete: 'Delete',
-    Key.Key_Help: 'Help',
-    Key.Key_0: '0',
-    Key.Key_1: '1',
-    Key.Key_2: '2',
-    Key.Key_3: '3',
-    Key.Key_4: '4',
-    Key.Key_5: '5',
-    Key.Key_6: '6',
-    Key.Key_7: '7',
-    Key.Key_8: '8',
-    Key.Key_9: '9',
-    Key.Key_A: 'a',
-    Key.Key_B: 'b',
-    Key.Key_C: 'c',
-    Key.Key_D: 'd',
-    Key.Key_E: 'e',
-    Key.Key_F: 'f',
-    Key.Key_G: 'g',
-    Key.Key_H: 'h',
-    Key.Key_I: 'i',
-    Key.Key_J: 'j',
-    Key.Key_K: 'k',
-    Key.Key_L: 'l',
-    Key.Key_M: 'm',
-    Key.Key_N: 'n',
-    Key.Key_O: 'o',
-    Key.Key_P: 'p',
-    Key.Key_Q: 'q',
-    Key.Key_R: 'r',
-    Key.Key_S: 's',
-    Key.Key_T: 't',
-    Key.Key_U: 'u',
-    Key.Key_V: 'v',
-    Key.Key_W: 'w',
-    Key.Key_X: 'x',
-    Key.Key_Y: 'y',
-    Key.Key_Z: 'z',
-    Key.Key_Asterisk: 'asterisk',
-    Key.Key_Plus: 'plus',
-    Key.Key_Minus: 'minus',
-    Key.Key_Period: 'period',
-    Key.Key_Slash: 'slash',
-    Key.Key_F1: 'F1',
-    Key.Key_F2: 'F2',
-    Key.Key_F3: 'F3',
-    Key.Key_F4: 'F4',
-    Key.Key_F5: 'F5',
-    Key.Key_F6: 'F6',
-    Key.Key_F7: 'F7',
-    Key.Key_F8: 'F8',
-    Key.Key_F9: 'F9',
-    Key.Key_F10: 'F10',
-    Key.Key_F11: 'F11',
-    Key.Key_F12: 'F12',
-    Key.Key_F13: 'F13',
-    Key.Key_F14: 'F14',
-    Key.Key_F15: 'F15',
-    Key.Key_F16: 'F16',
-    Key.Key_F17: 'F17',
-    Key.Key_F18: 'F18',
-    Key.Key_F19: 'F19',
-    Key.Key_F20: 'F20',
-    Key.Key_F21: 'F21',
-    Key.Key_F22: 'F22',
-    Key.Key_F23: 'F23',
-    Key.Key_F24: 'F24',
-    Key.Key_NumLock: 'Num_Lock',
-    Key.Key_ScrollLock: 'Scroll_Lock',
-    }
-
-
-if __name__ == "__main__":
-    print(PyQtImpl)
-    QVTKRenderWidgetConeExample()
+_KEYSYMS = {
+    Qt.Key.Key_Backspace: "BackSpace",
+    Qt.Key.Key_Tab: "Tab",
+    Qt.Key.Key_Backtab: "Tab",
+    # Qt.Key.Key_Clear : 'Clear',
+    Qt.Key.Key_Return: "Return",
+    Qt.Key.Key_Enter: "Return",
+    Qt.Key.Key_Shift: "Shift_L",
+    Qt.Key.Key_Control: "Control_L",
+    Qt.Key.Key_Alt: "Alt_L",
+    Qt.Key.Key_Pause: "Pause",
+    Qt.Key.Key_CapsLock: "Caps_Lock",
+    Qt.Key.Key_Escape: "Escape",
+    Qt.Key.Key_Space: "space",
+    # Qt.Key.Key_Prior : 'Prior',
+    # Qt.Key.Key_Next : 'Next',
+    Qt.Key.Key_End: "End",
+    Qt.Key.Key_Home: "Home",
+    Qt.Key.Key_Left: "Left",
+    Qt.Key.Key_Up: "Up",
+    Qt.Key.Key_Right: "Right",
+    Qt.Key.Key_Down: "Down",
+    Qt.Key.Key_SysReq: "Snapshot",
+    Qt.Key.Key_Insert: "Insert",
+    Qt.Key.Key_Delete: "Delete",
+    Qt.Key.Key_Help: "Help",
+    Qt.Key.Key_0: "0",
+    Qt.Key.Key_1: "1",
+    Qt.Key.Key_2: "2",
+    Qt.Key.Key_3: "3",
+    Qt.Key.Key_4: "4",
+    Qt.Key.Key_5: "5",
+    Qt.Key.Key_6: "6",
+    Qt.Key.Key_7: "7",
+    Qt.Key.Key_8: "8",
+    Qt.Key.Key_9: "9",
+    Qt.Key.Key_A: "a",
+    Qt.Key.Key_B: "b",
+    Qt.Key.Key_C: "c",
+    Qt.Key.Key_D: "d",
+    Qt.Key.Key_E: "e",
+    Qt.Key.Key_F: "f",
+    Qt.Key.Key_G: "g",
+    Qt.Key.Key_H: "h",
+    Qt.Key.Key_I: "i",
+    Qt.Key.Key_J: "j",
+    Qt.Key.Key_K: "k",
+    Qt.Key.Key_L: "l",
+    Qt.Key.Key_M: "m",
+    Qt.Key.Key_N: "n",
+    Qt.Key.Key_O: "o",
+    Qt.Key.Key_P: "p",
+    Qt.Key.Key_Q: "q",
+    Qt.Key.Key_R: "r",
+    Qt.Key.Key_S: "s",
+    Qt.Key.Key_T: "t",
+    Qt.Key.Key_U: "u",
+    Qt.Key.Key_V: "v",
+    Qt.Key.Key_W: "w",
+    Qt.Key.Key_X: "x",
+    Qt.Key.Key_Y: "y",
+    Qt.Key.Key_Z: "z",
+    Qt.Key.Key_Asterisk: "asterisk",
+    Qt.Key.Key_Plus: "plus",
+    Qt.Key.Key_Minus: "minus",
+    Qt.Key.Key_Period: "period",
+    Qt.Key.Key_Slash: "slash",
+    Qt.Key.Key_F1: "F1",
+    Qt.Key.Key_F2: "F2",
+    Qt.Key.Key_F3: "F3",
+    Qt.Key.Key_F4: "F4",
+    Qt.Key.Key_F5: "F5",
+    Qt.Key.Key_F6: "F6",
+    Qt.Key.Key_F7: "F7",
+    Qt.Key.Key_F8: "F8",
+    Qt.Key.Key_F9: "F9",
+    Qt.Key.Key_F10: "F10",
+    Qt.Key.Key_F11: "F11",
+    Qt.Key.Key_F12: "F12",
+    Qt.Key.Key_F13: "F13",
+    Qt.Key.Key_F14: "F14",
+    Qt.Key.Key_F15: "F15",
+    Qt.Key.Key_F16: "F16",
+    Qt.Key.Key_F17: "F17",
+    Qt.Key.Key_F18: "F18",
+    Qt.Key.Key_F19: "F19",
+    Qt.Key.Key_F20: "F20",
+    Qt.Key.Key_F21: "F21",
+    Qt.Key.Key_F22: "F22",
+    Qt.Key.Key_F23: "F23",
+    Qt.Key.Key_F24: "F24",
+    Qt.Key.Key_NumLock: "Num_Lock",
+    Qt.Key.Key_ScrollLock: "Scroll_Lock",
+}
