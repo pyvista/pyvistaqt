@@ -1279,10 +1279,12 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
     print("Waiting")
     with wait_exposed(qtbot, plotter):
         plotter.window().show()
+    # `image` grabs the buffer as-is, and `plotter.render()` is threaded on Darwin, so draw synchronously
+    plotter.ren_win.Render()
     img = np.array(plotter.image)
     drawn = img.any(-1)
     del img
+    print(f"Drawn {drawn.mean():.3f} of {drawn.shape} at dpr={plotter.devicePixelRatio()}, ren_win {tuple(plotter.ren_win.GetSize())}")
     if not BAD_INTERACTION:
-        # Loose: the render fills only ~half the buffer where window size and device pixel ratio disagree (darwin/arm64 CI, but not a Retina display)
-        assert 0.4 < drawn.mean() < 1.0
+        assert 0.9 < drawn.mean() < 1.0
     plotter.close()
