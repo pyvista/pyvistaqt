@@ -10,6 +10,7 @@ import platform
 import re
 import sys
 import threading
+import time
 import weakref
 
 import numpy as np
@@ -797,7 +798,14 @@ def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D1
     # check_gc on runners slow enough for the orbit to outlive the test
     # (macOS Intel), so wait for every thread the orbit spawned.
     for thread in set(threading.enumerate()) - threads_before:
-        thread.join(timeout=10)
+        # enumerate() lists a thread while another one is still inside start(), where join() raises
+        for _ in range(100):
+            try:
+                thread.join(timeout=10)
+            except RuntimeError:  # noqa: PERF203
+                time.sleep(0.01)
+            else:
+                break
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
