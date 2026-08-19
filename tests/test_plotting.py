@@ -1284,7 +1284,13 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
     img = np.array(plotter.image)
     drawn = img.any(-1)
     del img
-    print(f"Drawn {drawn.mean():.3f} of {drawn.shape} at dpr={plotter.devicePixelRatio()}, ren_win {tuple(plotter.ren_win.GetSize())}")
+    # The grab spans the whole render window, which rwi.resizeEvent sizes from _getPixelRatio();
+    # where that disagrees with the widget's own ratio (macOS/arm64) only the overlap is ever drawn
+    dpr = plotter.devicePixelRatioF()
+    win_w, win_h = plotter.ren_win.GetSize()
+    want_w, want_h = round(plotter.width() * dpr), round(plotter.height() * dpr)
+    expected = (min(want_w, win_w) * min(want_h, win_h)) / (win_w * win_h)
+    print(f"Drawn {drawn.mean():.3f}, expected {expected:.3f}: {want_w}x{want_h} wanted (dpr={dpr}), ren_win {win_w}x{win_h}")
     if not BAD_INTERACTION:
-        assert 0.9 < drawn.mean() < 1.0
+        assert 0.9 * expected < drawn.mean() < expected
     plotter.close()
