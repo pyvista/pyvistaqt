@@ -101,6 +101,7 @@ Known platform limitation (macOS, hard-won but not fixable here):
 from collections.abc import Callable
 import contextlib
 import ctypes
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import cast
@@ -113,11 +114,24 @@ from qtpy.QtCore import QTimer
 from qtpy.QtGui import QOffscreenSurface
 from qtpy.QtGui import QOpenGLContext
 from qtpy.QtGui import QSurfaceFormat
-from qtpy.QtOpenGLWidgets import QOpenGLWidget
 from qtpy.QtWidgets import QApplication
 from qtpy.QtWidgets import QSizePolicy
 from vtkmodules.vtkRenderingOpenGL2 import vtkGenericOpenGLRenderWindow
 from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
+
+if TYPE_CHECKING:
+    # A type checker has to see one concrete QOpenGLWidget: resolving it
+    # through the try/except below leaves the name unresolved, every method
+    # on it becomes Unknown, and the checks that depend on knowing the base
+    # class quietly stop running.
+    from qtpy.QtOpenGLWidgets import QOpenGLWidget
+else:
+    try:
+        from qtpy.QtOpenGLWidgets import QOpenGLWidget
+    except ImportError:
+        # Qt 5 keeps QOpenGLWidget in QtWidgets, and qtpy raises
+        # QtBindingMissingModuleError (an ImportError) for QtOpenGLWidgets.
+        from qtpy.QtWidgets import QOpenGLWidget
 
 # OpenGL enums (PyOpenGL is not a dependency).
 GL_READ_FRAMEBUFFER = 0x8CA8
