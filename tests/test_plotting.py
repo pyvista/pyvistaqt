@@ -215,7 +215,7 @@ def _no_gl() -> bool:
     Return True where Qt cannot provide a GL context at all.
 
     On macOS >= 26 with Qt >= 6.10 the Apple software renderer is refused
-    outright (QOpenGLWidget is unsupported; see rwi.py invariant #6), so there
+    outright (QOpenGLWidget is unsupported; see rwi.py invariant #7), so there
     is no context for tests that need one to inspect. Detect it the same way
     ``test_report_capabilities_unrealized`` does and cache it.
     """
@@ -1491,4 +1491,32 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
     if not BAD_INTERACTION:
         # The cone covers 0.63 of the frame at this zoom on every platform measured
         assert 0.55 < drawn.mean() < 0.70
+    plotter.close()
+
+
+def test_render_from_worker_thread(qtbot) -> None:
+    """Rendering off the GUI thread must not abort the process (invariant 6)."""
+    plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
+    with wait_exposed(qtbot, plotter.app_window):
+        plotter.app_window.show()
+
+    # add_mesh -> reset_camera -> Render -> WindowMakeCurrentEvent. Qt kills the
+    # process on a cross-thread QOpenGLContext.makeCurrent, so an unguarded
+    # observer takes the whole test run down rather than failing this test.
+    errors: list[BaseException] = []
+
+    def worker() -> None:
+        try:
+            plotter.add_mesh(pyvista.Sphere(), name="sphere")
+        except BaseException as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    thread = threading.Thread(target=worker)
+    thread.start()
+    qtbot.waitUntil(lambda: not thread.is_alive(), timeout=10_000)
+    thread.join()
+
+    assert not errors
+    assert "sphere" in plotter.renderer.actors
     plotter.close()

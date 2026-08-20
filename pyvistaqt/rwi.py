@@ -78,10 +78,19 @@ of them produces symptoms that are far removed from the cause):
    and ``Finalize`` already drives ``MakeCurrent`` through the observer.
    Freeing GL objects against the wrong context is driver heap corruption
    that, like (4), crashes at a distance.
+6. Ignore ``WindowMakeCurrentEvent`` off the GUI thread. A ``QOpenGLContext``
+   belongs to the thread that created it, and Qt answers a cross-thread
+   ``makeCurrent`` with ``qFatal`` -- an abort no caller can catch. The
+   native-window widget this replaces let VTK own the context, so its
+   ``MakeCurrent`` was a plain GLX/EGL call and rendering from a worker (a
+   background loader calling ``add_actor``) worked. Skipping is safe:
+   ``currentContext()`` is per-thread, so ``IsCurrent()`` already reports
+   False there and VTK skips the GL work, exactly as before the widget is
+   realized. The GUI thread draws the change on the next paint.
 
 Known platform limitation (macOS, hard-won but not fixable here):
 
-6. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
+7. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
    context would use the Apple *software* renderer, because NSOpenGLContext
    crashes in ``flushBuffer``/``setView:`` there (qtbase commit a9ca1aef2291).
    Qt warns ``QOpenGLWidget is not supported on this platform.`` and this
@@ -110,6 +119,7 @@ from qtpy.QtCore import QEvent
 from qtpy.QtCore import QRect
 from qtpy.QtCore import QSize
 from qtpy.QtCore import Qt
+from qtpy.QtCore import QThread
 from qtpy.QtCore import QTimer
 from qtpy.QtGui import QOffscreenSurface
 from qtpy.QtGui import QOpenGLContext
@@ -317,6 +327,9 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
     # ---- render-window observers (QVTKRenderWindowAdapter) -------------------
     def _cb_make_current(self, obj, evt):
         """Make VTK's context current WITHOUT touching framebuffer bindings."""
+        app = QApplication.instance()
+        if app is not None and QThread.currentThread() is not app.thread():
+            return  # see invariant 6
         if self._ctx is not None and self._surface is not None:
             try:
                 self._ctx.makeCurrent(self._surface)
