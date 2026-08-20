@@ -1494,25 +1494,27 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
     plotter.close()
 
 
-@pytest.mark.skipif(
-    platform.system() == "Darwin",
-    reason="VTK's render path segfaults off the main thread on macOS",
-)
-def test_render_from_worker_thread(qtbot) -> None:
-    """Rendering off the GUI thread must not abort the process (invariant 6)."""
+def test_make_current_from_worker_thread(qtbot) -> None:
+    """A cross-thread MakeCurrent must not abort the process (invariant 6)."""
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
     with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
 
-    # add_mesh -> reset_camera -> Render -> WindowMakeCurrentEvent. Qt kills the
-    # process on a cross-thread QOpenGLContext.makeCurrent, so an unguarded
-    # observer takes the whole test run down rather than failing this test.
+    # MakeCurrent/IsCurrent are what VTK drives on every render, and the only
+    # part of that path this widget owns. Poking them directly keeps the test
+    # to the invariant: the rest of VTK's render path is not thread-safe on
+    # macOS or Windows, so rendering off-thread there crashes for reasons the
+    # guard neither causes nor can fix. Without the guard Qt aborts the whole
+    # run here rather than failing this test.
+    ren_win = plotter.ren_win
     errors: list[BaseException] = []
+    is_current: list[bool] = []
 
     def worker() -> None:
         try:
-            plotter.add_mesh(pyvista.Sphere(), name="sphere")
+            ren_win.MakeCurrent()
+            is_current.append(bool(ren_win.IsCurrent()))
         except BaseException as exc:  # noqa: BLE001
             errors.append(exc)
 
@@ -1522,5 +1524,6 @@ def test_render_from_worker_thread(qtbot) -> None:
     thread.join()
 
     assert not errors
-    assert "sphere" in plotter.renderer.actors
+    # currentContext() is per-thread, so VTK is told to skip the GL work
+    assert is_current == [False]
     plotter.close()
