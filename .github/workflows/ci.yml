@@ -193,10 +193,10 @@ jobs:
           use_oidc: true
 
   wayland:
-    # #445: pyvistaqt did not work on Wayland, and the docs told Wayland users
-    # to force QT_QPA_PLATFORM=xcb. The QOpenGLWidget rewrite is supposed to
-    # remove that caveat, which is only a claim until something tests it -- no
-    # other job here runs a Wayland compositor, they all run xcb under Xvfb.
+    # gh-445: pyvistaqt did not work on Wayland, and the docs told Wayland
+    # users to force QT_QPA_PLATFORM=xcb. The QOpenGLWidget rewrite is supposed
+    # to remove that caveat, which is only a claim until something tests it --
+    # every other job here runs xcb under Xvfb.
     name: ubuntu-latest / wayland / ${{ matrix.qt }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -208,107 +208,35 @@ jobs:
     defaults:
       run:
         shell: bash -e {0}
-    env:
-      QT_QPA_PLATFORM: "wayland"
-      WAYLAND_DISPLAY: "wayland-ci"
-      XDG_RUNTIME_DIR: "/tmp/xdg-runtime-dir"
-      # llvmpipe: the runners have no GPU, and the Wayland EGL path cannot fall
-      # back to OSMesa the way the Xvfb jobs do.
-      LIBGL_ALWAYS_SOFTWARE: "1"
-      GALLIUM_DRIVER: "llvmpipe"
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - name: "Install Weston and the Wayland/EGL runtime"
-        run: |
-          opts=(
-            -o Acquire::Retries=3
-            -o Acquire::http::Timeout=30
-            -o Acquire::https::Timeout=30
-            -o DPkg::Lock::Timeout=120
-            -o Dpkg::Options::=--force-unsafe-io
-          )
-          sudo timeout 5m apt-get update "${opts[@]}"
-          sudo DEBIAN_FRONTEND=noninteractive timeout 10m apt-get install -y "${opts[@]}" \
-            weston \
-            libegl1 \
-            libgl1-mesa-dri \
-            libgles2 \
-            libopengl0 \
-            libwayland-egl1 \
-            libdbus-1-3 \
-            libpulse0 \
-            libxkbcommon0 \
-            libxkbcommon-x11-0 \
-            libnss3 \
-            libxcomposite1 \
-            libxdamage1 \
-            libxrandr2 \
-            libxtst6
-          weston --version
-
-      - name: "Start a headless Weston compositor"
-        run: |
-          mkdir -p "$XDG_RUNTIME_DIR"
-          chmod 700 "$XDG_RUNTIME_DIR"
-          # Two things vary across Weston releases and both matter here:
-          #   * Weston 14 renamed the backend "headless-backend.so" -> "headless".
-          #   * The headless backend defaults to the pixman (software) renderer,
-          #     which advertises neither wl_drm nor linux-dmabuf, so a client
-          #     asking Mesa for an EGL context on the Wayland platform gets
-          #     nothing and QOpenGLWidget has no GL to render into. --renderer=gl
-          #     runs the compositor on surfaceless EGL and does advertise them.
-          # Try the combinations most-capable first and report which one took.
-          for args in \
-            "--backend=headless --renderer=gl" \
-            "--backend=headless-backend.so --renderer=gl" \
-            "--backend=headless" \
-            "--backend=headless-backend.so"; do
-            echo "Trying weston $args"
-            # shellcheck disable=SC2086
-            nohup weston $args --socket="$WAYLAND_DISPLAY" \
-              --width=1920 --height=1080 --idle-time=0 >weston.log 2>&1 &
-            for _ in $(seq 1 50); do
-              if [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
-                echo "Compositor socket is up (weston $args)"
-                echo "WESTON_ARGS=$args" >> "$GITHUB_ENV"
-                exit 0
-              fi
-              sleep 0.2
-            done
-            echo "--- weston.log for: $args ---"
-            cat weston.log || true
-          done
-          echo "Weston never created $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" >&2
-          exit 1
-
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
+          wm: weston
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: "Install dependencies with pip"
-        run: |
+      - run: |
           python -m pip install --upgrade pip wheel
           pip install -e ".[test]" "${{ matrix.qt }}" --only-binary="${{ matrix.qt }}"
-
-      - name: "Confirm Qt is really on Wayland"
-        run: python .github/scripts/assert_wayland.py
-
-      - name: "Check report"
-        run: python -c "import pyvista; print(pyvista.Report())"
-
-      - name: "Run QVTKRenderWidgetConeExample"
-        run: python pyvistaqt/rwi.py
-
-      - name: "Run Tests"
-        run: pytest -v --cov=pyvistaqt --cov-report=html tests/
-
-      - name: "Weston log"
+        name: "Install dependencies with pip"
+      - run: |
+          python -c "from qtpy.QtGui import QGuiApplication; n = QGuiApplication([]).platformName(); print(n); assert n.startswith('wayland'), n"
+        name: "Confirm Qt is really on Wayland"
+      - run: |
+          python -c "import pyvista; print(pyvista.Report())"
+        name: "Check report"
+      - run: python pyvistaqt/rwi.py
+        name: "Run QVTKRenderWidgetConeExample"
+      - run: pytest -v --cov=pyvistaqt --cov-report=html tests/
+        name: "Run Tests"
+      - run: cat "$WESTON_LOG" || true
         if: always()
-        run: cat weston.log || true
-
+        name: "Compositor log"
       - uses: codecov/codecov-action@v7
         if: success()
         name: "Upload coverage to CodeCov"
