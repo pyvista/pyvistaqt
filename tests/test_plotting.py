@@ -1496,34 +1496,37 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
 
 def test_make_current_from_worker_thread(qtbot) -> None:
     """A cross-thread MakeCurrent must not abort the process (invariant 6)."""
+    from qtpy.QtGui import QOpenGLContext  # noqa: PLC0415
+
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
     with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
 
-    # MakeCurrent/IsCurrent are what VTK drives on every render, and the only
-    # part of that path this widget owns. Poking them directly keeps the test
-    # to the invariant: the rest of VTK's render path is not thread-safe on
-    # macOS or Windows, so rendering off-thread there crashes for reasons the
-    # guard neither causes nor can fix. Without the guard Qt aborts the whole
-    # run here rather than failing this test.
-    ren_win = plotter.ren_win
+    # Call the observer rather than ren_win.MakeCurrent(): VTK's event dispatch
+    # is not thread-safe, so going through it races whatever the GUI thread is
+    # doing and access-violates on Windows for reasons the guard cannot fix.
+    # This is the function the guard lives in, and the only part of a render
+    # this widget owns. Without the guard Qt aborts the whole run here rather
+    # than failing this test.
+    interactor = plotter.interactor
     errors: list[BaseException] = []
-    is_current: list[bool] = []
+    current: list[bool] = []
 
     def worker() -> None:
         try:
-            ren_win.MakeCurrent()
-            is_current.append(bool(ren_win.IsCurrent()))
+            interactor._cb_make_current(None, None)  # noqa: SLF001
+            current.append(QOpenGLContext.currentContext() is not None)
         except BaseException as exc:  # noqa: BLE001
             errors.append(exc)
 
     thread = threading.Thread(target=worker)
     thread.start()
-    qtbot.waitUntil(lambda: not thread.is_alive(), timeout=10_000)
-    thread.join()
+    # Deliberately not qtbot.waitUntil: that pumps the event loop, which lets
+    # the GUI thread render while the worker is inside the observer.
+    thread.join(timeout=10)
 
+    assert not thread.is_alive()
     assert not errors
-    # currentContext() is per-thread, so VTK is told to skip the GL work
-    assert is_current == [False]
+    assert current == [False]  # skipped, rather than made current off-thread
     plotter.close()
