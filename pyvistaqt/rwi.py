@@ -86,7 +86,10 @@ of them produces symptoms that are far removed from the cause):
    background loader calling ``add_actor``) worked. Skipping is safe:
    ``currentContext()`` is per-thread, so ``IsCurrent()`` already reports
    False there and VTK skips the GL work, exactly as before the widget is
-   realized. The GUI thread draws the change on the next paint.
+   realized. The GUI thread draws the change on the next paint. This buys
+   Linux and Windows only: on macOS VTK's render path segfaults off the main
+   thread whatever we do here, so the guard removes Qt's abort and nothing
+   more.
 
 Known platform limitation (macOS, hard-won but not fixable here):
 
