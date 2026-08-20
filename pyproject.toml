@@ -98,6 +98,8 @@ force-single-line = true
 # (often unused) Qt event arguments, and pass raw GL booleans.
 "pyvistaqt/rwi.py" = ["N802", "N803", "N815", "ANN", "D102", "D105", "ARG002", "FBT003"]
 "doc/**" = ["INP001"]
+# CI helper scripts are standalone entry points whose output is the job log.
+".github/scripts/**" = ["INP001", "T201"]
 "tests/**" = ["ANN001", "INP001", "S101", "T201", "PLR0915"]
 
 [tool.ruff.lint.pyupgrade]
