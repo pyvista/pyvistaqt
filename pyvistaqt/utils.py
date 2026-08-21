@@ -1,6 +1,8 @@
 """This module contains utilities routines."""  # noqa: D404
 
+from collections.abc import Iterator
 import contextlib
+import os
 import sys
 from types import ModuleType
 from typing import Any
@@ -64,6 +66,60 @@ def _setup_application(app: QApplication | None = None) -> QApplication:
         if not app:  # pragma: no cover
             app = QApplication(["PyVista"])
     return app
+
+
+def _gl_backend_for(platform_name: str) -> str | None:
+    """
+    Return the render window class this process uses, where pyvista would guess wrong.
+
+    pyvista picks the render window for its GL capability probes out of the
+    environment, and reads ``WAYLAND_DISPLAY`` as "this process draws through
+    EGL". That only holds if Qt actually connected to the compositor:
+    ``QT_QPA_PLATFORM=xcb`` runs a Qt application through XWayland inside a
+    Wayland session, and its GL is GLX. An EGL render window cannot make its
+    context current there, so every probe render logs ``Unable to
+    eglMakeCurrent: 12290`` (``EGL_BAD_ACCESS``) -- once per depth-peeling
+    pass, so dozens of warnings for a single ``enable_depth_peeling()``.
+
+    ``WAYLAND_DISPLAY`` describes the session, not the process, so pyvista
+    cannot do better than guess from it. We created the application and know
+    which platform Qt got.
+
+    Returns ``None`` when there is nothing to correct: on a native Wayland
+    platform pyvista already probes with EGL, and saying so would also flip
+    ``uses_egl()``, which decides anti-aliasing and would downgrade FXAA to
+    SSAA. Platforms implying neither backend (``offscreen``, ``minimal``) are
+    left alone, and an explicit choice by the caller outranks ours.
+    """
+    if os.environ.get("VTK_DEFAULT_OPENGL_WINDOW"):
+        return None  # an explicit choice outranks ours
+    if not os.environ.get("WAYLAND_DISPLAY"):
+        return None  # without it pyvista never reaches for EGL
+    if not platform_name.startswith("xcb"):
+        return None
+    return "vtkXOpenGLRenderWindow"
+
+
+@contextlib.contextmanager
+def _declared_gl_backend() -> Iterator[None]:
+    """
+    Declare this process's render window backend for the duration of a GL probe.
+
+    Scoped rather than set once at startup: ``VTK_DEFAULT_OPENGL_WINDOW`` is
+    process-global and also steers VTK's own factory, so it is ours to borrow
+    while pyvista answers a question for us, not ours to keep.
+    """
+    app = cast("QApplication | None", QApplication.instance())
+    backend = _gl_backend_for(app.platformName()) if app is not None else None
+    if backend is None:
+        yield
+        return
+    os.environ["VTK_DEFAULT_OPENGL_WINDOW"] = backend
+    try:
+        yield
+    finally:
+        # _gl_backend_for only answers when it was unset, so remove it
+        os.environ.pop("VTK_DEFAULT_OPENGL_WINDOW", None)
 
 
 def _setup_off_screen(off_screen: bool | None = None) -> bool:  # noqa: FBT001

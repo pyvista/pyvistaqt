@@ -95,6 +95,7 @@ from .editor import Editor
 from .rwi import QVTKRenderWindowInteractor
 from .utils import _check_type
 from .utils import _create_menu_bar
+from .utils import _declared_gl_backend
 from .utils import _setup_application
 from .utils import _setup_ipython
 from .utils import _setup_off_screen
@@ -275,6 +276,18 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._first_time = False  # Crucial!
         # self._rendered = True  # this is handled in render()  # noqa: ERA001
         LOG.debug("QtInteractor init stop")
+
+    def enable_depth_peeling(self, *args: Any, **kwargs: Any) -> bool:  # noqa: ANN401
+        """
+        Enable depth peeling, declaring the GL backend pyvista should probe with.
+
+        pyvista probes for depth peeling support by rendering into a throwaway
+        render window whose class it infers from the environment, and that
+        inference is wrong for a Qt application running on ``xcb`` inside a
+        Wayland session. See ``_gl_backend_for``.
+        """
+        with _declared_gl_backend():
+            return bool(super().enable_depth_peeling(*args, **kwargs))
 
     def _setup_interactor(self, off_screen: bool) -> None:  # noqa: FBT001
         self._off_screen = off_screen

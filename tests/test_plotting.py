@@ -59,6 +59,8 @@ from pyvistaqt.plotting import QVTKRenderWindowInteractor
 from pyvistaqt.utils import _TERMINAL_OUTPUT_GUARDS
 from pyvistaqt.utils import _check_type
 from pyvistaqt.utils import _create_menu_bar
+from pyvistaqt.utils import _declared_gl_backend
+from pyvistaqt.utils import _gl_backend_for
 from pyvistaqt.utils import _setup_application
 from pyvistaqt.utils import _setup_terminal_output_fix
 from pyvistaqt.utils import _TerminalOpostGuard
@@ -1530,3 +1532,58 @@ def test_make_current_from_worker_thread(qtbot) -> None:
     assert not errors
     assert current == [False]  # skipped, rather than made current off-thread
     plotter.close()
+
+
+@pytest.mark.parametrize(
+    ("env", "platform_name", "expected"),
+    [
+        # The bug: a Wayland session with Qt forced through XWayland, so
+        # pyvista would probe with an EGL render window in a GLX process.
+        ({"WAYLAND_DISPLAY": "wayland-0"}, "xcb", "vtkXOpenGLRenderWindow"),
+        # Native Wayland: pyvista's guess is already EGL, and saying so here
+        # would also flip uses_egl() and downgrade FXAA to SSAA.
+        ({"WAYLAND_DISPLAY": "wayland-0"}, "wayland", None),
+        # No compositor: pyvista never reaches for EGL, nothing to correct.
+        ({}, "xcb", None),
+        # An explicit choice outranks ours.
+        (
+            {"WAYLAND_DISPLAY": "wayland-0", "VTK_DEFAULT_OPENGL_WINDOW": "vtkEGLRenderWindow"},
+            "xcb",
+            None,
+        ),
+        # Neither offscreen nor minimal implies GLX.
+        ({"WAYLAND_DISPLAY": "wayland-0"}, "offscreen", None),
+    ],
+)
+def test_gl_backend_for(monkeypatch, env, platform_name, expected) -> None:
+    """Only a Wayland session that Qt did not join gets its backend corrected."""
+    monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
+    monkeypatch.delenv("VTK_DEFAULT_OPENGL_WINDOW", raising=False)
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    assert _gl_backend_for(platform_name) == expected
+
+
+def test_declared_gl_backend_is_scoped(qapp, monkeypatch) -> None:
+    """The declaration is borrowed for the probe, never left behind."""
+    monkeypatch.setenv("WAYLAND_DISPLAY", "wayland-0")
+    monkeypatch.delenv("VTK_DEFAULT_OPENGL_WINDOW", raising=False)
+    inside = []
+    with _declared_gl_backend():
+        inside.append(os.environ.get("VTK_DEFAULT_OPENGL_WINDOW"))
+    assert "VTK_DEFAULT_OPENGL_WINDOW" not in os.environ
+    # xcb is the only platform that gets a declaration; anything else is a
+    # no-op, and this suite runs under both
+    platform_name = qapp.platformName()
+    expected = "vtkXOpenGLRenderWindow" if platform_name.startswith("xcb") else None
+    assert inside == [expected]
+
+
+def test_declared_gl_backend_restores_on_error(qapp, monkeypatch) -> None:  # noqa: ARG001
+    """A failing probe must not leak the declaration either."""
+    monkeypatch.setenv("WAYLAND_DISPLAY", "wayland-0")
+    monkeypatch.delenv("VTK_DEFAULT_OPENGL_WINDOW", raising=False)
+    msg = "boom"
+    with pytest.raises(RuntimeError, match=msg), _declared_gl_backend():
+        raise RuntimeError(msg)
+    assert "VTK_DEFAULT_OPENGL_WINDOW" not in os.environ
