@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>API Reference &#8212; PyVistaQt 0.1.0.dev1+g97261321f documentation</title>
+    <title>API Reference &#8212; PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=fd53a2aa"></script>
+    <script src="_static/documentation_options.js?v=9184568d"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
     <link rel="prev" title="Usage" href="usage.html" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1+g97261321f" />
+  <meta name="docsearch:version" content="0.1.0.dev1+g98a9abbd4" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -161,8 +161,8 @@
       
     
     
-    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g97261321f documentation - Home"/>
-    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g97261321f documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation - Home"/>
   
   
 </a></div>
@@ -861,7 +861,7 @@ pyvista’s <cite>Plotter.link_views</cite> method.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pyvistaqt.QtInteractor.staticMetaObject">
-<span class="sig-name descname"><span class="pre">staticMetaObject</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PySide6.QtCore.QMetaObject(&quot;QtInteractor&quot;</span> <span class="pre">inherits</span> <span class="pre">&quot;QVTKRenderWindowInteractor&quot;:</span> <span class="pre">Methods:</span>&#160;&#160; <span class="pre">#33</span> <span class="pre">type=Signal,</span> <span class="pre">signature=render_signal()</span>&#160;&#160; <span class="pre">#34</span> <span class="pre">type=Signal,</span> <span class="pre">signature=key_press_event_signal(PyObject,QString),</span> <span class="pre">parameters=PyObject,</span> <span class="pre">QString</span> <span class="pre">)</span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.staticMetaObject" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">staticMetaObject</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PySide6.QtCore.QMetaObject(&quot;QtInteractor&quot;</span> <span class="pre">inherits</span> <span class="pre">&quot;QVTKRenderWindowInteractor&quot;:</span> <span class="pre">Methods:</span>&#160;&#160; <span class="pre">#37</span> <span class="pre">type=Signal,</span> <span class="pre">signature=render_signal()</span>&#160;&#160; <span class="pre">#38</span> <span class="pre">type=Signal,</span> <span class="pre">signature=key_press_event_signal(PyObject,QString),</span> <span class="pre">parameters=PyObject,</span> <span class="pre">QString</span> <span class="pre">)</span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.staticMetaObject" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -875,9 +875,8 @@ pyvista’s <cite>Plotter.link_views</cite> method.</p>
 <p>Inheritance:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>BackgroundPlotter
 +-- QtInteractor
-    |-- QVTKRenderWindowInteractor
-    |   +-- QWidget  (the default QVTKRWIBaseClass; QGLWidget or
-    |                 QOpenGLWidget can be selected via vtkmodules.qt)
+    |-- QVTKRenderWindowInteractor  (pyvistaqt.rwi: FBO-based, no native
+    |   +-- QOpenGLWidget            window handle -- Wayland-compatible)
     +-- BasePlotter
 
 MainWindow
@@ -893,21 +892,21 @@ MainWindow
 +-- QtInteractor.__init__(parent=self.frame)
     |-- with _no_base_plotter_init():
     |   +-- QVTKRenderWindowInteractor.__init__(parent=parent)
-    |       +-- QWidget.__init__(parent, wflags)
+    |       +-- QOpenGLWidget.__init__(parent)
     |-- BasePlotter.__init__(**kwargs)
     +-- self.ren_win: vtkRenderWindow = self.GetRenderWindow()
 </pre></div>
 </div>
-<p>Because <code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor.__init__</span></code> calls <code class="docutils literal notranslate"><span class="pre">QWidget.__init__</span></code>
-and the Qt bindings continue the cooperative <code class="docutils literal notranslate"><span class="pre">super()</span></code> chain past the Qt
-classes, this triggers a spurious <code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> call with no
-arguments. This cannot be solved by using <code class="docutils literal notranslate"><span class="pre">super()</span></code> because
-<code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor.__init__</span></code> does not use <code class="docutils literal notranslate"><span class="pre">super()</span></code>, and the
-chaining happens inside Qt’s <code class="docutils literal notranslate"><span class="pre">QWidget</span></code> initialization, outside of our
-control. We therefore temporarily monkey-patch <code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> with
-a no-op during the <code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor.__init__</span></code> call (see
-<code class="docutils literal notranslate"><span class="pre">_no_base_plotter_init</span></code>), then call <code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> explicitly
-with the real arguments.</p>
+<p>Because <code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor.__init__</span></code> calls
+<code class="docutils literal notranslate"><span class="pre">QOpenGLWidget.__init__</span></code> and the Qt bindings continue the cooperative
+<code class="docutils literal notranslate"><span class="pre">super()</span></code> chain past the Qt classes, this triggers a spurious
+<code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> call with no arguments. This cannot be solved by
+using <code class="docutils literal notranslate"><span class="pre">super()</span></code> because <code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor.__init__</span></code> does not
+use <code class="docutils literal notranslate"><span class="pre">super()</span></code>, and the chaining happens inside Qt’s widget initialization,
+outside of our control. We therefore temporarily monkey-patch
+<code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> with a no-op during the
+<code class="docutils literal notranslate"><span class="pre">QVTKRenderWindowInteractor.__init__</span></code> call (see <code class="docutils literal notranslate"><span class="pre">_no_base_plotter_init</span></code>),
+then call <code class="docutils literal notranslate"><span class="pre">BasePlotter.__init__</span></code> explicitly with the real arguments.</p>
 </section>
 </section>
 </section>

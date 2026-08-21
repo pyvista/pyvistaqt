@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>pyvistaqt &#8212; PyVistaQt 0.1.0.dev1+g97261321f documentation</title>
+    <title>pyvistaqt &#8212; PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=fd53a2aa"></script>
+    <script src="_static/documentation_options.js?v=9184568d"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
     <link rel="next" title="Usage" href="usage.html" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1+g97261321f" />
+  <meta name="docsearch:version" content="0.1.0.dev1+g98a9abbd4" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -161,8 +161,8 @@
       
     
     
-    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g97261321f documentation - Home"/>
-    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g97261321f documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation - Home"/>
   
   
 </a></div>
@@ -500,21 +500,6 @@ sphere.</p>
 <span class="n">plotter</span> <span class="o">=</span> <span class="n">BackgroundPlotter</span><span class="p">()</span>
 <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">sphere</span><span class="p">)</span>
 </pre></div>
-</div>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>On Linux/Wayland, Qt may currently require forcing the XCB platform
-plugin for <code class="docutils literal notranslate"><span class="pre">pyvistaqt</span></code> to work correctly. You can set
-<code class="docutils literal notranslate"><span class="pre">QT_QPA_PLATFORM=xcb</span></code> directly in your script before importing
-Qt-related modules:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"QT_QPA_PLATFORM"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"xcb"</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pyvistaqt</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackgroundPlotter</span>
-</pre></div>
-</div>
 </div>
 <div class="toctree-wrapper compound">
 </div>
