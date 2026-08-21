@@ -52,8 +52,6 @@ jobs:
       - run: |
           python -c "import pyvista; print(pyvista.Report())"
         name: "Check report"
-      - run: python pyvistaqt/rwi.py
-        name: "Run QVTKRenderWidgetConeExample"
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
       - uses: codecov/codecov-action@v7
@@ -186,6 +184,55 @@ jobs:
         name: "Install pyvistaqt and check report"
       - run: pytest -v --cov pyvistaqt --cov-report html
         name: "Run Tests"
+      - uses: codecov/codecov-action@v7
+        if: success()
+        name: "Upload coverage to CodeCov"
+        with:
+          use_oidc: true
+
+  wayland:
+    # gh-445: pyvistaqt did not work on Wayland, and the docs told Wayland
+    # users to force QT_QPA_PLATFORM=xcb. The QOpenGLWidget rewrite is supposed
+    # to remove that caveat, which is only a claim until something tests it --
+    # every other job here runs xcb under Xvfb.
+    name: ubuntu-latest / wayland / ${{ matrix.qt }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        qt: ["PyQt6", "PySide6"]
+        python-version: ["3.13"]
+    defaults:
+      run:
+        shell: bash -e {0}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pyvista/setup-headless-display-action@main
+        with:
+          qt: true
+          pyvista: false
+          wm: weston
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: |
+          python -m pip install --upgrade pip wheel
+          pip install -e ".[test]" "${{ matrix.qt }}" --only-binary="${{ matrix.qt }}"
+        name: "Install dependencies with pip"
+      - run: |
+          python -c "from qtpy.QtGui import QGuiApplication; n = QGuiApplication([]).platformName(); print(n); assert n.startswith('wayland'), n"
+        name: "Confirm Qt is really on Wayland"
+      - run: |
+          python -c "import pyvista; print(pyvista.Report())"
+        name: "Check report"
+      - run: pytest -v --cov=pyvistaqt --cov-report=html tests/
+        name: "Run Tests"
+      - run: cat "$WESTON_LOG" || true
+        if: always()
+        name: "Compositor log"
       - uses: codecov/codecov-action@v7
         if: success()
         name: "Upload coverage to CodeCov"

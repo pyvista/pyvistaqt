@@ -17,7 +17,7 @@ Overview
    :alt: MIT License
 
 The Python package ``pyvistaqt`` extends the
-functionality of ``pyvista`` through the usage of *Qt*. 
+functionality of ``pyvista`` through the usage of *Qt*.
 Since *Qt* applications operate in a separate thread than VTK,
 you can simultaneously have an active VTK plot and a non-blocking Python session.
 
@@ -68,23 +68,6 @@ sphere.
 
     plotter = BackgroundPlotter()
     plotter.add_mesh(sphere)
-
-.. important::
-
-   On Linux/Wayland, Qt may currently require forcing the XCB platform
-   plugin for ``pyvistaqt`` to work correctly. You can set
-   ``QT_QPA_PLATFORM=xcb`` directly in your script before importing
-   Qt-related modules:
-
-   .. code:: python
-
-      import os
-
-      os.environ["QT_QPA_PLATFORM"] = "xcb"
-
-      import pyvista as pv
-      from pyvistaqt import BackgroundPlotter
-
 
 .. toctree::
    :maxdepth: 2
