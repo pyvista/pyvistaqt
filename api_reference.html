@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>API Reference &#8212; PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation</title>
+    <title>API Reference &#8212; PyVistaQt 0.1.0.dev1+gc3fe1074d documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=9184568d"></script>
+    <script src="_static/documentation_options.js?v=bbd06435"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
     <link rel="prev" title="Usage" href="usage.html" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1+g98a9abbd4" />
+  <meta name="docsearch:version" content="0.1.0.dev1+gc3fe1074d" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -161,8 +161,8 @@
       
     
     
-    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation - Home"/>
-    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+g98a9abbd4 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+gc3fe1074d documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+gc3fe1074d documentation - Home"/>
   
   
 </a></div>
@@ -810,6 +810,16 @@ to allow files.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyvistaqt.QtInteractor.enable_depth_peeling">
+<span class="sig-name descname"><span class="pre">enable_depth_peeling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.enable_depth_peeling" title="Link to this definition">#</a></dt>
+<dd><p>Enable depth peeling, declaring the GL backend pyvista should probe with.</p>
+<p>pyvista probes for depth peeling support by rendering into a throwaway
+render window whose class it infers from the environment, and that
+inference is wrong for a Qt application running on <code class="docutils literal notranslate"><span class="pre">xcb</span></code> inside a
+Wayland session. See <code class="docutils literal notranslate"><span class="pre">_gl_backend_for</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyvistaqt.QtInteractor.gesture_event">
 <span class="sig-name descname"><span class="pre">gesture_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QGestureEvent.html#PySide6.QtWidgets.QGestureEvent" title="(in PySide v6.11.0)"><span class="pre">QGestureEvent</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.gesture_event" title="Link to this definition">#</a></dt>
 <dd><p>Handle gesture events.</p>
@@ -970,6 +980,7 @@ then call <code class="docutils literal notranslate"><span class="pre">BasePlott
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.dragEnterEvent"><code class="docutils literal notranslate"><span class="pre">QtInteractor.dragEnterEvent()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.dropEvent"><code class="docutils literal notranslate"><span class="pre">QtInteractor.dropEvent()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.enable"><code class="docutils literal notranslate"><span class="pre">QtInteractor.enable()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.enable_depth_peeling"><code class="docutils literal notranslate"><span class="pre">QtInteractor.enable_depth_peeling()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.gesture_event"><code class="docutils literal notranslate"><span class="pre">QtInteractor.gesture_event()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.key_press_event"><code class="docutils literal notranslate"><span class="pre">QtInteractor.key_press_event()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvistaqt.QtInteractor.key_press_event_signal"><code class="docutils literal notranslate"><span class="pre">QtInteractor.key_press_event_signal</span></code></a></li>
