@@ -17,6 +17,7 @@ import pytest
 from pytestqt.exceptions import TimeoutError as QtBotTimeoutError
 import pyvista
 from pyvista.plotting import Renderer
+from pyvista.plotting.utilities.gl_checks import check_depth_peeling
 from qtpy import API_NAME
 from qtpy import QtCore
 from qtpy.QtCore import QMimeData
@@ -409,6 +410,50 @@ def test_depth_peeling(qtbot) -> None:  # noqa: D103
     assert plotter.renderer.GetUseDepthPeeling()
     plotter.close()
     global_theme.depth_peeling["enabled"] = False
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="macOS activation policy")
+def test_depth_peeling_probe_keeps_application_regular(qtbot) -> None:
+    """
+    Probing for depth peeling must not demote this application.
+
+    pyvista answers ``enable_depth_peeling()`` by rendering into a throwaway
+    off-screen render window, and on macOS that demotes the process-global
+    ``NSApplication`` activation policy away from ``Regular`` so an unbundled
+    headless process gets no Dock icon (pyvista#8832). A Qt application is not
+    headless: the demotion costs it its Dock icon and menu bar, and the window
+    server can stop presenting a window that is already on screen -- drawn
+    once and never again, with ``isVisible()`` still ``True``, so nothing ever
+    retries the show and only ``hide()``/``show()`` brings it back.
+
+    The policy is what this asserts. The lost window is the symptom worth
+    caring about, but it only follows the first ``Regular`` -> ``Accessory``
+    transition in a process and not reliably even then, so ``isExposed()``
+    is far too weak to hang a test on.
+    """
+    appkit = pytest.importorskip("AppKit")
+    app = appkit.NSApp()
+    if app is None:
+        pytest.skip("no NSApplication in this process")
+    regular = appkit.NSApplicationActivationPolicyRegular
+    original = app.activationPolicy()
+
+    plotter = BackgroundPlotter()
+    qtbot.addWidget(plotter.app_window)
+    try:
+        # The policy is sticky and process-global, so an earlier probe in this
+        # session may already have demoted it and would mask the assertion
+        app.setActivationPolicy_(regular)
+        # A warm cache answers without probing at all, and test_depth_peeling
+        # warms it; pyvista only began caching in 0.49, hence the getattr
+        cache_clear = getattr(check_depth_peeling, "cache_clear", None)
+        if cache_clear is not None:
+            cache_clear()
+        plotter.enable_depth_peeling()
+        assert app.activationPolicy() == regular
+    finally:
+        app.setActivationPolicy_(original)
+        plotter.close()
 
 
 @pytest.mark.skipif(
