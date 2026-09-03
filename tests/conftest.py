@@ -49,7 +49,7 @@ def _is_vtk(obj) -> bool:
     """
     global _vtk_object_base  # noqa: PLW0603
     if _vtk_object_base is None:
-        from vtkmodules.vtkCommonCore import vtkObjectBase  # noqa: PLC0415
+        from pyvistaqt._vtk import vtkObjectBase  # noqa: PLC0415
 
         _vtk_object_base = vtkObjectBase
     return isinstance(obj, _vtk_object_base)

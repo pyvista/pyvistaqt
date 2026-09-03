@@ -129,8 +129,17 @@ from qtpy.QtGui import QOpenGLContext
 from qtpy.QtGui import QSurfaceFormat
 from qtpy.QtWidgets import QApplication
 from qtpy.QtWidgets import QSizePolicy
-from vtkmodules.vtkRenderingOpenGL2 import vtkGenericOpenGLRenderWindow
-from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
+
+# These VTK objects cross the PyVista boundary, so they must come from the
+# backend selected by PyVista rather than directly from stock ``vtkmodules``.
+from pyvistaqt import _vtk
+from pyvistaqt._vtk import vtkGenericRenderWindowInteractor
+
+try:
+    vtkGenericOpenGLRenderWindow = _vtk.vtkGenericOpenGLRenderWindow  # noqa: N816
+except AttributeError as error:
+    msg = f"The selected VTK backend {_vtk.VTK_BACKEND!r} does not provide vtkGenericOpenGLRenderWindow, which pyvistaqt requires."
+    raise ImportError(msg) from error
 
 if TYPE_CHECKING:
     # A type checker has to see one concrete QOpenGLWidget: resolving it

@@ -37,8 +37,8 @@ from qtpy.QtWidgets import QStackedWidget
 from qtpy.QtWidgets import QToolBar
 from qtpy.QtWidgets import QTreeWidget
 from qtpy.QtWidgets import QVBoxLayout
-import vtk
 
+from pyvistaqt._vtk import vtkRenderer
 from pyvistaqt.plotting import LOG
 from pyvistaqt.plotting import global_theme
 
@@ -603,7 +603,7 @@ def test_qt_interactor(qtbot, plotting, ensure_closed) -> None:  # noqa: ARG001,
     assert_hasattr(vtk_widget, "render_timer", QTimer)
     # check that BasePlotter.__init__() is called
     assert_hasattr(vtk_widget, "_closed", bool)
-    assert_hasattr(vtk_widget, "renderer", vtk.vtkRenderer)
+    assert_hasattr(vtk_widget, "renderer", vtkRenderer)
     # check that QVTKRenderWindowInteractorAdapter.__init__() is called
     assert_hasattr(vtk_widget, "interactor", QVTKRenderWindowInteractor)
 
