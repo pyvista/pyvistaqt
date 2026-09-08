@@ -86,7 +86,8 @@ from qtpy.QtWidgets import QPinchGesture
 from qtpy.QtWidgets import QToolBar
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
-from vtkmodules.vtkRenderingUI import vtkGenericRenderWindowInteractor
+
+from pyvistaqt._vtk import vtkGenericRenderWindowInteractor
 
 from .counter import Counter
 from .dialog import FileDialog

@@ -14,7 +14,8 @@ from qtpy.QtWidgets import QTreeWidget
 from qtpy.QtWidgets import QTreeWidgetItem
 from qtpy.QtWidgets import QVBoxLayout
 from qtpy.QtWidgets import QWidget
-from vtkmodules.vtkRenderingCore import vtkActor
+
+from pyvistaqt._vtk import vtkActor
 
 from .window import MainWindow
 
