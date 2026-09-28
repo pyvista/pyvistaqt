@@ -450,6 +450,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.render_timer.stop()
         super().closeEvent(evt)
 
+    def __getattr__(self, attr: str) -> Any:  # noqa: ANN401
+        """Resolve lazy pyvista plotter components, then forward to the interactor."""
+        base_getattr = getattr(BasePlotter, "__getattr__", None)
+        if base_getattr is not None:
+            with contextlib.suppress(AttributeError):
+                return base_getattr(self, attr)
+        return QVTKRenderWindowInteractor.__getattr__(self, attr)
+
     def close(self) -> None:  # ty: ignore[invalid-method-override]
         """Quit application (intentionally returns None, unlike QWidget.close)."""
         if getattr(self, "_closed", True):  # if it doesn't exist, error during init
