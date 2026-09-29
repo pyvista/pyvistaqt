@@ -606,6 +606,10 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         iren = self.__dict__.get("_Iren")
         if iren is not None and hasattr(iren, attr):
             return getattr(iren, attr)
+        # Cooperate with later bases (e.g. BasePlotter's lazy plotter-component loader).
+        parent = getattr(super(), "__getattr__", None)
+        if parent is not None:
+            return parent(attr)
         msg = f"{type(self).__name__} has no attribute {attr!r}"
         raise AttributeError(msg)
 
