@@ -825,7 +825,10 @@ class BackgroundPlotter(QtInteractor):
         # MNE's Brain sets the *interactor* to the requested size and grows
         # the window around it).
         if self._ctx is None:
-            self.render_window.SetSize(*window_size)
+            # Match resizeGL, which sizes VTK in device pixels.
+            dpr = self.devicePixelRatioF()
+            self.render_window.SetSize(*(max(1, round(s * dpr)) for s in window_size))
+            self.render_window.SetDPI(round(72 * dpr))
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
