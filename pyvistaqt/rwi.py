@@ -606,6 +606,13 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         iren = self.__dict__.get("_Iren")
         if iren is not None and hasattr(iren, attr):
             return getattr(iren, attr)
+        # Try every later __getattr__ (e.g. BasePlotter's plugin loader): PyQt's QObject one doesn't chain.
+        mro = type(self).__mro__
+        for klass in mro[mro.index(QVTKRenderWindowInteractor) + 1 :]:
+            getattr_ = klass.__dict__.get("__getattr__")
+            if getattr_ is not None:
+                with contextlib.suppress(AttributeError):
+                    return getattr_.__get__(self, type(self))(attr)
         msg = f"{type(self).__name__} has no attribute {attr!r}"
         raise AttributeError(msg)
 
