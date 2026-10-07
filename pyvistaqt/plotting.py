@@ -773,17 +773,7 @@ class BackgroundPlotter(QtInteractor):
         available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
 
         """
-        # On pyvista >= 0.49 the trame integration moved to the
-        # ``trame-pyvista`` plugin and ``Plotter.export_vtksz`` is a
-        # deprecated proxy that errors when the plugin is missing.
-        # Force-load the plugin so ``self.trame`` resolves; the Qt
-        # super-classes shadow ``BasePlotter.__getattr__`` so the lazy
-        # entry-point loader does not run on attribute access alone.
-        import contextlib  # noqa: PLC0415
-
-        with contextlib.suppress(ImportError):
-            import trame_pyvista  # noqa: F401, PLC0415
-
+        # pyvista >= 0.49 moved trame to the lazily loaded ``trame-pyvista`` plugin.
         trame = getattr(self, "trame", None)
         if trame is not None and hasattr(trame, "export_vtksz"):
             # pyvista >= 0.49 (trame-pyvista). ``filename`` is keyword-only
@@ -835,7 +825,10 @@ class BackgroundPlotter(QtInteractor):
         # MNE's Brain sets the *interactor* to the requested size and grows
         # the window around it).
         if self._ctx is None:
-            self.render_window.SetSize(*window_size)
+            # Match resizeGL, which sizes VTK in device pixels.
+            dpr = self.devicePixelRatioF()
+            self.render_window.SetSize(*(max(1, round(s * dpr)) for s in window_size))
+            self.render_window.SetDPI(round(72 * dpr))
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""

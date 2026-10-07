@@ -18,7 +18,7 @@ env:
 
 jobs:
   pip-pre:
-    name: ${{ matrix.os }} / Python${{ matrix.python-version }} / ${{ matrix.qt }} / pyvista-main / qtpy-master
+    name: ${{ matrix.os }} / Python${{ matrix.python-version }} / ${{ matrix.qt }} / pyvista-main / qtpy-master${{ matrix.scale && ' / scale ' }}${{ matrix.scale }}
     runs-on: ${{ matrix.os}}
     timeout-minutes: 20
     strategy:
@@ -31,6 +31,9 @@ jobs:
           - qt: "PySide6"
             python-version: "3.14"
             os: "macos-latest"
+            scale: "2" # emulate a Retina display; the runners' screens are 1x
+    env:
+      QT_SCALE_FACTOR: ${{ matrix.scale || '1' }}
     defaults:
       run:
         shell: bash -e {0}

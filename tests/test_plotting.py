@@ -337,6 +337,24 @@ def test_close_removes_vtk_observers(qtbot) -> None:
         assert not ren_win.HasObserver(event), event
 
 
+def test_lazy_plotter_component(qtbot, monkeypatch) -> None:
+    """Pending ``pyvista.plotter_components`` entry points resolve on first access."""
+    registry = pytest.importorskip("pyvista.plotting.component_registry")
+    monkeypatch.setattr(registry, "_ensure_entry_points", lambda: None)
+    monkeypatch.setitem(registry._pending_components, "pvqt_lazy_component", "fake_plugin")  # noqa: SLF001
+    plotter = QtInteractor(off_screen=True)
+    qtbot.addWidget(plotter)
+    monkeypatch.setattr(
+        registry,
+        "import_module",
+        lambda _name: monkeypatch.setattr(QtInteractor, "pvqt_lazy_component", "loaded", raising=False),
+    )
+    assert plotter.pvqt_lazy_component == "loaded"
+    with pytest.raises(AttributeError):
+        _ = plotter.pvqt_missing_component
+    plotter.close()
+
+
 def test_default_surface_format(qtbot) -> None:
     """
     The GL format must be installed process-wide (rwi.py invariant 2).
