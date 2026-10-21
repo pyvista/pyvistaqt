@@ -114,8 +114,6 @@ LOG.addHandler(logging.StreamHandler())
 
 # pyvista 0.50 deprecated ``ren_win`` and made ``render_window`` settable.
 _RENDER_WINDOW_SETTABLE = BasePlotter.render_window.fset is not None
-# pyvista 0.49 moved trame to the lazily loaded ``trame`` plotter component.
-_HAS_TRAME_COMPONENT = pyvista.version_info >= (0, 49)
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
@@ -782,9 +780,11 @@ class BackgroundPlotter(QtInteractor):
         available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
 
         """
-        if _HAS_TRAME_COMPONENT:
-            # ``filename`` is keyword-only on trame-pyvista 0.1.0.
-            trame = self.trame
+        # pyvista >= 0.49 moved trame to the lazily loaded ``trame-pyvista`` plugin.
+        trame = getattr(self, "trame", None)
+        if trame is not None and hasattr(trame, "export_vtksz"):
+            # pyvista >= 0.49 (trame-pyvista). ``filename`` is keyword-only
+            # on trame-pyvista 0.1.0, so wrap the FileDialog callback.
             callback = lambda fn: trame.export_vtksz(filename=fn)  # noqa: E731
             ext = "vtksz"
         elif hasattr(self, "export_vtksz"):
@@ -803,7 +803,7 @@ class BackgroundPlotter(QtInteractor):
         )
 
     def _toggle_edl(self) -> None:
-        if self.renderer._render_passes._edl_pass is not None:  # noqa: SLF001
+        if hasattr(self.renderer, "edl_pass"):
             return self.renderer.disable_eye_dome_lighting()
         return self.renderer.enable_eye_dome_lighting()
 

@@ -90,8 +90,7 @@ def _get_renderer_widget(renderer: Renderer) -> QWidget:
     widget = QWidget()
     layout = QVBoxLayout()
     axes = QCheckBox("Axes")
-    # Older pyvista deletes ``axes_widget`` when the axes are hidden.
-    axes_widget = renderer.axes_widget if hasattr(renderer, "axes_widget") else None
+    axes_widget = getattr(renderer, "axes_widget", None)
     if axes_widget is not None:
         axes.setChecked(bool(axes_widget.GetEnabled()))
     else:
