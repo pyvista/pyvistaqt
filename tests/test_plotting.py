@@ -1165,16 +1165,13 @@ def test_drag_event(tmpdir) -> None:  # noqa: D103
     mesh.save(filename)
     assert os.path.isfile(filename)  # noqa: PTH113
     plotter = BackgroundPlotter(update_app_icon=False)
-    point = QPoint(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
-    event = QDragEnterEvent(
-        point,
-        Qt.DropAction.IgnoreAction,
-        data,
-        Qt.MouseButton.NoButton,
-        Qt.KeyboardModifier.NoModifier,
-    )
+    args = (Qt.DropAction.IgnoreAction, data, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
+    try:  # Qt >= 6.12 deprecates the QPoint overload
+        event = QDragEnterEvent(QPointF(0, 0), *args)
+    except TypeError:
+        event = QDragEnterEvent(QPoint(0, 0), *args)
     plotter.dragEnterEvent(event)
     plotter.close()
 
