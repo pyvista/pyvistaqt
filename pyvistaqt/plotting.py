@@ -30,7 +30,7 @@ Implementation
         |   +-- QVTKRenderWindowInteractor.__init__(parent=parent)
         |       +-- QOpenGLWidget.__init__(parent)
         |-- BasePlotter.__init__(**kwargs)
-        +-- self.ren_win: vtkRenderWindow = self.GetRenderWindow()
+        +-- self.render_window: vtkRenderWindow = self.GetRenderWindow()
 
 Because ``QVTKRenderWindowInteractor.__init__`` calls
 ``QOpenGLWidget.__init__`` and the Qt bindings continue the cooperative
@@ -112,6 +112,8 @@ LOG.addHandler(logging.StreamHandler())
 # LOG = logging.getLogger(__name__)  # noqa: ERA001
 # LOG.setLevel('DEBUG')  # noqa: ERA001
 
+# pyvista 0.50 deprecated ``ren_win`` and made ``render_window`` settable.
+_RENDER_WINDOW_SETTABLE = BasePlotter.render_window.fset is not None
 _PYVISTA_VERSION = tuple(int(part) for part in pyvista.__version__.split(".")[:2])
 # pyvista 0.49 moved trame to the lazily loaded ``trame`` plotter component.
 _HAS_TRAME_COMPONENT = _PYVISTA_VERSION >= (0, 49)
@@ -230,18 +232,22 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self.setAcceptDrops(True)
 
         # Create and start the interactive renderer
-        self.ren_win = self.GetRenderWindow()
-        self.ren_win.SetMultiSamples(multi_samples)
+        render_window = self.GetRenderWindow()
+        if _RENDER_WINDOW_SETTABLE:
+            self.render_window = render_window
+        else:
+            self.ren_win = render_window
+        render_window.SetMultiSamples(multi_samples)
         if line_smoothing:
-            self.ren_win.LineSmoothingOn()
+            render_window.LineSmoothingOn()
         if point_smoothing:
-            self.ren_win.PointSmoothingOn()
+            render_window.PointSmoothingOn()
         if polygon_smoothing:
-            self.ren_win.PolygonSmoothingOn()
+            render_window.PolygonSmoothingOn()
 
         for renderer in self.renderers:
             renderer.view_isometric()
-            self.ren_win.AddRenderer(renderer)
+            render_window.AddRenderer(renderer)
 
         self.render_signal.connect(self._render)
         self.key_press_event_signal.connect(super().key_press_event)
@@ -256,7 +262,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         self._setup_interactor(off_screen)
 
         if off_screen:
-            self.ren_win.SetOffScreenRendering(1)
+            render_window.SetOffScreenRendering(1)
         else:
             self._setup_key_press()
 
@@ -299,7 +305,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen:
             self.iren: Any = None
         else:
-            self.iren = RenderWindowInteractor(self, interactor=self.ren_win.GetInteractor())
+            self.iren = RenderWindowInteractor(self, interactor=self.render_window.GetInteractor())
             # slows window update?
             self.iren.interactor.RemoveObservers("MouseMoveEvent")  # ty: ignore[unresolved-attribute]
             self.iren.initialize()

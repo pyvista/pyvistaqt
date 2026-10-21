@@ -10,6 +10,7 @@ import re
 import sys
 import threading
 import time
+import warnings
 import weakref
 
 import numpy as np
@@ -289,7 +290,7 @@ def test_report_capabilities_unrealized(qtbot) -> None:
         pytest.skip("Qt did not provide a GL context (macOS software GL)")
     plotter = BackgroundPlotter(show=False, off_screen=False)
     qtbot.addWidget(plotter.app_window)
-    caps = plotter.ren_win.ReportCapabilities()
+    caps = plotter.render_window.ReportCapabilities()
     assert "OpenGL" in caps
     plotter.close()
 
@@ -331,11 +332,11 @@ def test_close_removes_vtk_observers(qtbot) -> None:
     """
     plotter = BackgroundPlotter(show=False, off_screen=False)
     qtbot.addWidget(plotter.app_window)
-    ren_win = plotter.ren_win  # close() drops the plotter's own reference
-    assert ren_win.HasObserver("WindowMakeCurrentEvent")
+    render_window = plotter.render_window  # close() drops the plotter's own reference
+    assert render_window.HasObserver("WindowMakeCurrentEvent")
     plotter.close()
     for event in ("WindowMakeCurrentEvent", "WindowIsCurrentEvent", "WindowFrameEvent"):
-        assert not ren_win.HasObserver(event), event
+        assert not render_window.HasObserver(event), event
 
 
 def test_lazy_plotter_component(qtbot, monkeypatch) -> None:
@@ -354,6 +355,17 @@ def test_lazy_plotter_component(qtbot, monkeypatch) -> None:
     with pytest.raises(AttributeError):
         _ = plotter.pvqt_missing_component
     plotter.close()
+
+
+def test_render_window_no_deprecation_warning(qtbot) -> None:
+    """Setting up and closing a ``QtInteractor`` must not use the deprecated ``ren_win``."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", pyvista.PyVistaDeprecationWarning)
+        plotter = QtInteractor(off_screen=True)
+        qtbot.addWidget(plotter)
+        assert plotter.render_window is plotter.GetRenderWindow()
+        plotter.close()
+    assert plotter.render_window is None
 
 
 def test_default_surface_format(qtbot) -> None:
@@ -482,20 +494,20 @@ def test_depth_peeling_probe_keeps_application_regular(qtbot) -> None:
 def test_off_screen(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter(off_screen=False)
     qtbot.addWidget(plotter.app_window)
-    assert not plotter.ren_win.GetOffScreenRendering()
+    assert not plotter.render_window.GetOffScreenRendering()
     plotter.close()
     plotter = BackgroundPlotter(off_screen=True)
     qtbot.addWidget(plotter.app_window)
-    assert plotter.ren_win.GetOffScreenRendering()
+    assert plotter.render_window.GetOffScreenRendering()
     plotter.close()
 
 
 def test_smoothing(qtbot) -> None:  # noqa: D103
     plotter = BackgroundPlotter()
     qtbot.addWidget(plotter.app_window)
-    assert not plotter.ren_win.GetPolygonSmoothing()
-    assert not plotter.ren_win.GetLineSmoothing()
-    assert not plotter.ren_win.GetPointSmoothing()
+    assert not plotter.render_window.GetPolygonSmoothing()
+    assert not plotter.render_window.GetLineSmoothing()
+    assert not plotter.render_window.GetPointSmoothing()
     plotter.close()
     plotter = BackgroundPlotter(
         polygon_smoothing=True,
@@ -503,9 +515,9 @@ def test_smoothing(qtbot) -> None:  # noqa: D103
         point_smoothing=True,
     )
     qtbot.addWidget(plotter.app_window)
-    assert plotter.ren_win.GetPolygonSmoothing()
-    assert plotter.ren_win.GetLineSmoothing()
-    assert plotter.ren_win.GetPointSmoothing()
+    assert plotter.render_window.GetPolygonSmoothing()
+    assert plotter.render_window.GetLineSmoothing()
+    assert plotter.render_window.GetPointSmoothing()
     plotter.close()
 
 
@@ -1150,16 +1162,13 @@ def test_drag_event(tmpdir) -> None:  # noqa: D103
     mesh.save(filename)
     assert os.path.isfile(filename)  # noqa: PTH113
     plotter = BackgroundPlotter(update_app_icon=False)
-    point = QPoint(0, 0)
     data = QMimeData()
     data.setUrls([QUrl(filename)])
-    event = QDragEnterEvent(
-        point,
-        Qt.DropAction.IgnoreAction,
-        data,
-        Qt.MouseButton.NoButton,
-        Qt.KeyboardModifier.NoModifier,
-    )
+    args = (Qt.DropAction.IgnoreAction, data, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
+    try:  # Qt >= 6.12 deprecates the QPoint overload
+        event = QDragEnterEvent(QPointF(0, 0), *args)
+    except TypeError:
+        event = QDragEnterEvent(QPoint(0, 0), *args)
     plotter.dragEnterEvent(event)
     plotter.close()
 
@@ -1498,7 +1507,7 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
     print("Check skips")
     # Realizes the GL context, which the expose below otherwise waits on
     print("Ren window capabilities")
-    gpu_info_full = plotter.ren_win.ReportCapabilities()
+    gpu_info_full = plotter.render_window.ReportCapabilities()
     skip_reason = None
     if aa == "fxaa":  # Breaks on Windows and mesa
         if platform.system() == "Windows":
@@ -1539,13 +1548,13 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
         skip_reason = None
         if plotter.interactor._ctx is None:  # noqa: SLF001
             skip_reason = "Qt did not provide a GL context (macOS software GL)"
-        elif platform.machine() == "arm64" and "Apple Software Renderer" in plotter.ren_win.ReportCapabilities():
+        elif platform.machine() == "arm64" and "Apple Software Renderer" in plotter.render_window.ReportCapabilities():
             skip_reason = "Apple software GL renders a corrupted view on arm64"
         if skip_reason:
             plotter.close()
             pytest.skip(skip_reason)
     # `image` grabs the buffer as-is, and `plotter.render()` is threaded on Darwin, so draw synchronously
-    plotter.ren_win.Render()
+    plotter.render_window.Render()
     img = np.array(plotter.image)
     drawn = img.any(-1)
     del img
@@ -1565,7 +1574,7 @@ def test_make_current_from_worker_thread(qtbot) -> None:
     with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
 
-    # Call the observer rather than ren_win.MakeCurrent(): VTK's event dispatch
+    # Call the observer rather than render_window.MakeCurrent(): VTK's event dispatch
     # is not thread-safe, so going through it races whatever the GUI thread is
     # doing and access-violates on Windows for reasons the guard cannot fix.
     # This is the function the guard lives in, and the only part of a render
