@@ -40,6 +40,7 @@ from qtpy.QtWidgets import QTreeWidget
 from qtpy.QtWidgets import QVBoxLayout
 
 from pyvistaqt._vtk import vtkRenderer
+from pyvistaqt.plotting import _HAS_TRAME_COMPONENT
 from pyvistaqt.plotting import LOG
 from pyvistaqt.plotting import global_theme
 
@@ -933,9 +934,8 @@ def _trame_server(tmp_path_factory) -> None:
         import trame_pyvista  # noqa: F401, PLC0415
     plotter = pyvista.Plotter(off_screen=True)
     plotter.add_mesh(pyvista.Cone())
-    trame = getattr(plotter, "trame", None)
-    if trame is not None and hasattr(trame, "export_vtksz"):
-        trame.export_vtksz(filename=None)  # pyvista >= 0.49 (trame-pyvista)
+    if _HAS_TRAME_COMPONENT:
+        plotter.trame.export_vtksz(filename=None)
     else:
         plotter.export_vtksz(str(tmp_path_factory.mktemp("trame") / "warmup.vtksz"))
     plotter.close()
@@ -988,7 +988,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting, trame_array_ca
     dlg = plotter._qt_export_vtkjs(show=False)  # FileDialog  # noqa: SLF001
     qtbot.addWidget(dlg)  # register the dialog
 
-    if hasattr(getattr(plotter, "trame", None), "export_vtksz") or hasattr(plotter, "export_vtksz"):
+    if _HAS_TRAME_COMPONENT or hasattr(plotter, "export_vtksz"):
         ext = ".vtksz"
         filename = str(os.path.join(output_dir, f"tmp{ext}"))  # noqa: PTH118
     else:
@@ -1112,15 +1112,12 @@ def test_background_plotting_menu_bar(qtbot, plotting) -> None:  # noqa: ARG001,
         window.show()
 
     print("EDL action")
-    if hasattr(plotter.renderer, "_render_passes"):
-        obj, attr = plotter.renderer._render_passes, "_edl_pass"  # noqa: SLF001
-    else:
-        obj, attr = plotter.renderer, "edl_pass"
-    assert getattr(obj, attr, None) is None
+    render_passes = plotter.renderer._render_passes  # noqa: SLF001
+    assert render_passes._edl_pass is None  # noqa: SLF001
     plotter._edl_action.trigger()  # noqa: SLF001
-    assert getattr(obj, attr, None) is not None
-    # and now test reset
+    assert render_passes._edl_pass is not None  # noqa: SLF001
     plotter._edl_action.trigger()  # noqa: SLF001
+    assert render_passes._edl_pass is None  # noqa: SLF001
 
     print("Parallel projection action")
     assert not plotter.camera.GetParallelProjection()
