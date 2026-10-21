@@ -112,6 +112,10 @@ LOG.addHandler(logging.StreamHandler())
 # LOG = logging.getLogger(__name__)  # noqa: ERA001
 # LOG.setLevel('DEBUG')  # noqa: ERA001
 
+_PYVISTA_VERSION = tuple(int(part) for part in pyvista.__version__.split(".")[:2])
+# pyvista 0.49 moved trame to the lazily loaded ``trame`` plotter component.
+_HAS_TRAME_COMPONENT = _PYVISTA_VERSION >= (0, 49)
+
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
 
@@ -773,11 +777,9 @@ class BackgroundPlotter(QtInteractor):
         available at https://kitware.github.io/vtk-js/examples/OfflineLocalView.html
 
         """
-        # pyvista >= 0.49 moved trame to the lazily loaded ``trame-pyvista`` plugin.
-        trame = getattr(self, "trame", None)
-        if trame is not None and hasattr(trame, "export_vtksz"):
-            # pyvista >= 0.49 (trame-pyvista). ``filename`` is keyword-only
-            # on trame-pyvista 0.1.0, so wrap the FileDialog callback.
+        if _HAS_TRAME_COMPONENT:
+            # ``filename`` is keyword-only on trame-pyvista 0.1.0.
+            trame = self.trame
             callback = lambda fn: trame.export_vtksz(filename=fn)  # noqa: E731
             ext = "vtksz"
         elif hasattr(self, "export_vtksz"):
@@ -796,7 +798,7 @@ class BackgroundPlotter(QtInteractor):
         )
 
     def _toggle_edl(self) -> None:
-        if hasattr(self.renderer, "edl_pass"):
+        if self.renderer._render_passes._edl_pass is not None:  # noqa: SLF001
             return self.renderer.disable_eye_dome_lighting()
         return self.renderer.enable_eye_dome_lighting()
 
