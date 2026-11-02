@@ -90,10 +90,22 @@ of them produces symptoms that are far removed from the cause):
    Linux and Windows only: on macOS VTK's render path segfaults off the main
    thread whatever we do here, so the guard removes Qt's abort and nothing
    more.
+7. Never hold the surface wrapper past the surface's deletion. The surface
+   has to be cached: Qt's ``QOpenGLWidgetPrivate::reset()`` calls
+   ``doneCurrent()`` before deleting the context, so ``context().surface()``
+   is already None in ``aboutToBeDestroyed``. But it is a Qt-owned
+   ``QOffscreenSurface`` returned through a ``QSurface *`` (``QSurface`` is not
+   a ``QObject``), and PySide never learns of its deletion. The wrapper stays
+   "valid", stays in the binding's address-to-wrapper map, and is returned for
+   whatever C++ object Qt later allocates at that address (e.g.
+   ``QWidget.layout()`` returning a ``QOffscreenSurface``). The
+   ``aboutToBeDestroyed`` slot does not always run (see ``_forget_context``),
+   so the context's ``destroyed`` signal also drops the reference. Qt deletes
+   the surface right after the context, so it is still alive at that point.
 
 Known platform limitation (macOS, hard-won but not fixable here):
 
-7. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
+8. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
    context would use the Apple *software* renderer, because NSOpenGLContext
    crashes in ``flushBuffer``/``setView:`` there (qtbase commit a9ca1aef2291).
    Qt warns ``QOpenGLWidget is not supported on this platform.`` and this
@@ -113,10 +125,12 @@ Known platform limitation (macOS, hard-won but not fixable here):
 from collections.abc import Callable
 import contextlib
 import ctypes
+import functools
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import cast
+import weakref
 
 from qtpy.QtCore import QEvent
 from qtpy.QtCore import QRect
@@ -164,6 +178,13 @@ GL_COLOR_BUFFER_BIT = 0x00004000
 GL_LINEAR = 0x2601
 GL_DEPTH_TEST = 0x0B71
 GL_LEQUAL = 0x0203
+
+
+def _forget_widget_context(widget_ref, *_args):
+    """Drop a widget's context and surface wrappers once Qt deletes its context (invariant 7)."""
+    widget = widget_ref()
+    if widget is not None:
+        widget._forget_context()  # noqa: SLF001
 
 
 def _default_format() -> QSurfaceFormat:
@@ -463,6 +484,13 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         self._drop_fallback_context()  # the real context takes over
         self._ctx = self.context()
         self._surface = self._ctx.surface()
+        # See invariant 7. Qt deletes the surface only in reset(), right after
+        # the context, so the context's destroyed signal (unlike the surface's,
+        # it is always typed as a QObject) drops both while the surface is
+        # still alive. A weakref rather than a bound method: the slot must not
+        # pin the widget, and PySide can skip bound-method slots of a receiver
+        # that is mid-destruction.
+        self._ctx.destroyed.connect(functools.partial(_forget_widget_context, weakref.ref(self)))
         self._gl = _GLAPI(self._ctx)
         # Connections die with the context object, so a plain connect cannot
         # duplicate across context re-creation.

@@ -426,6 +426,10 @@ def test_close_after_parent_destroyed(qtbot, qapp, capsys) -> None:
     dead = weak_interactor()
     # If it outlived the window, the context must at least be forgotten.
     assert dead is None or dead._ctx is None  # noqa: SLF001
+    # The surface too: Qt deleted it, and a wrapper held past that is handed
+    # out for whatever Qt allocates at its address next (invariant 7 in rwi).
+    surface_dropped = dead is None or dead._surface is None  # noqa: SLF001
+    assert surface_dropped, "interactor still holds the deleted Qt surface"
 
 
 def test_depth_peeling(qtbot) -> None:  # noqa: D103
@@ -814,7 +818,18 @@ def test_background_plotting_close_gc(qtbot, plotting) -> None:  # noqa: ARG001
     plotter.add_mesh(pyvista.Sphere(), scalars=pyvista.Sphere().points[:, 0])
     plotter.save_camera_position()
     ref = weakref.ref(plotter)
+    realized = plotter._ctx is not None  # noqa: SLF001
     plotter.close()
+    qtbot.wait(10)
+    if realized:
+        # Qt deleted the widget's surface with the window. A wrapper held
+        # past that is handed out for whatever Qt allocates at its address
+        # next (invariant 7 in rwi), e.g. QWidget.layout() returning it.
+        # (plain bools: pytest's repr of a stale wrapper reads freed memory)
+        surface_dropped = plotter._surface is None  # noqa: SLF001
+        ctx_dropped = plotter._ctx is None  # noqa: SLF001
+        assert surface_dropped, "interactor still holds the deleted Qt surface"
+        assert ctx_dropped, "interactor still holds the deleted Qt context"
     del plotter
     # process the scheduled (deleteLater) deletions, then collect
     for _ in range(3):
