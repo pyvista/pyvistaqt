@@ -11,7 +11,7 @@ repos:
           - numpy==2.5.0
           - qtpy==2.4.3
           - pyside6==6.11.1
-          - scooby==0.11.2
+          - scooby==0.12.1
           - ipython==8.39.0
           - trame-pyvista==0.1.1
         args: [--no-python-downloads, --no-project]
@@ -20,7 +20,6 @@ repos:
     rev: v2.4.2
     hooks:
       - id: codespell
-        args: ["docs examples examples_flask pyvista tests", "*.py *.rst *.md"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

@@ -1,4 +1,4 @@
-from __future__ import annotations  # noqa: INP001, D100
+from __future__ import annotations  # noqa: D100
 
 import datetime
 import faulthandler
@@ -175,7 +175,7 @@ html_theme_options = {
         },
         {
             "name": "Contributing",
-            "url": "https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst",
+            "url": "https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md",
             "icon": "fa fa-gavel fa-fw",
         },
     ],

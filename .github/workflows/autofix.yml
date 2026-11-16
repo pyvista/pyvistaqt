@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write # gh pr create on the scheduled/workflow_dispatch path
 
 jobs:
   autofix:
@@ -19,12 +20,6 @@ jobs:
         shell: bash -el {0}
     steps:
       - uses: actions/checkout@v7
-      - name: Do a deeper checkout
-        if: github.event_name != 'pull_request'
-        run: |
-          set -x
-          git fetch origin "${{ github.event.ref }}"
-          git reset --hard "${{ github.event.ref }}"
       - uses: j178/prek-action@v2
         with:
           install-only: true
@@ -36,6 +31,8 @@ jobs:
         if: github.event_name == 'pull_request' && failure()
       - name: Create PR
         if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           prek auto-update
           git diff && git status --porcelain
@@ -50,5 +47,5 @@ jobs:
           git checkout -b $BRANCH
           git commit -am "pyvista[bot]: Update prek"
           git push origin $BRANCH
-          PR_NUM=$(gh pr create --base main --head $BRANCH --title "Update prek" --body "Created by [GitHub action](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).")
-          echo "Opened https://github.com/${{ github.repository }}/pull/${PR_NUM}" >> $GITHUB_STEP_SUMMARY
+          PR_URL=$(gh pr create --base main --head $BRANCH --title "Update prek" --body "Created by [GitHub action](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}).")
+          echo "Opened ${PR_URL}" >> $GITHUB_STEP_SUMMARY

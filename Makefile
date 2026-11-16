@@ -19,9 +19,9 @@ format:
 	@$(RUN) ruff check --fix $(PACKAGE)
 	@$(RUN) ruff format $(PACKAGE)
 
-mypy:
-	@echo "Running mypy"
-	@$(RUN) mypy
+typecheck:
+	@echo "Running ty (via prek, as in CI)"
+	@$(RUN) prek run ty --all-files
 
 coverage:
 	@echo "Running coverage"
@@ -35,4 +35,4 @@ coverage-html:
 	@echo "Reporting HTML coverage"
 	@$(RUN) pytest -v --cov $(PACKAGE) --cov-report html
 
-.PHONY: all lint format mypy coverage coverage-xml coverage-html
+.PHONY: all lint format typecheck coverage coverage-xml coverage-html

@@ -27,6 +27,10 @@ Background Plotter
 MultiPlotter
 ~~~~~~~~~~~~
 
+.. deprecated:: 0.13
+   ``MultiPlotter`` will be removed in 0.14. Use ``BackgroundPlotter`` with
+   its ``shape`` argument instead.
+
 .. rubric:: Attributes
 
 .. autoautosummary:: pyvistaqt.MultiPlotter

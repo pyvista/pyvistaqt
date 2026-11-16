@@ -4,7 +4,8 @@ description = "pyvista qt plotter"
 authors = [
     {name = "PyVista Developers", email = "info@pyvista.org"},
 ]
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.rst"
 requires-python = ">=3.10"
 keywords = ["vtk", "numpy", "plotting", "mesh", "qt"]
@@ -12,7 +13,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Information Analysis",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Operating System :: MacOS",
@@ -23,8 +23,13 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
+    # numpy and scooby floors match what pyvista 0.43.7 itself requires
+    "numpy>=1.21.0",
     "pyvista>=0.43.7",  # May 2024
-    "QtPy>=1.9.0",
+    # 2.0 added Qt6 support (QtOpenGLWidgets); 2.0.1 to 2.2.1 fail to import
+    # with PySide6 >= 6.4 ("cannot reassign member"), fixed in 2.3.0
+    "QtPy>=2.3.0",
+    "scooby>=0.5.1",
 ]
 dynamic = ["version"]
 
@@ -57,13 +62,14 @@ dev = [
 
 [project.urls]
 homepage = "https://github.com/pyvista/pyvistaqt"
+documentation = "https://qt.pyvista.org"
 
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm>=6.2,!=10.1.1", "vcs_versioning!=2.0.1"]
+requires = ["setuptools>=77", "setuptools_scm>=6.2,!=10.1.1", "vcs_versioning!=2.0.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["pyvistaqt"]
+packages = ["pyvistaqt", "pyvistaqt.data"]
 
 [tool.setuptools.package-data]
 pyvistaqt = ["data/*.png", "py.typed"]
@@ -97,7 +103,7 @@ force-single-line = true
 # Qt overrides and VTK-facing methods must use camelCase names, take fixed
 # (often unused) Qt event arguments, and pass raw GL booleans.
 "pyvistaqt/rwi.py" = ["N802", "N803", "N815", "ANN", "D102", "D105", "ARG002", "FBT003"]
-"doc/**" = ["INP001"]
+"docs/**" = ["INP001"]
 # CI helper scripts are standalone entry points whose output is the job log.
 ".github/scripts/**" = ["INP001", "T201"]
 "tests/**" = ["ANN001", "INP001", "S101", "T201", "PLR0915"]
