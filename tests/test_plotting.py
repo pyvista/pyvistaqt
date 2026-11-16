@@ -30,6 +30,7 @@ from qtpy.QtGui import QDragEnterEvent
 from qtpy.QtGui import QDropEvent
 from qtpy.QtWidgets import QAction
 from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QDoubleSpinBox
 from qtpy.QtWidgets import QFrame
 from qtpy.QtWidgets import QGestureEvent
 from qtpy.QtWidgets import QMenuBar
@@ -59,6 +60,8 @@ from pyvistaqt.editor import Editor
 from pyvistaqt.plotting import Counter
 from pyvistaqt.plotting import QTimer
 from pyvistaqt.plotting import QVTKRenderWindowInteractor
+from pyvistaqt.plotting import _ndarray_to_qpixmap
+from pyvistaqt.plotting import resample_image
 from pyvistaqt.utils import _TERMINAL_OUTPUT_GUARDS
 from pyvistaqt.utils import _check_type
 from pyvistaqt.utils import _create_menu_bar
@@ -321,6 +324,58 @@ def test_screenshot_unrealized(qtbot) -> None:
     assert img.shape == (round(size[1] * dpr), round(size[0] * dpr), 3)
     assert 0.0 < img.any(-1).mean() < 1.0  # the sphere actually rendered
     plotter.close()
+
+
+def test_window_size(qtbot, plotting) -> None:  # noqa: ARG001
+    """``window_size`` accepts a list and follows the actual window size."""
+    plotter = BackgroundPlotter(show=False, off_screen=False, window_size=[500, 400])
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.window_size == (500, 400)
+    plotter.app_window.resize(600, 450)
+    assert plotter.window_size == (600, 450)
+    plotter.window_size = [550, 420]
+    assert plotter.window_size == (550, 420)
+    plotter.close()
+
+
+@pytest.mark.parametrize("size", [10, 400, 401, 799, 800, 1024, 1200])
+def test_resample_image(size) -> None:
+    """``resample_image`` keeps the last row/column and fits non-divisible sizes."""
+    arr = np.full((size, size, 3), 255, dtype=np.uint8)
+    img = resample_image(arr)
+    max_size = min(400, size)
+    assert img.shape == (max_size, max_size, 3)
+    stride = int(np.ceil(size / max_size))
+    n = len(range(0, size, stride))
+    lo = (max_size - n) // 2
+    covered = img[lo : lo + n, lo : lo + n]
+    assert (covered == 255).all()
+    # the sampled image is centered, everything else is padding
+    assert (img == 255).sum() == covered.size
+    if n == max_size:  # fully covered: no black last row/column
+        assert (img[-1] == 255).all()
+        assert (img[:, -1] == 255).all()
+
+
+@pytest.mark.parametrize("n_channels", [3, 4])
+def test_ndarray_to_qpixmap(qapp, n_channels) -> None:  # noqa: ARG001
+    """Odd-width RGB(A) arrays must not be skewed (bytesPerLine)."""
+    img = np.zeros((5, 5, n_channels), dtype=np.uint8)
+    img[..., 0] = 255  # red
+    img[1, 3, :3] = (0, 255, 0)  # one green pixel at row 1, column 3
+    if n_channels == 4:
+        img[..., 3] = 255
+        img[4, 4, 3] = 0  # one fully transparent pixel
+    image = _ndarray_to_qpixmap(img).toImage()
+    assert (image.width(), image.height()) == (5, 5)
+    for row in range(5):
+        for col in range(5):
+            color = image.pixelColor(col, row)
+            if n_channels == 4 and (row, col) == (4, 4):
+                assert color.alpha() == 0
+                continue
+            expected = (0, 255, 0) if (row, col) == (1, 3) else (255, 0, 0)
+            assert (color.red(), color.green(), color.blue(), color.alpha()) == (*expected, 255), (row, col)
 
 
 def test_close_removes_vtk_observers(qtbot) -> None:
@@ -609,6 +664,52 @@ def test_editor(qtbot, plotting) -> None:  # noqa: ARG001, D103
     plotter.close()
 
 
+def test_editor_actor_widget(qtbot, plotting) -> None:  # noqa: ARG001
+    """The actor page controls must act on the actor, and pages must not pile up."""
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    actor = plotter.add_mesh(pyvista.Sphere())
+    editor = plotter.editor
+    editor.update()
+    n_pages = editor.stacked_widget.count()
+    assert n_pages == 2  # one renderer, one actor
+    for _ in range(3):
+        editor.update()
+    assert editor.stacked_widget.count() == n_pages
+
+    child_item = editor.tree_widget.topLevelItem(0).child(0)
+    page = editor.stacked_widget.widget(child_item.data(0, Qt.ItemDataRole.UserRole))
+    visibility = page.findChild(QCheckBox)
+    opacity = page.findChild(QDoubleSpinBox)
+    assert visibility.isChecked()
+    assert actor.GetVisibility()
+    visibility.setChecked(False)
+    assert not actor.GetVisibility()
+    visibility.setChecked(True)
+    assert actor.GetVisibility()
+    assert actor.GetProperty().GetOpacity() == 1.0
+    opacity.setValue(0.5)
+    assert actor.GetProperty().GetOpacity() == 0.5
+    plotter.close()
+
+
+def test_add_editor_without_menu_bar(qtbot, plotting) -> None:  # noqa: ARG001
+    """``add_editor`` must work without a menu bar (no menu action added)."""
+    plotter = BackgroundPlotter(show=False, off_screen=False, menu_bar=False)
+    qtbot.addWidget(plotter.app_window)
+    assert plotter.main_menu is None
+    assert plotter.editor is None
+    plotter.add_editor()
+    assert_hasattr(plotter, "editor", Editor)
+    assert plotter._editor_action is None  # noqa: SLF001
+    editor = plotter.editor
+    with wait_exposed(qtbot, editor):
+        editor.toggle()
+    assert editor.isVisible()
+    plotter.close()
+    assert not editor.isVisible()
+
+
 @pytest.fixture
 def ensure_closed():  # noqa: ANN201
     """Ensure all plotters are closed."""
@@ -785,6 +886,25 @@ def test_background_plotting_axes_scale(qtbot, show_plotter, plotting) -> None: 
     assert not dlg.isVisible()
 
 
+def test_scale_axes_dialog_no_layout_warning(qtbot, plotting) -> None:  # noqa: ARG001
+    """Building the dialog must not make Qt warn about re-parented layouts."""
+    plotter = BackgroundPlotter(show=False, off_screen=False)
+    qtbot.addWidget(plotter.app_window)
+    messages = []
+
+    def _handler(mode, context, message) -> None:  # noqa: ARG001
+        messages.append(message)
+
+    previous = QtCore.qInstallMessageHandler(_handler)
+    try:
+        dlg = plotter.scale_axes_dialog(show=False)
+    finally:
+        QtCore.qInstallMessageHandler(previous)
+    assert not [msg for msg in messages if "QLayout" in msg]
+    assert dlg.x_slider_group.parent() is not None  # adopted by the form layout
+    plotter.close()
+
+
 def test_background_plotting_camera(qtbot, plotting) -> None:  # noqa: ARG001, D103
     plotter = BackgroundPlotter(off_screen=False, title="Testing Window")
     plotter.add_mesh(pyvista.Sphere())
@@ -838,7 +958,7 @@ def test_background_plotting_close_gc(qtbot, plotting) -> None:  # noqa: ARG001
     assert ref() is None
 
 
-@pytest.mark.parametrize("other_views", [None, 0, [0]])
+@pytest.mark.parametrize("other_views", [None, 0, [0], np.array([0], dtype=np.int32)])
 def test_link_views_across_plotters(other_views) -> None:  # noqa: D103
     def _to_array(camera_position):  # noqa: ANN202
         return np.asarray([list(row) for row in camera_position])

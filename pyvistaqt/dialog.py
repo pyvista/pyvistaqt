@@ -135,14 +135,20 @@ class RangeGroup(QHBoxLayout):
 
     def __init__(
         self,
-        parent: MainWindow,
+        parent: MainWindow,  # noqa: ARG002
         callback: Any,  # noqa: ANN401
         minimum: float = 0.0,
         maximum: float = 20.0,
         value: float = 1.0,
     ) -> None:
-        """Initialize the range widget."""
-        super().__init__(parent)
+        """
+        Initialize the range widget.
+
+        ``parent`` is unused (kept for backward compatibility): the layout is
+        adopted by the widget it is added to, and passing a widget that
+        already has a layout as the parent makes Qt warn.
+        """
+        super().__init__()
         self.slider = DoubleSlider(QtCore.Qt.Orientation.Horizontal)
         self.slider.setMinimum(minimum)
         self.slider.setMaximum(maximum)
@@ -190,7 +196,6 @@ class RangeGroup(QHBoxLayout):
 class ScaleAxesDialog(QDialog):
     """Dialog to control axes scaling."""
 
-    accepted = Signal(float)
     signal_close = Signal()
 
     def __init__(self, parent: MainWindow, plotter: pv.Plotter, show: bool = True) -> None:  # noqa: FBT001, FBT002
