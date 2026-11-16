@@ -2,9 +2,9 @@
 
 from collections.abc import Callable
 import os
+from typing import TYPE_CHECKING
 from typing import Any
 
-import pyvista as pv
 from qtpy import QtCore
 from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QDialog
@@ -15,6 +15,9 @@ from qtpy.QtWidgets import QHBoxLayout
 from qtpy.QtWidgets import QSlider
 
 from .window import MainWindow
+
+if TYPE_CHECKING:
+    from .plotting import BackgroundPlotter
 
 
 class FileDialog(QFileDialog):
@@ -33,7 +36,7 @@ class FileDialog(QFileDialog):
         filefilter: list[str] | None = None,
         save_mode: bool = True,  # noqa: FBT001, FBT002
         show: bool = True,  # noqa: FBT001, FBT002
-        callback: Callable[[str], None] | None = None,
+        callback: Callable[[str], object] | None = None,
         directory: bool = False,  # noqa: FBT001, FBT002
     ) -> None:
         """Initialize the file dialog."""
@@ -198,7 +201,7 @@ class ScaleAxesDialog(QDialog):
 
     signal_close = Signal()
 
-    def __init__(self, parent: MainWindow, plotter: pv.Plotter, show: bool = True) -> None:  # noqa: FBT001, FBT002
+    def __init__(self, parent: MainWindow, plotter: "BackgroundPlotter", show: bool = True) -> None:  # noqa: FBT001, FBT002
         """Initialize the scaling dialog."""
         super().__init__(parent)
         self.setGeometry(300, 300, 50, 50)

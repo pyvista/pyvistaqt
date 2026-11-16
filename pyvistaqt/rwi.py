@@ -688,12 +688,6 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         if rw is not None:
             rw.Finalize()
 
-    def _remove_observers(self):
-        """Drop VTK's C++-side references to our bound methods."""
-        observers, self._vtk_observers = self._vtk_observers, []
-        for obj, tag in observers:
-            obj.RemoveObserver(tag)
-
     def CreateTimer(self, obj, evt):
         self._Timer.start(10)
 
@@ -842,10 +836,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         self._Iren.KeyReleaseEvent()
 
     def wheelEvent(self, ev):
-        if hasattr(ev, "delta"):  # Qt4 compat kept from the vendored source
-            self._wheel_delta += ev.delta()
-        else:
-            self._wheel_delta += ev.angleDelta().y()
+        self._wheel_delta += ev.angleDelta().y()
         if self._wheel_delta >= 120:
             self._Iren.MouseWheelForwardEvent()
             self._wheel_delta = 0
