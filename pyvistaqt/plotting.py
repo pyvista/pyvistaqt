@@ -129,8 +129,11 @@ def resample_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     x_size, y_size, _ = arr.shape
     s_x = int(np.ceil(x_size / max_size))
     s_y = int(np.ceil(y_size / max_size))
+    arr = arr[::s_x, ::s_y, :]
+    # With a non-divisible stride the result can be smaller than max_size
+    # (it is centered below) but never larger, as ceil(size / max_size)
+    # strides yield at most max_size samples.
     img = np.zeros((max_size, max_size, arr.shape[2]), dtype=arr.dtype)
-    arr = arr[0:-1:s_x, 0:-1:s_y, :]
     x_l = (max_size - arr.shape[0]) // 2
     y_l = (max_size - arr.shape[1]) // 2
     img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
@@ -145,6 +148,21 @@ def pad_image(arr: np.ndarray, max_size: int = 400) -> np.ndarray:
     y_l = (dim - arr.shape[1]) // 2
     img[x_l : arr.shape[0] + x_l, y_l : arr.shape[1] + y_l, :] = arr
     return resample_image(img, max_size=max_size)
+
+
+def _ndarray_to_qpixmap(img: np.ndarray) -> QtGui.QPixmap:
+    """Convert a C-ordered uint8 (h, w, 3 | 4) RGB(A) array to a QPixmap."""
+    fmt = QtGui.QImage.Format.Format_RGBA8888 if img.shape[2] == 4 else QtGui.QImage.Format.Format_RGB888
+    # QImage does not copy the data, so ``buf`` must outlive the QImage until
+    # QPixmap.fromImage has copied it. Pass the row stride explicitly:
+    # otherwise Qt assumes 32-bit-aligned scanlines, which skews RGB images
+    # whose width * 3 is not a multiple of 4 (and reads past the buffer).
+    # The bindings accept any buffer, but the stubs only declare bytes-likes.
+    buf = np.ascontiguousarray(img)
+    image = QtGui.QImage(buf, buf.shape[1], buf.shape[0], buf.strides[0], fmt)  # ty: ignore[no-matching-overload]
+    pixmap = QtGui.QPixmap.fromImage(image)
+    del image, buf
+    return pixmap
 
 
 @contextlib.contextmanager
@@ -419,7 +437,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         else:
             other_views = np.asarray(other_views)
 
-        if not np.issubdtype(other_views.dtype, int):
+        if not np.issubdtype(other_views.dtype, np.integer):
             msg = f"Expected `other_views` type is int, or list or tuple of ints, but {other_views.dtype} is given"
             raise TypeError(msg)
 
@@ -580,7 +598,7 @@ class BackgroundPlotter(QtInteractor):
         LOG.debug("BackgroundPlotter init start")
         _check_type(show, "show", [bool])
         _check_type(app, "app", [QApplication, type(None)])
-        _check_type(window_size, "window_size", [tuple, type(None)])
+        _check_type(window_size, "window_size", [tuple, list, type(None)])
         _check_type(off_screen, "off_screen", [bool, type(None)])
         _check_type(allow_quit_keypress, "allow_quit_keypress", [bool])
         _check_type(toolbar, "toolbar", [bool])
@@ -751,19 +769,12 @@ class BackgroundPlotter(QtInteractor):
         if not (
             isinstance(img, np.ndarray) and img.ndim == 3 and img.shape[0] == img.shape[1] and img.dtype == np.uint8 and img.shape[-1] in (3, 4)
         ) and not isinstance(img, str):
-            msg = "img must be 3D uint8 ndarray with shape[1] == shape[2] and shape[2] == 3 or 4, or str"
+            msg = "img must be 3D uint8 ndarray with shape[0] == shape[1] and shape[2] == 3 or 4, or str"
             raise ValueError(msg)
-        if isinstance(img, np.ndarray):
-            fmt_str = "Format_RGB"
-            fmt_str += ("A8" if img.shape[2] == 4 else "") + "888"
-            fmt = getattr(QtGui.QImage, fmt_str)
-            pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(img.copy(), img.shape[1], img.shape[0], fmt))
-            icon = QtGui.QIcon(pixmap)
-        else:
-            # Currently no way to check if str/path is actually correct (want to
-            # allow resource paths and the like so os.path.isfile is no good)
-            # and icon.isNull() returns False even if the path is bogus.
-            icon = QtGui.QIcon(img)
+        # For a str, there is currently no way to check if the path is actually
+        # correct (want to allow resource paths and the like so os.path.isfile
+        # is no good) and icon.isNull() returns False even if the path is bogus.
+        icon = QtGui.QIcon(_ndarray_to_qpixmap(img) if isinstance(img, np.ndarray) else img)
         self.app.setWindowIcon(icon)
 
     def _qt_screenshot(self, show: bool = True) -> FileDialog:  # noqa: FBT001, FBT002
@@ -816,7 +827,7 @@ class BackgroundPlotter(QtInteractor):
     @property
     def window_size(self) -> tuple[int, int]:
         """Return render window size."""
-        the_size = self.app_window.baseSize()
+        the_size = self.app_window.size()
         return the_size.width(), the_size.height()
 
     @window_size.setter
@@ -977,9 +988,16 @@ class BackgroundPlotter(QtInteractor):
         view_menu.addSeparator()
 
     def add_editor(self) -> None:
-        """Add the editor."""
+        """
+        Add the editor.
+
+        If the plotter has a menu bar (``menu_bar=True``), an "Editor" action
+        is added to it. Without a menu bar, the editor is still created and
+        can be shown programmatically with ``plotter.editor.toggle()``.
+        """
         self.editor = Editor(parent=self.app_window, renderers=self.renderers)
-        self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
+        if self.main_menu is not None:
+            self._editor_action = self.main_menu.addAction("Editor", self.editor.toggle)
         self.app_window.signal_close.connect(self.editor.close)
 
 
@@ -1040,7 +1058,7 @@ class MultiPlotter:
         _check_type(nrows, "nrows", [int])
         _check_type(ncols, "ncols", [int])
         _check_type(show, "show", [bool])
-        _check_type(window_size, "window_size", [tuple, type(None)])
+        _check_type(window_size, "window_size", [tuple, list, type(None)])
         _check_type(title, "title", [str, type(None)])
         _check_type(off_screen, "off_screen", [bool, type(None)])
         self.ipython = _setup_ipython()
