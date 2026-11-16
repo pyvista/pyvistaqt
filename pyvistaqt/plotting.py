@@ -50,7 +50,7 @@ import contextlib
 from functools import wraps
 import logging
 import os
-import platform
+import sys
 import time
 from typing import Any
 from typing import cast
@@ -65,13 +65,6 @@ try:
 except ImportError:  # PV < 0.40
     from pyvista.plotting.plotting import BasePlotter
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
-
-try:
-    from pyvista.core.utilities import conditional_decorator
-    from pyvista.core.utilities import threaded
-except ImportError:  # PV < 0.40
-    from pyvista.utilities import conditional_decorator
-    from pyvista.utilities import threaded
 from qtpy import QtCore
 from qtpy import QtGui
 from qtpy.QtCore import QTimer
@@ -104,19 +97,20 @@ from .utils import _setup_terminal_output_fix
 from .window import MainWindow
 
 LOG = logging.getLogger("pyvistaqt")
-LOG.setLevel(logging.CRITICAL)
-LOG.addHandler(logging.StreamHandler())
-
-
-# LOG is unused at the moment
-# LOG = logging.getLogger(__name__)  # noqa: ERA001
-# LOG.setLevel('DEBUG')  # noqa: ERA001
+LOG.addHandler(logging.NullHandler())
 
 # pyvista 0.50 deprecated ``ren_win`` and made ``render_window`` settable.
 _RENDER_WINDOW_SETTABLE = BasePlotter.render_window.fset is not None
 _PYVISTA_VERSION = tuple(int(part) for part in pyvista.__version__.split(".")[:2])
 # pyvista 0.49 moved trame to the lazily loaded ``trame`` plotter component.
 _HAS_TRAME_COMPONENT = _PYVISTA_VERSION >= (0, 49)
+
+# How ``render_signal`` reaches ``_render``. On macOS, render() defers the
+# actual render to a later event-loop iteration: rendering synchronously from
+# inside VTK callbacks (e.g., cell picking) segfaulted there (pyvista#603).
+# Elsewhere, AutoConnection renders directly when emitted on the GUI thread and
+# queues when emitted from a worker thread.
+_RENDER_CONNECTION = QtCore.Qt.ConnectionType.QueuedConnection if sys.platform == "darwin" else QtCore.Qt.ConnectionType.AutoConnection
 
 SAVE_CAM_BUTTON_TEXT = "Save Camera"
 CLEAR_CAMS_BUTTON_TEXT = "Clear Cameras"
@@ -209,6 +203,14 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         updating the render window when actors are change without
         being automatically ``Modified``.
 
+    wflags : optional
+        Qt window flags passed to the underlying ``QOpenGLWidget``.
+
+    stereo : optional
+        Not supported: this widget renders into Qt-managed framebuffer
+        objects, which have no quad-buffer stereo, so a truthy value warns
+        and is ignored. Use ``enable_stereo_render()`` for anaglyph stereo.
+
     """
 
     # Signals must be class attributes
@@ -267,7 +269,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             renderer.view_isometric()
             render_window.AddRenderer(renderer)
 
-        self.render_signal.connect(self._render)
+        self.render_signal.connect(self._render, _RENDER_CONNECTION)
         self.key_press_event_signal.connect(super().key_press_event)
 
         self.background_color = global_theme.background
@@ -384,18 +386,21 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             return
         self.render()
 
-    @conditional_decorator(threaded, platform.system() == "Darwin")
-    def render(self) -> None:
-        """Override the ``render`` method to handle threading issues."""
+    def render(self) -> None:  # ty: ignore[invalid-method-override]
+        """
+        Render the scene through ``render_signal``.
+
+        The render runs on the GUI thread: directly when called from it (or
+        deferred to the event loop on macOS), and queued when called from a
+        worker thread. Use ``_render`` to render synchronously.
+        """
         # Never render after the plotter has been closed: the render window has
         # been finalized and touching its OpenGL context can crash (see #762).
         if getattr(self, "_closed", False):
-            return None
+            return
         self._rendered = True  # Crucial for BasePlotter to know this has rendered
-        try:
-            return self.render_signal.emit()
-        except RuntimeError:  #  wrapped C/C++ object has been deleted
-            return None
+        with contextlib.suppress(RuntimeError):  # wrapped C/C++ object has been deleted
+            self.render_signal.emit()
 
     @wraps(BasePlotter.enable)
     def enable(self) -> None:
@@ -455,7 +460,8 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """
         try:
             for url in event.mimeData().urls():
-                if os.path.isfile(url.path()):  # noqa: PTH113
+                # toLocalFile, not path: on Windows path() is "/C:/..."
+                if os.path.isfile(url.toLocalFile()):  # noqa: PTH113
                     # only call accept on files
                     event.accept()
         except OSError as exception:  # pragma: no cover
@@ -466,9 +472,10 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         try:
             for url in event.mimeData().urls():
                 self._url = url
-                filename = self._url.path()
+                filename = self._url.toLocalFile()
                 if os.path.isfile(filename):  # noqa: PTH113
                     self.add_mesh(pyvista.read(filename))
+                    event.accept()
         except OSError as exception:  # pragma: no cover
             warnings.warn(f"Exception when dropping files: {exception!s}")  # noqa: B028
 
