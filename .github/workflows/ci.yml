@@ -54,7 +54,7 @@ jobs:
       - run: |
           python -c "import pyvista; print(pyvista.Report())"
         name: "Check report"
-      - run: pytest -v --cov pyvistaqt --cov-report html
+      - run: pytest -v --cov=pyvistaqt --cov-report=xml
         name: "Run Tests"
       - uses: codecov/codecov-action@v7
         if: success()
@@ -141,10 +141,10 @@ jobs:
       - run: |
           python -c "import pyvista; print(pyvista.Report())"
         name: "Check report"
-      - run: pytest -v --cov=pyvistaqt --cov-report=html -m "not slow" tests/
+      - run: pytest -v --cov=pyvistaqt --cov-report=xml -m "not slow" tests/
         name: "Run most tests" # the slow tests are *really* slow on Intel sometimes
         if: matrix.os == 'macos-15-intel'
-      - run: pytest -v --cov=pyvistaqt --cov-report=html tests/
+      - run: pytest -v --cov=pyvistaqt --cov-report=xml tests/
         name: "Run all tests"
         if: matrix.os != 'macos-15-intel'
       - uses: codecov/codecov-action@v7
@@ -189,7 +189,7 @@ jobs:
           pip install -e .
           python -c "import pyvista; print(pyvista.Report())"
         name: "Install pyvistaqt and check report"
-      - run: pytest -v --cov pyvistaqt --cov-report html
+      - run: pytest -v --cov=pyvistaqt --cov-report=xml
         name: "Run Tests"
       - uses: codecov/codecov-action@v7
         if: success()
@@ -235,7 +235,7 @@ jobs:
       - run: |
           python -c "import pyvista; print(pyvista.Report())"
         name: "Check report"
-      - run: pytest -v --cov=pyvistaqt --cov-report=html tests/
+      - run: pytest -v --cov=pyvistaqt --cov-report=xml tests/
         name: "Run Tests"
       - run: cat "$WESTON_LOG" || true
         if: always()
