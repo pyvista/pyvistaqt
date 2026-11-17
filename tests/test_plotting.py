@@ -1019,12 +1019,30 @@ def test_background_plotting_camera(qtbot, plotting) -> None:  # noqa: ARG001, D
     key_callbacks["1"][0]()
     assert plotter.camera_position == cpos
 
+    # a callback of the user's own on the same key survives clearing
+    calls = []
+    plotter.add_key_event("1", lambda: calls.append(1))
+    assert len(key_callbacks["1"]) == 2
+
     plotter.clear_camera_positions()
     # 2 because the first two buttons are save and clear
     assert len(plotter.saved_cameras_tool_bar.actions()) == 2
     assert plotter.saved_camera_positions == []
     # and the number key no longer jumps to the cleared position
-    assert "1" not in key_callbacks
+    cpos_2 = [(0.0, 0.0, 3.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    plotter.camera_position = cpos_2
+    assert len(key_callbacks["1"]) == 2
+    for callback in key_callbacks["1"]:
+        callback()
+    assert plotter.camera_position == cpos_2
+    assert calls == [1]
+
+    # saving again reuses the key binding rather than stacking another one
+    plotter.save_camera_position()
+    assert len(key_callbacks["1"]) == 2
+    plotter.camera_position = cpos
+    key_callbacks["1"][0]()
+    assert plotter.camera_position == cpos_2
     plotter.close()
 
 

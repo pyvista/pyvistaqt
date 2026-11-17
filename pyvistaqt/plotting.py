@@ -621,6 +621,8 @@ class BackgroundPlotter(QtInteractor):
         self.default_camera_tool_bar: QToolBar | None = None
         self.saved_camera_positions: list | None = None
         self.saved_cameras_tool_bar: QToolBar | None = None
+        self._saved_camera_key_positions: dict[str, list] = {}
+        self._saved_camera_keys: set[str] = set()
         # menu bar
         LOG.debug("BackgroundPlotter init menubar")
         self.main_menu: QMenuBar | None = None
@@ -895,6 +897,7 @@ class BackgroundPlotter(QtInteractor):
             return  # no camera toolbar (toolbar=False)
         self.saved_camera_positions.append(self.camera_position)
         ncam = len(self.saved_camera_positions)
+        key = str(ncam)
         # A snapshot of (position, focal_point, viewup), detached from the camera.
         camera_position = self.camera_position.to_list()
 
@@ -902,9 +905,22 @@ class BackgroundPlotter(QtInteractor):
             self.camera_position = camera_position
 
         self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
+        if ncam >= 10:
+            return
+        self._saved_camera_key_positions[key] = camera_position
+        # Each number key is bound once and looks its position up when pressed,
+        # so clear_camera_positions never has to remove a key callback (pyvista
+        # can only drop every callback on a key, including the user's own).
         # Older pyvista (e.g., 0.43) add_key_event fails on an off-screen (None) iren
-        if ncam < 10 and self.iren is not None:
-            self.add_key_event(str(ncam), load_camera_position)  # ty: ignore[invalid-argument-type]
+        if key not in self._saved_camera_keys and self.iren is not None:
+
+            def load_saved_camera_position() -> None:
+                position = self._saved_camera_key_positions.get(key)
+                if position is not None:
+                    self.camera_position = position
+
+            self.add_key_event(key, load_saved_camera_position)  # ty: ignore[invalid-argument-type]
+            self._saved_camera_keys.add(key)
 
     def clear_camera_positions(self) -> None:
         """Clear all camera positions."""
@@ -912,11 +928,8 @@ class BackgroundPlotter(QtInteractor):
             for action in self.saved_cameras_tool_bar.actions():
                 if action.text() not in [SAVE_CAM_BUTTON_TEXT, CLEAR_CAMS_BUTTON_TEXT]:
                     self.saved_cameras_tool_bar.removeAction(action)
-        # Also drop the number-key shortcuts save_camera_position installed.
-        # (As with add_key_event, older pyvista fails on an off-screen None iren.)
-        if self.saved_camera_positions and self.iren is not None:
-            for ncam in range(1, min(len(self.saved_camera_positions), 9) + 1):
-                self.clear_events_for_key(str(ncam))  # ty: ignore[invalid-argument-type]
+        # The number-key shortcuts stay bound but find nothing to load.
+        self._saved_camera_key_positions.clear()
         self.saved_camera_positions = []
 
     def _add_action(self, tool_bar: QToolBar, key: str, method: Any) -> QAction:  # noqa: ANN401
