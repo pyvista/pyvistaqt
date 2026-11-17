@@ -519,7 +519,9 @@ def test_capture_reflects_scene(qtbot, off_screen) -> None:
     # from one render of the same scene to the next
     np.testing.assert_allclose(plotter.screenshot().astype(int), img.astype(int), atol=1)
 
+    # render explicitly: before PyVista 0.50, screenshot() does not render
     plotter.renderer.SetBackground(1.0, 0.0, 0.0)
+    plotter.render()
     np.testing.assert_array_equal(plotter.screenshot()[0, 0], [255, 0, 0])
 
     frames = []
