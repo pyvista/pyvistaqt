@@ -514,7 +514,10 @@ def test_capture_reflects_scene(qtbot, off_screen) -> None:
     img = plotter.screenshot()
     assert 0.0 < img.any(-1).mean() < 1.0  # the sphere on its background
     np.testing.assert_array_equal(img[0, 0], [0, 0, 0])
-    np.testing.assert_array_equal(plotter.screenshot(), img)  # and reproducibly
+    # and reproducibly, up to the last bit: with multisampling, some Linux GPU
+    # drivers (NVIDIA) resolve a few edge pixels one gray level differently
+    # from one render of the same scene to the next
+    np.testing.assert_allclose(plotter.screenshot().astype(int), img.astype(int), atol=1)
 
     plotter.renderer.SetBackground(1.0, 0.0, 0.0)
     np.testing.assert_array_equal(plotter.screenshot()[0, 0], [255, 0, 0])
@@ -576,7 +579,11 @@ def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
         qtbot.wait(20)
     assert n_render <= len(renders) <= n_render + 3
 
-    # a paint with another cause renders, as the scene may have changed
+    # a paint with another cause renders, as the scene may have changed.
+    # Wayland delivers no paints to a window that the compositor is not
+    # showing (one that opened behind another window, say), so the paint
+    # scheduled by the last render can still be pending: flush it first.
+    plotter.grabFramebuffer()
     renders.clear()
     plotter.renderer.SetBackground(0.0, 0.0, 1.0)
     image = plotter.grabFramebuffer()
