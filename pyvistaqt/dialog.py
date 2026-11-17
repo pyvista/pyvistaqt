@@ -104,7 +104,7 @@ class DoubleSlider(QSlider):
         """Return the value range of the slider."""
         return self._max_value - self._min_value
 
-    def value(self) -> float:  # ty: ignore[invalid-method-override]
+    def value(self) -> float:  # ty: ignore[incompatible-method-override]
         """Return the value of the slider (intentionally float, not int)."""
         return float(super().value()) / self._max_int * self._value_range + self._min_value
 
@@ -229,7 +229,7 @@ class ScaleAxesDialog(QDialog):
         # pyvista wraps ``set_scale`` with functools, so ty sees the unbound
         # signature (first parameter typed ``BasePlotter``).
         self.plotter.set_scale(
-            self.x_slider_group.value,  # ty: ignore[invalid-argument-type]
+            self.x_slider_group.value,
             self.y_slider_group.value,
             self.z_slider_group.value,
         )

@@ -1,6 +1,6 @@
 """This module contains utilities routines."""  # noqa: D404
 
-from collections.abc import Iterator
+from collections.abc import Generator
 import contextlib
 import os
 import sys
@@ -101,7 +101,7 @@ def _gl_backend_for(platform_name: str) -> str | None:
 
 
 @contextlib.contextmanager
-def _declared_gl_backend() -> Iterator[None]:
+def _declared_gl_backend() -> Generator[None, None, None]:
     """
     Declare this process's render window backend for the duration of a GL probe.
 

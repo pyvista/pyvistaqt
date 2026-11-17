@@ -57,7 +57,7 @@ class Editor(QDialog):
 
         self.update()
 
-    def update(self) -> None:  # ty: ignore[invalid-method-override]
+    def update(self) -> None:  # ty: ignore[incompatible-method-override]
         """Update the internal widget list (intentionally shadows QWidget.update)."""
         self.tree_widget.clear()
         while (page := self.stacked_widget.widget(0)) is not None:

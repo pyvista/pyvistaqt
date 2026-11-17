@@ -1,6 +1,6 @@
 from __future__ import annotations  # noqa: D100
 
-import datetime
+import datetime as dt
 import faulthandler
 import os
 import sys
@@ -79,7 +79,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "PyVistaQt"
-year = datetime.date.today().year  # noqa: DTZ011
+year = dt.date.today().year  # noqa: DTZ011
 copyright = f"2017-{year}, The PyVista Developers"  # noqa: A001
 author = "Alex Kaszynski and Bane Sullivan"
 
