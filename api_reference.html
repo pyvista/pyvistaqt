@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>API Reference &#8212; PyVistaQt 0.1.0.dev1+gf78757529 documentation</title>
+    <title>API Reference &#8212; PyVistaQt 0.1.0.dev1+gddcd79535 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=ea5017e5"></script>
+    <script src="_static/documentation_options.js?v=8c4eaa97"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -52,7 +52,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1+gf78757529" />
+  <meta name="docsearch:version" content="0.1.0.dev1+gddcd79535" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -161,8 +161,8 @@
       
     
     
-    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+gf78757529 documentation - Home"/>
-    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+gf78757529 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+gddcd79535 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+gddcd79535 documentation - Home"/>
   
   
 </a></div>
@@ -770,6 +770,10 @@ impact on performance.</p></li>
 <li><p><strong>auto_update</strong> – Number of updates per second.  Useful for automatically
 updating the render window when actors are change without
 being automatically <code class="docutils literal notranslate"><span class="pre">Modified</span></code>.</p></li>
+<li><p><strong>wflags</strong> (<em>optional</em>) – Qt window flags passed to the underlying <code class="docutils literal notranslate"><span class="pre">QOpenGLWidget</span></code>.</p></li>
+<li><p><strong>stereo</strong> (<em>optional</em>) – Not supported: this widget renders into Qt-managed framebuffer
+objects, which have no quad-buffer stereo, so a truthy value warns
+and is ignored. Use <code class="docutils literal notranslate"><span class="pre">enable_stereo_render()</span></code> for anaglyph stereo.</p></li>
 </ul>
 </dd>
 </dl>
@@ -864,7 +868,10 @@ pyvista’s <cite>Plotter.link_views</cite> method.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyvistaqt.QtInteractor.render">
 <span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pyvistaqt.QtInteractor.render" title="Link to this definition">#</a></dt>
-<dd><p>Override the <code class="docutils literal notranslate"><span class="pre">render</span></code> method to handle threading issues.</p>
+<dd><p>Render the scene through <code class="docutils literal notranslate"><span class="pre">render_signal</span></code>.</p>
+<p>The render runs on the GUI thread: directly when called from it (or
+deferred to the event loop on macOS), and queued when called from a
+worker thread. Use <code class="docutils literal notranslate"><span class="pre">_render</span></code> to render synchronously.</p>
 </dd></dl>
 
 <dl class="py attribute">
