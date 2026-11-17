@@ -67,7 +67,7 @@ def _drain_qt_events() -> None:
         return
     for _ in range(2):
         app.processEvents()
-        app.sendPostedEvents(None, QEvent.DeferredDelete)
+        app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 @pytest.fixture(autouse=True)

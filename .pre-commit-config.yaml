@@ -7,7 +7,7 @@ repos:
         # are declared here for import resolution. pyvistaqt itself and rwi.py
         # are configured via [tool.ty] in pyproject.toml.
         additional_dependencies:
-          - pyvista==0.48.4
+          - pyvista==0.49.2
           - numpy==2.5.0
           - qtpy==2.4.3
           - pyside6==6.11.1

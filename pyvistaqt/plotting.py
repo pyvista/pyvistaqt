@@ -60,10 +60,11 @@ import numpy as np
 import pyvista
 from pyvista import global_theme
 
-try:
-    from pyvista.plotting import BasePlotter
-except ImportError:  # PV < 0.40
-    from pyvista.plotting.plotting import BasePlotter
+# NB: pyvista 0.48 (which the ty hook checks against) types BasePlotter's
+# forwarding methods (add_key_event, enable_trackball_style, ...) as
+# functools._Wrapped, which type checkers do not bind to the instance; the
+# ``ty: ignore``s on calls to them are for that.
+from pyvista.plotting import BasePlotter
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 from qtpy import QtCore
 from qtpy import QtGui
@@ -190,13 +191,13 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         impact on performance.
 
     line_smoothing :
-        If True, enable line smothing
+        If True, enable line smoothing
 
     point_smoothing :
-        If True, enable point smothing
+        If True, enable point smoothing
 
     polygon_smoothing :
-        If True, enable polygon smothing
+        If True, enable polygon smoothing
 
     auto_update :
         Number of updates per second.  Useful for automatically
@@ -289,7 +290,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         # Make the render timer but only activate if using auto update
         self.render_timer = QTimer(parent=parent)
         if float(auto_update) > 0.0:  # Can be False as well
-            # Spawn a thread that updates the render window.
+            # Periodically re-render the window from the GUI thread.
             # Sometimes directly modifying object data doesn't trigger
             # Modified() and upstream objects won't be updated.  This
             # ensures the render window stays updated without consuming too
@@ -325,11 +326,11 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if off_screen:
             self.iren: Any = None
         else:
-            self.iren = RenderWindowInteractor(self, interactor=self.render_window.GetInteractor())
+            self.iren = RenderWindowInteractor(self, interactor=self.GetRenderWindow().GetInteractor())
             # slows window update?
             self.iren.interactor.RemoveObservers("MouseMoveEvent")  # ty: ignore[unresolved-attribute]
             self.iren.initialize()
-            self.enable_trackball_style()
+            self.enable_trackball_style()  # ty: ignore[missing-argument]
 
     def _setup_key_press(self) -> None:
         self._observers: dict[None, None] = {}  # Map of events to observers of self.iren
@@ -555,19 +556,20 @@ class BackgroundPlotter(QtInteractor):
         impact on performance.
 
     line_smoothing : bool, optional
-        If True, enable line smothing
+        If True, enable line smoothing
 
     point_smoothing : bool, optional
-        If True, enable point smothing
+        If True, enable point smoothing
 
     polygon_smoothing : bool, optional
-        If True, enable polygon smothing
+        If True, enable polygon smoothing
 
     auto_update : float, bool, optional
-        Automatic update rate in seconds.  Useful for automatically
+        Number of updates per second.  Useful for automatically
         updating the render window when actors are change without
-        being automatically ``Modified``.  If set to ``True``, update
-        rate will be 1 second.
+        being automatically ``Modified``.  If set to ``True``, the
+        window updates once per second; ``False`` or ``0`` disables
+        automatic updates.
 
     app_window_class : None, class, optional
         A subclass of MainWindow to use when creating the app window.
@@ -619,6 +621,8 @@ class BackgroundPlotter(QtInteractor):
         self.default_camera_tool_bar: QToolBar | None = None
         self.saved_camera_positions: list | None = None
         self.saved_cameras_tool_bar: QToolBar | None = None
+        self._saved_camera_key_positions: dict[str, list] = {}
+        self._saved_camera_keys: set[str] = set()
         # menu bar
         LOG.debug("BackgroundPlotter init menubar")
         self.main_menu: QMenuBar | None = None
@@ -660,7 +664,7 @@ class BackgroundPlotter(QtInteractor):
         vlayout.addWidget(self)
         self.frame.setLayout(vlayout)
         self.app_window.setCentralWidget(self.frame)
-        self.app_window.grabGesture(QtCore.Qt.PinchGesture)
+        self.app_window.grabGesture(QtCore.Qt.GestureType.PinchGesture)
         self.app_window.signal_gesture.connect(self.gesture_event)
         self.app_window.signal_close.connect(self._close)
 
@@ -699,7 +703,7 @@ class BackgroundPlotter(QtInteractor):
         """
         super().reset_key_events()
         if self.allow_quit_keypress:
-            self.add_key_event("q", self.close)
+            self.add_key_event("q", self.close)  # ty: ignore[invalid-argument-type]
 
     def scale_axes_dialog(self, show: bool = True) -> ScaleAxesDialog:  # noqa: FBT001, FBT002
         """Open scale axes dialog."""
@@ -789,7 +793,6 @@ class BackgroundPlotter(QtInteractor):
             self.app_window,
             filefilter=["Image File (*.png)", "JPEG (*.jpeg)"],
             show=show,
-            directory=bool(os.getcwd()),  # noqa: PTH109
             callback=self.screenshot,
         )
 
@@ -805,19 +808,13 @@ class BackgroundPlotter(QtInteractor):
             # ``filename`` is keyword-only on trame-pyvista 0.1.0.
             trame = self.trame
             callback = lambda fn: trame.export_vtksz(filename=fn)  # noqa: E731
-            ext = "vtksz"
-        elif hasattr(self, "export_vtksz"):
-            callback = self.export_vtksz  # pyvista 0.40 - 0.48
-            ext = "vtksz"
         else:
-            callback = self.export_vtkjs  # pre-v0.40
-            ext = "vtkjs"
+            callback = self.export_vtksz  # pyvista 0.40 to 0.48
 
         return FileDialog(
             self.app_window,
-            filefilter=[f"VTK.js File(*.{ext})"],
+            filefilter=["VTK.js File(*.vtksz)"],
             show=show,
-            directory=bool(os.getcwd()),  # noqa: PTH109
             callback=callback,
         )
 
@@ -828,12 +825,12 @@ class BackgroundPlotter(QtInteractor):
 
     def _toggle_parallel_projection(self) -> None:
         if self.camera.GetParallelProjection():
-            return self.disable_parallel_projection()
-        return self.enable_parallel_projection()
+            return self.disable_parallel_projection()  # ty: ignore[missing-argument]
+        return self.enable_parallel_projection()  # ty: ignore[missing-argument]
 
     @property
     def window_size(self) -> tuple[int, int]:
-        """Return render window size."""
+        """Return the application window size."""
         the_size = self.app_window.size()
         return the_size.width(), the_size.height()
 
@@ -853,14 +850,15 @@ class BackgroundPlotter(QtInteractor):
         if self._ctx is None:
             # Match resizeGL, which sizes VTK in device pixels.
             dpr = self.devicePixelRatioF()
-            self.render_window.SetSize(*(max(1, round(s * dpr)) for s in window_size))
-            self.render_window.SetDPI(round(72 * dpr))
+            render_window = self.GetRenderWindow()
+            render_window.SetSize(*(max(1, round(s * dpr)) for s in window_size))
+            render_window.SetDPI(round(72 * dpr))
 
     def __del__(self) -> None:  # pragma: no cover
         """Delete the qt plotter."""
         self.close()
 
-    def add_callback(self, func: Callable, interval: int = 1000, count: int | None = None) -> None:
+    def add_callback(self, func: Callable, interval: int = 1000, count: int | None = None) -> QTimer:
         """
         Add a function that can update the scene in the background.
 
@@ -874,34 +872,55 @@ class BackgroundPlotter(QtInteractor):
             Number of times `func` will be called. If None,
             `func` will be called until the main window is closed.
 
+        Returns
+        -------
+        timer : QTimer
+            The timer that calls ``func``. Call its ``stop()`` method to stop
+            the callbacks early.
+
         """
-        self._callback_timer = QTimer(parent=self.app_window)
-        self._callback_timer.timeout.connect(func)
-        self._callback_timer.start(interval)
-        self.app_window.signal_close.connect(self._callback_timer.stop)
+        timer = QTimer(parent=self.app_window)
+        timer.timeout.connect(func)
+        timer.start(interval)
+        self.app_window.signal_close.connect(timer.stop)
         if count is not None:
             counter = Counter(count)
-            counter.signal_finished.connect(self._callback_timer.stop)
-            self._callback_timer.timeout.connect(counter.decrease)
+            counter.signal_finished.connect(timer.stop)
+            timer.timeout.connect(counter.decrease)
             self.counters.append(counter)
+        self._callback_timer = timer  # the most recent one, kept for backward compat
+        return timer
 
     def save_camera_position(self) -> None:
         """Save camera position to saved camera menu for recall."""
-        if self.saved_camera_positions is not None:
-            self.camera_position: Any
-            self.saved_camera_positions.append(self.camera_position)
-            ncam = len(self.saved_camera_positions)
-        if self.camera_position is not None:
-            camera_position: Any = self.camera_position[:]  # py2.7 copy compatibility
+        if self.saved_camera_positions is None or self.saved_cameras_tool_bar is None:
+            return  # no camera toolbar (toolbar=False)
+        self.saved_camera_positions.append(self.camera_position)
+        ncam = len(self.saved_camera_positions)
+        key = str(ncam)
+        # A snapshot of (position, focal_point, viewup), detached from the camera.
+        camera_position = self.camera_position.to_list()
 
-        if self.saved_cameras_tool_bar is not None:
+        def load_camera_position() -> None:
+            self.camera_position = camera_position
 
-            def load_camera_position() -> None:
-                self.camera_position = camera_position
+        self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
+        if ncam >= 10:
+            return
+        self._saved_camera_key_positions[key] = camera_position
+        # Each number key is bound once and looks its position up when pressed,
+        # so clear_camera_positions never has to remove a key callback (pyvista
+        # can only drop every callback on a key, including the user's own).
+        # Older pyvista (e.g., 0.43) add_key_event fails on an off-screen (None) iren
+        if key not in self._saved_camera_keys and self.iren is not None:
 
-            self.saved_cameras_tool_bar.addAction(f"Cam {ncam}", load_camera_position)
-            if ncam < 10:
-                self.add_key_event(str(ncam), load_camera_position)
+            def load_saved_camera_position() -> None:
+                position = self._saved_camera_key_positions.get(key)
+                if position is not None:
+                    self.camera_position = position
+
+            self.add_key_event(key, load_saved_camera_position)  # ty: ignore[invalid-argument-type]
+            self._saved_camera_keys.add(key)
 
     def clear_camera_positions(self) -> None:
         """Clear all camera positions."""
@@ -909,6 +928,8 @@ class BackgroundPlotter(QtInteractor):
             for action in self.saved_cameras_tool_bar.actions():
                 if action.text() not in [SAVE_CAM_BUTTON_TEXT, CLEAR_CAMS_BUTTON_TEXT]:
                     self.saved_cameras_tool_bar.removeAction(action)
+        # The number-key shortcuts stay bound but find nothing to load.
+        self._saved_camera_key_positions.clear()
         self.saved_camera_positions = []
 
     def _add_action(self, tool_bar: QToolBar, key: str, method: Any) -> QAction:  # noqa: ANN401
@@ -971,7 +992,7 @@ class BackgroundPlotter(QtInteractor):
         tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
         tool_menu.addAction(
             "Enable Cell Picking (visible)",
-            lambda: self.enable_cell_picking(through=False),
+            lambda: self.enable_cell_picking(through=False),  # ty: ignore[missing-argument]
         )
 
         cam_menu = view_menu.addMenu("Camera")

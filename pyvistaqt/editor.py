@@ -1,5 +1,6 @@
 """This module contains the Qt scene editor."""  # noqa: D404
 
+from collections.abc import Iterable
 import weakref
 
 from pyvista import Renderer
@@ -23,7 +24,7 @@ from .window import MainWindow
 class Editor(QDialog):
     """Basic scene editor."""
 
-    def __init__(self, parent: MainWindow, renderers: list[Renderer]) -> None:
+    def __init__(self, parent: MainWindow, renderers: Iterable[Renderer]) -> None:
         """Initialize the Editor."""
         super().__init__(parent=parent)
         self.renderers = renderers

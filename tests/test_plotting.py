@@ -271,7 +271,7 @@ def test_mouse_interactions(qtbot, debug_log_level) -> None:  # noqa: D103,ARG00
     point = QPoint(0, 0)
     if not BAD_INTERACTION:
         qtbot.mouseMove(interactor, point)
-        qtbot.mouseClick(interactor, QtCore.Qt.LeftButton)
+        qtbot.mouseClick(interactor, QtCore.Qt.MouseButton.LeftButton)
     plotter.close()
 
 
@@ -1012,9 +1012,56 @@ def test_background_plotting_camera(qtbot, plotting) -> None:  # noqa: ARG001, D
     plotter.saved_cameras_tool_bar.actions()[2].trigger()
     assert plotter.camera_position == cpos
 
+    # the number key shortcut loads the saved position too
+    key_callbacks = plotter.iren._key_press_event_callbacks  # noqa: SLF001
+    assert len(key_callbacks["1"]) == 1
+    plotter.camera_position = [(0.0, 0.0, 3.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    key_callbacks["1"][0]()
+    assert plotter.camera_position == cpos
+
+    # a callback of the user's own on the same key survives clearing
+    calls = []
+    plotter.add_key_event("1", lambda: calls.append(1))
+    assert len(key_callbacks["1"]) == 2
+
     plotter.clear_camera_positions()
     # 2 because the first two buttons are save and clear
     assert len(plotter.saved_cameras_tool_bar.actions()) == 2
+    assert plotter.saved_camera_positions == []
+    # and the number key no longer jumps to the cleared position
+    cpos_2 = [(0.0, 0.0, 3.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+    plotter.camera_position = cpos_2
+    assert len(key_callbacks["1"]) == 2
+    for callback in key_callbacks["1"]:
+        callback()
+    assert plotter.camera_position == cpos_2
+    assert calls == [1]
+
+    # saving again reuses the key binding rather than stacking another one
+    plotter.save_camera_position()
+    assert len(key_callbacks["1"]) == 2
+    plotter.camera_position = cpos
+    key_callbacks["1"][0]()
+    assert plotter.camera_position == cpos_2
+    plotter.close()
+
+
+def test_background_plotting_camera_off_screen_or_no_toolbar(qtbot, plotting) -> None:  # noqa: ARG001
+    """Saving and clearing cameras works off screen (no iren) and without a toolbar."""
+    plotter = BackgroundPlotter(off_screen=True, update_app_icon=False)
+    assert plotter.iren is None
+    plotter.save_camera_position()
+    assert len(plotter.saved_camera_positions) == 1
+    assert len(plotter.saved_cameras_tool_bar.actions()) == 3
+    plotter.clear_camera_positions()
+    assert plotter.saved_camera_positions == []
+    assert len(plotter.saved_cameras_tool_bar.actions()) == 2
+    plotter.close()
+
+    plotter = BackgroundPlotter(off_screen=False, toolbar=False, update_app_icon=False)
+    plotter.save_camera_position()  # a no-op without the camera toolbar
+    assert plotter.saved_camera_positions is None
+    assert "1" not in plotter.iren._key_press_event_callbacks  # noqa: SLF001
     plotter.close()
 
 
@@ -1216,12 +1263,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting, trame_array_ca
     dlg = plotter._qt_export_vtkjs(show=False)  # FileDialog  # noqa: SLF001
     qtbot.addWidget(dlg)  # register the dialog
 
-    if _HAS_TRAME_COMPONENT or hasattr(plotter, "export_vtksz"):
-        ext = ".vtksz"
-        filename = str(os.path.join(output_dir, f"tmp{ext}"))  # noqa: PTH118
-    else:
-        ext = ".vtkjs"
-        filename = str(os.path.join(output_dir, "tmp"))  # noqa: PTH118
+    filename = str(os.path.join(output_dir, "tmp.vtksz"))  # noqa: PTH118
     dlg.selectFile(filename)
 
     # show the dialog
@@ -1239,10 +1281,7 @@ def test_background_plotter_export_vtkjs(qtbot, tmpdir, plotting, trame_array_ca
     plotter.close()
     assert not window.isVisible()
 
-    if ext == ".vtksz":
-        assert os.path.isfile(filename)  # noqa: PTH113
-    else:
-        assert os.path.isfile(filename + ext)  # noqa: PTH113
+    assert os.path.isfile(filename)  # noqa: PTH113
 
 
 def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D103
@@ -1257,7 +1296,7 @@ def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D1
     # check_gc on runners slow enough for the orbit to outlive the test
     # (macOS Intel), so wait (best effort) for the threads the orbit spawned.
     for thread in set(threading.enumerate()) - threads_before:
-        # Only pyvista's render/orbit worker threads (plain Thread) can hold
+        # Only pyvista's orbit worker thread (a plain Thread) can hold
         # the plotter; a stray stdlib threading.Timer from test infrastructure
         # never does and may outlive the wait, so skip it.
         if isinstance(thread, threading.Timer):
@@ -1275,7 +1314,6 @@ def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D1
                 break
 
 
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="#508")
 def test_background_plotting_toolbar(qtbot, plotting) -> None:  # noqa: ARG001, D103
     with pytest.raises(TypeError, match="toolbar"):  # noqa: PT012
         p = BackgroundPlotter(off_screen=False, toolbar="foo")
@@ -1503,9 +1541,30 @@ def test_background_plotting_add_callback(qtbot, monkeypatch, plotting) -> None:
                 pass
         assert not callback_timer.isActive()  # counter stops the callback
 
-    plotter.add_callback(mycallback, interval=200)
+    returned_timer = plotter.add_callback(mycallback, interval=200)
     callback_timer = plotter._callback_timer  # QTimer  # noqa: SLF001
+    assert returned_timer is callback_timer
     assert callback_timer.isActive()
+
+    # Each call returns its own timer, so an earlier one can still be stopped
+    # after a later add_callback replaced ``_callback_timer``.
+    calls = [0]
+
+    def count_calls() -> None:
+        calls[0] += 1
+
+    first_timer = plotter.add_callback(count_calls, interval=10)
+    later_timer = plotter.add_callback(lambda: None, interval=200)
+    assert plotter._callback_timer is later_timer  # noqa: SLF001
+    assert first_timer is not later_timer
+    assert first_timer.isActive()
+    qtbot.waitUntil(lambda: calls[0] > 0, timeout=10000)
+    first_timer.stop()
+    assert not first_timer.isActive()
+    assert later_timer.isActive()
+    n_calls = calls[0]
+    qtbot.wait(100)
+    assert calls[0] == n_calls  # stopped: no more callbacks
 
     if not BAD_INTERACTION:
         print("ensure that self.callback_timer send a signal")
