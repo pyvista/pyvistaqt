@@ -345,6 +345,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         self._surface = None
         self._gl = None
         self._in_paint = False  # C++ InPaint
+        self._frame_fresh = False  # VTK's framebuffer holds a frame not yet blitted
         # Lazy offscreen (context, surface) servicing GL queries before the
         # widget is realized; dropped as soon as initializeGL runs. Creation
         # is disallowed during teardown: Finalize on a never-realized window
@@ -491,6 +492,9 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             # rendered to the back buffer only: not meant to be shown yet
             return
         if not self._in_paint:
+            # The paint this schedules only has to show the frame VTK just
+            # rendered, not render it a second time.
+            self._frame_fresh = self._ctx is not None
             self.update()
 
     def _set_symbol_loader(self, rw):
@@ -592,6 +596,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             iren.InvokeEvent("ConfigureEvent")
         else:
             rw.SetSize(dw, dh)
+        self._frame_fresh = False  # rendered at the old size
         # NOTE: no self.screen()/SetScreenSize here. VTK only uses the screen
         # size for fullscreen render windows (not applicable to a widget), and
         # PySide's wrapper for QWidget.screen() can end up owning -- and later
@@ -610,12 +615,14 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         st.Reset()  # Qt touched GL since the last VTK call: resync the cache
         st.Push()
         st.vtkglDepthFunc(GL_LEQUAL)
-        # Unlike C++ QVTKOpenGLNativeWidget (which skips the VTK render when the
-        # paint was scheduled by a finished render's WindowFrameEvent), always
-        # render: pyvista mutates the scene (cameras, actors) without asking the
-        # widget to repaint, so a skipped render here shows a stale frame. This
-        # matches the vendored QVTKRenderWindowInteractor's paintEvent behavior.
-        if not self._in_paint:
+        # Like C++ QVTKOpenGLNativeWidget, skip the VTK render when this paint
+        # was scheduled by a render that just finished (``_cb_frame``): its
+        # frame is already in VTK's framebuffer and only needs the blit below.
+        # Any other paint (expose, resize, ``update()``) renders, because
+        # pyvista mutates the scene (cameras, actors) without asking the widget
+        # to repaint, and a skipped render there would show a stale frame.
+        fresh, self._frame_fresh = self._frame_fresh, False
+        if not self._in_paint and not fresh:
             self._in_paint = True
             try:
                 iren = rw.GetInteractor()

@@ -492,6 +492,59 @@ def test_wflags(qtbot) -> None:
     plotter.close()
 
 
+def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
+    """
+    A render is shown by blitting it, not by rendering the scene a second time.
+
+    A finished VTK render schedules a paint to put its frame on screen. That
+    paint used to render again, so every ``render()`` and every interaction
+    cost two VTK renders. Paints with any other cause must still render.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(off_screen=False, update_app_icon=False, auto_update=False, window_size=(300, 300))
+    qtbot.addWidget(plotter.app_window)
+    plotter.set_background("black")
+    with wait_exposed(qtbot, plotter.app_window):
+        plotter.app_window.show()
+    qtbot.wait(10)  # let pending paints go through
+    if plotter._ctx is None:  # noqa: SLF001
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    renders = []
+    plotter.renderer.AddObserver("StartEvent", lambda *_: renders.append(1))
+
+    # the paint scheduled by a finished render shows that render's frame
+    plotter.renderer.SetBackground(1.0, 0.0, 0.0)
+    plotter._render()  # noqa: SLF001
+    assert len(renders) == 1
+    image = plotter.grabFramebuffer()  # paints synchronously
+    assert len(renders) == 1
+    color = image.pixelColor(image.width() // 2, image.height() // 2)
+    assert (color.red(), color.green(), color.blue()) == (255, 0, 0)
+
+    # the scheduled paint itself does not render again either
+    renders.clear()
+    plotter.render()
+    qtbot.wait(50)
+    assert len(renders) == 1
+
+    # a paint with another cause renders, as the scene may have changed
+    renders.clear()
+    plotter.renderer.SetBackground(0.0, 0.0, 1.0)
+    image = plotter.grabFramebuffer()
+    assert len(renders) == 1
+    color = image.pixelColor(image.width() // 2, image.height() // 2)
+    assert (color.red(), color.green(), color.blue()) == (0, 0, 255)
+
+    # a frame rendered before a resize is not reused at the new size
+    renders.clear()
+    plotter._render()  # noqa: SLF001
+    plotter.app_window.resize(360, 340)
+    qtbot.wait(50)
+    assert len(renders) >= 2
+    plotter.close()
+
+
 def test_render_returns_none_and_renders(qtbot, plotting, monkeypatch) -> None:  # noqa: ARG001
     """
     ``render`` returns None everywhere and the scene is rendered on the GUI thread.
