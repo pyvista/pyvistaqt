@@ -34,7 +34,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          prek auto-update
+          prek update
           git diff && git status --porcelain
           if [[ ! $(git status --porcelain) ]]; then
             echo "No changes to commit"
