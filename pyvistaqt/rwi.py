@@ -53,9 +53,12 @@ of them produces symptoms that are far removed from the cause):
    widget composites black (reproducible with a plain magenta-clearing
    ``QOpenGLWidget``; the format *content* is irrelevant). Setting the default
    in ``__init__`` also covers applications that created the ``QApplication``
-   themselves. The default format additionally requests desktop OpenGL
-   explicitly, since Wayland/EGL may otherwise return a GLES context whose
-   GLSL rejects VTK's ``#version 150`` shaders.
+   themselves. ``__init__`` installs our format only when the current default
+   is not already usable by VTK (``_is_suitable_format``: desktop OpenGL, core
+   profile, >= 3.2), so a host application's own suitable default (sample
+   count, buffer sizes, newer version) is left alone. Our format additionally
+   requests desktop OpenGL explicitly, since Wayland/EGL may otherwise return
+   a GLES context whose GLSL rejects VTK's ``#version 150`` shaders.
 3. ``paintGL`` must *always* render, unlike C++
    ``QVTKOpenGLNativeWidget::paintGL`` which skips the VTK render for paints
    scheduled by a finished render's ``WindowFrameEvent``. pyvista mutates the
@@ -130,6 +133,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import cast
+import warnings
 import weakref
 
 from qtpy.QtCore import QEvent
@@ -204,6 +208,21 @@ def _default_format() -> QSurfaceFormat:
     fmt.setStencilBufferSize(0)
     fmt.setSamples(0)  # MSAA happens in VTK's FBOs, not the Qt context
     return fmt
+
+
+def _is_suitable_format(fmt: QSurfaceFormat) -> bool:
+    """
+    Return whether VTK can render with contexts created from ``fmt``.
+
+    VTK needs desktop OpenGL requested explicitly (``DefaultRenderableType``,
+    which a fresh default format reports, may give GLES on Wayland/EGL), the
+    core profile, and version 3.2 or newer.
+    """
+    return (
+        fmt.renderableType() == QSurfaceFormat.RenderableType.OpenGL
+        and fmt.profile() == QSurfaceFormat.OpenGLContextProfile.CoreProfile
+        and (fmt.majorVersion(), fmt.minorVersion()) >= (3, 2)
+    )
 
 
 class _GLAPI:
@@ -281,7 +300,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
     }
 
     def __init__(self, parent=None, **kw):
-        """Initialize the widget and its render window (``rw``/``iren`` kwargs)."""
+        """Initialize the widget and its render window (``rw``/``iren``/``wflags``/``stereo`` kwargs)."""
         # The GL format must be set as the process-wide default: a per-widget
         # ``setFormat`` makes the widget's context incompatible with the
         # top-level window's share context on Wayland and the widget then
@@ -289,9 +308,23 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # QOpenGLWidget breaks with per-widget setFormat there). Setting the
         # default is effective as long as the top-level window has not been
         # created yet, so this works even when the user already made the
-        # QApplication. Same requirement as C++ QVTKOpenGLNativeWidget.
-        QSurfaceFormat.setDefaultFormat(_default_format())
-        QOpenGLWidget.__init__(self, parent)
+        # QApplication. Same requirement as C++ QVTKOpenGLNativeWidget. A
+        # default the application already chose is kept if VTK can use it.
+        if not _is_suitable_format(QSurfaceFormat.defaultFormat()):
+            QSurfaceFormat.setDefaultFormat(_default_format())
+        if kw.get("stereo"):
+            # The widget renders into Qt-managed FBOs, which have no
+            # quad-buffer (left/right back buffer) stereo path.
+            warnings.warn(
+                "stereo is not supported by this widget and is ignored; use the plotter's enable_stereo_render() for anaglyph stereo instead",
+                UserWarning,
+                stacklevel=2,
+            )
+        wflags = kw.get("wflags")
+        if wflags is None:
+            QOpenGLWidget.__init__(self, parent)
+        else:
+            QOpenGLWidget.__init__(self, parent, wflags)
         self.setUpdateBehavior(QOpenGLWidget.UpdateBehavior.NoPartialUpdate)
         self.setMouseTracking(True)  # get all mouse events
         self.setFocusPolicy(Qt.FocusPolicy.WheelFocus)

@@ -442,6 +442,99 @@ def test_default_surface_format(qtbot) -> None:
     plotter.close()
 
 
+def test_default_surface_format_respects_application(qtbot) -> None:
+    """Our format replaces an unsuitable default but not a suitable one the application chose."""
+    from qtpy.QtGui import QSurfaceFormat  # noqa: PLC0415
+
+    from pyvistaqt.rwi import _default_format  # noqa: PLC0415
+    from pyvistaqt.rwi import _is_suitable_format  # noqa: PLC0415
+
+    # Earlier tests have already installed our format, so start from what a
+    # fresh application reports, and restore whatever was there afterward.
+    previous = QSurfaceFormat.defaultFormat()
+    try:
+        QSurfaceFormat.setDefaultFormat(QSurfaceFormat())
+        assert not _is_suitable_format(QSurfaceFormat.defaultFormat())
+        plotter = QtInteractor(off_screen=True)
+        qtbot.addWidget(plotter)
+        plotter.close()
+        assert QSurfaceFormat.defaultFormat() == _default_format()
+
+        app_format = QSurfaceFormat()
+        app_format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
+        app_format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+        app_format.setVersion(4, 1)
+        app_format.setSamples(2)
+        QSurfaceFormat.setDefaultFormat(app_format)
+        plotter = QtInteractor(off_screen=True)
+        qtbot.addWidget(plotter)
+        plotter.close()
+        fmt = QSurfaceFormat.defaultFormat()
+        assert fmt == app_format
+        assert fmt.samples() == 2
+    finally:
+        QSurfaceFormat.setDefaultFormat(previous)
+
+
+def test_stereo_warns(qtbot) -> None:
+    """Quad-buffer stereo is not available in the FBO widget, so asking for it warns."""
+    with pytest.warns(UserWarning, match="stereo is not supported"):
+        plotter = QtInteractor(off_screen=True, stereo=True)
+    qtbot.addWidget(plotter)
+    plotter.close()
+
+
+def test_wflags(qtbot) -> None:
+    """``wflags`` reaches the QOpenGLWidget."""
+    plotter = QtInteractor(off_screen=True, wflags=Qt.WindowType.Tool)
+    qtbot.addWidget(plotter)
+    assert plotter.windowType() == Qt.WindowType.Tool
+    plotter.close()
+
+
+def test_render_returns_none_and_renders(qtbot, plotting, monkeypatch) -> None:  # noqa: ARG001
+    """
+    ``render`` returns None everywhere and the scene is rendered on the GUI thread.
+
+    On macOS the render is deferred to the event loop (rendering synchronously
+    from inside VTK callbacks segfaulted there), without spawning a thread.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(off_screen=False, update_app_icon=False, auto_update=False)
+    qtbot.addWidget(plotter.app_window)
+    plotter.add_mesh(pyvista.Sphere())
+    with wait_exposed(qtbot, plotter.app_window):
+        plotter.app_window.show()
+    qtbot.wait(10)  # let pending paints go through
+
+    # The slot calls BasePlotter.render, which renders the render window.
+    from pyvistaqt import plotting as plotting_module  # noqa: PLC0415
+
+    base_render = plotting_module.BasePlotter.render
+    calls: list[bool] = []
+
+    def counting_render(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        calls.append(threading.current_thread() is threading.main_thread())
+        return base_render(self, *args, **kwargs)
+
+    monkeypatch.setattr(plotting_module.BasePlotter, "render", counting_render)
+    render_window = plotter.render_window
+    ends: list[bool] = []
+    tag = render_window.AddObserver("EndEvent", lambda *_: ends.append(True))
+    threads_before = threading.active_count()
+    try:
+        assert plotter.render() is None
+        assert threading.active_count() <= threads_before  # no thread spawned
+        if sys.platform == "darwin":
+            assert calls == []  # deferred, not rendered synchronously
+        qtbot.waitUntil(lambda: bool(calls) and bool(ends))
+    finally:
+        render_window.RemoveObserver(tag)
+    assert all(calls)  # on the GUI thread
+    plotter.close()
+
+
 def test_close_after_parent_destroyed(qtbot, qapp, capsys) -> None:
     """
     A child interactor must survive its context dying with its parent.
@@ -1160,8 +1253,7 @@ def test_background_plotting_orbit(qtbot, plotting) -> None:  # noqa: ARG001, D1
     plotter.orbit_on_path(threaded=True, step=0.0)
     plotter.close()
     # Released pyvista's threaded orbit is fire-and-forget and close() does
-    # not stop it (pyvista#8804 does); on macOS every render() also spawns a
-    # thread. A still-running thread's frame holds the plotter, tripping
+    # not stop it (pyvista#8804 does). A still-running thread's frame holds the plotter, tripping
     # check_gc on runners slow enough for the orbit to outlive the test
     # (macOS Intel), so wait (best effort) for the threads the orbit spawned.
     for thread in set(threading.enumerate()) - threads_before:
@@ -1277,16 +1369,24 @@ def test_drop_event(tmpdir, qtbot) -> None:  # noqa: D103
     with wait_exposed(qtbot, plotter.app_window):
         plotter.app_window.show()
     point = QPointF(0, 0)
-    data = QMimeData()
-    data.setUrls([QUrl(filename)])
-    event = QDropEvent(
-        point,
-        Qt.DropAction.IgnoreAction,
-        data,
-        Qt.MouseButton.NoButton,
-        Qt.KeyboardModifier.NoModifier,
-    )
-    plotter.dropEvent(event)
+    for url, loaded in (
+        (QUrl.fromLocalFile(filename + ".missing"), False),
+        (QUrl.fromLocalFile(filename), True),  # a file:// URL, as a real drop delivers
+    ):
+        n_actors = len(plotter.renderer.actors)
+        data = QMimeData()
+        data.setUrls([url])
+        event = QDropEvent(
+            point,
+            Qt.DropAction.IgnoreAction,
+            data,
+            Qt.MouseButton.NoButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        event.ignore()
+        plotter.dropEvent(event)
+        assert event.isAccepted() is loaded
+        assert len(plotter.renderer.actors) == n_actors + loaded
     plotter.close()
 
 
@@ -1297,14 +1397,20 @@ def test_drag_event(tmpdir) -> None:  # noqa: D103
     mesh.save(filename)
     assert os.path.isfile(filename)  # noqa: PTH113
     plotter = BackgroundPlotter(update_app_icon=False)
-    data = QMimeData()
-    data.setUrls([QUrl(filename)])
-    args = (Qt.DropAction.IgnoreAction, data, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
-    try:  # Qt >= 6.12 deprecates the QPoint overload
-        event = QDragEnterEvent(QPointF(0, 0), *args)
-    except TypeError:
-        event = QDragEnterEvent(QPoint(0, 0), *args)
-    plotter.dragEnterEvent(event)
+    for url, accepted in (
+        (QUrl.fromLocalFile(filename + ".missing"), False),
+        (QUrl.fromLocalFile(filename), True),  # a file:// URL, as a real drag delivers
+    ):
+        data = QMimeData()
+        data.setUrls([url])
+        args = (Qt.DropAction.IgnoreAction, data, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
+        try:  # Qt >= 6.12 deprecates the QPoint overload
+            event = QDragEnterEvent(QPointF(0, 0), *args)
+        except TypeError:
+            event = QDragEnterEvent(QPoint(0, 0), *args)
+        event.ignore()
+        plotter.dragEnterEvent(event)
+        assert event.isAccepted() is accepted
     plotter.close()
 
 
@@ -1688,7 +1794,7 @@ def test_background_plotting_plots(qtbot, plotting, ensure_closed, aa) -> None: 
         if skip_reason:
             plotter.close()
             pytest.skip(skip_reason)
-    # `image` grabs the buffer as-is, and `plotter.render()` is threaded on Darwin, so draw synchronously
+    # `image` grabs the buffer as-is, and `plotter.render()` is deferred on Darwin, so draw synchronously
     plotter.render_window.Render()
     img = np.array(plotter.image)
     drawn = img.any(-1)
