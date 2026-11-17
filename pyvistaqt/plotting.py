@@ -228,6 +228,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         """Initialize Qt interactor."""
         LOG.debug("QtInteractor init start")
         self._url: QtCore.QUrl | None = None
+        self._render_pending = False
 
         # Cannot use super() here because
         # QVTKRenderWindowInteractor silently swallows all kwargs
@@ -347,6 +348,11 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if self.render_window is not None:
             self._ensure_initialized()
             self.render_window.MakeCurrent()
+            # pyvista renders and then reads the image back. Where ``render``
+            # is deferred to the event loop (macOS), the image would be the
+            # previous frame, so run the pending render now.
+            if self._render_pending:
+                self._render_now()
         BasePlotter._check_has_ren_win(self)  # noqa: SLF001
 
     def gesture_event(self, event: QGestureEvent) -> bool:
@@ -365,7 +371,16 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
     @wraps(BasePlotter.render)
     def _render(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
         """Wrap ``BasePlotter.render``."""
+        self._render_pending = False
         return BasePlotter.render(self, *args, **kwargs)
+
+    def _render_now(self) -> None:
+        """Render synchronously on the GUI thread, or ask it to from another thread."""
+        if QtCore.QThread.currentThread() is self.thread():
+            self._render_pending = False
+            BasePlotter.render(self)
+        else:
+            self.render()
 
     def _auto_render(self) -> None:
         """
@@ -395,8 +410,20 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         if getattr(self, "_closed", False):
             return
         self._rendered = True  # Crucial for BasePlotter to know this has rendered
+        self._render_pending = True  # until ``_render`` runs
         with contextlib.suppress(RuntimeError):  # wrapped C/C++ object has been deleted
             self.render_signal.emit()
+
+    def write_frame(self) -> None:
+        """
+        Write a single frame to the movie file, rendering the scene first.
+
+        ``BasePlotter.write_frame`` relies on ``update()`` to render, but on a
+        Qt widget that only schedules a repaint, so without an explicit render
+        every frame written from a loop would be the same stale image.
+        """
+        self._render_now()
+        BasePlotter.write_frame(self)
 
     @wraps(BasePlotter.enable)
     def enable(self) -> None:

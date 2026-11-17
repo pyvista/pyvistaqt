@@ -492,6 +492,116 @@ def test_wflags(qtbot) -> None:
     plotter.close()
 
 
+@pytest.mark.parametrize("off_screen", [True, False])
+def test_capture_reflects_scene(qtbot, off_screen) -> None:
+    """
+    Screenshots and movie frames show the scene as it is when they are taken.
+
+    Two things went wrong without the event loop running in between. Where
+    ``render`` is deferred to the event loop (macOS), ``screenshot`` read back
+    the previous frame; and ``write_frame`` relies on ``update()``, which for
+    a Qt widget only schedules a repaint, so every frame of a movie written
+    from a loop was the same image. An off-screen plotter also never rendered
+    at all, because its interactor is not enabled, and returned garbage.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(show=False, off_screen=off_screen, window_size=(200, 150), auto_update=False, update_app_icon=False)
+    qtbot.addWidget(plotter.app_window)
+    plotter.set_background("black")
+    plotter.add_mesh(pyvista.Sphere(), color="white")
+
+    img = plotter.screenshot()
+    assert 0.0 < img.any(-1).mean() < 1.0  # the sphere on its background
+    np.testing.assert_array_equal(img[0, 0], [0, 0, 0])
+    # and reproducibly, up to the last bit: with multisampling, some Linux GPU
+    # drivers (NVIDIA) resolve a few edge pixels one gray level differently
+    # from one render of the same scene to the next
+    np.testing.assert_allclose(plotter.screenshot().astype(int), img.astype(int), atol=1)
+
+    # render explicitly: before PyVista 0.50, screenshot() does not render
+    plotter.renderer.SetBackground(1.0, 0.0, 0.0)
+    plotter.render()
+    np.testing.assert_array_equal(plotter.screenshot()[0, 0], [255, 0, 0])
+
+    frames = []
+
+    class Writer:
+        def append_data(self, frame) -> None:
+            frames.append(frame[0, 0].tolist())
+
+        def close(self) -> None:
+            pass
+
+    plotter.mwriter = Writer()
+    for color in [(0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]:
+        plotter.renderer.SetBackground(*color)
+        plotter.write_frame()
+    assert frames == [[0, 255, 0], [0, 0, 255]]
+    plotter.close()
+
+
+def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
+    """
+    A render is shown by blitting it, not by rendering the scene a second time.
+
+    A finished VTK render schedules a paint to put its frame on screen. That
+    paint used to render again, so every ``render()`` and every interaction
+    cost two VTK renders. Paints with any other cause must still render.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(off_screen=False, update_app_icon=False, auto_update=False, window_size=(300, 300))
+    qtbot.addWidget(plotter.app_window)
+    plotter.set_background("black")
+    with wait_exposed(qtbot, plotter.app_window):
+        plotter.app_window.show()
+    qtbot.wait(10)  # let pending paints go through
+    if plotter._ctx is None:  # noqa: SLF001
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    renders = []
+    plotter.renderer.AddObserver("StartEvent", lambda *_: renders.append(1))
+
+    # the paint scheduled by a finished render shows that render's frame
+    plotter.renderer.SetBackground(1.0, 0.0, 0.0)
+    plotter._render()  # noqa: SLF001
+    assert len(renders) == 1
+    image = plotter.grabFramebuffer()  # paints synchronously
+    assert len(renders) == 1
+    color = image.pixelColor(image.width() // 2, image.height() // 2)
+    assert (color.red(), color.green(), color.blue()) == (255, 0, 0)
+
+    # The scheduled paints do not render again either. The window system can
+    # ask for a repaint of its own at any time, which legitimately renders, so
+    # allow a few of those: rendering twice per call would give 2 * n_render.
+    renders.clear()
+    n_render = 10
+    for _ in range(n_render):
+        plotter.render()
+        qtbot.wait(20)
+    assert n_render <= len(renders) <= n_render + 3
+
+    # a paint with another cause renders, as the scene may have changed.
+    # Wayland delivers no paints to a window that the compositor is not
+    # showing (one that opened behind another window, say), so the paint
+    # scheduled by the last render can still be pending: flush it first.
+    plotter.grabFramebuffer()
+    renders.clear()
+    plotter.renderer.SetBackground(0.0, 0.0, 1.0)
+    image = plotter.grabFramebuffer()
+    assert len(renders) == 1
+    color = image.pixelColor(image.width() // 2, image.height() // 2)
+    assert (color.red(), color.green(), color.blue()) == (0, 0, 255)
+
+    # a frame rendered before a resize is not reused at the new size
+    renders.clear()
+    plotter._render()  # noqa: SLF001
+    plotter.app_window.resize(360, 340)
+    qtbot.wait(50)
+    assert len(renders) >= 2
+    plotter.close()
+
+
 def test_render_returns_none_and_renders(qtbot, plotting, monkeypatch) -> None:  # noqa: ARG001
     """
     ``render`` returns None everywhere and the scene is rendered on the GUI thread.
