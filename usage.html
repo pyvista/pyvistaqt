@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Usage &#8212; PyVistaQt 0.1.0.dev1+gb5e52382c documentation</title>
+    <title>Usage &#8212; PyVistaQt 0.14.0.dev4+g73b295294 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=23194b5e"></script>
+    <script src="_static/documentation_options.js?v=e0d05f8c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -53,7 +53,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.0.dev1+gb5e52382c" />
+  <meta name="docsearch:version" content="0.14.0.dev4+g73b295294" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -162,8 +162,8 @@
       
     
     
-    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.1.0.dev1+gb5e52382c documentation - Home"/>
-    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.1.0.dev1+gb5e52382c documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-light" alt="PyVistaQt 0.14.0.dev4+g73b295294 documentation - Home"/>
+    <img src="_static/pyvista_logo.png" class="logo__image only-dark pst-js-only" alt="PyVistaQt 0.14.0.dev4+g73b295294 documentation - Home"/>
   
   
 </a></div>
@@ -276,7 +276,7 @@
           
           
           
-          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i><span class="visually-hidden">Contributing</span></a>
+          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i><span class="visually-hidden">Contributing</span></a>
         </li>
 </ul></div>
       
@@ -415,7 +415,7 @@
           
           
           
-          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.rst" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i><span class="visually-hidden">Contributing</span></a>
+          <a href="https://github.com/pyvista/pyvistaqt/blob/main/CONTRIBUTING.md" title="Contributing" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa fa-gavel fa-fw fa-lg" aria-hidden="true"></i><span class="visually-hidden">Contributing</span></a>
         </li>
 </ul></div>
         
@@ -507,7 +507,7 @@ own event loop by default. By design, the plotter will look for an
 active instance of <code class="docutils literal notranslate"><span class="pre">QApplication</span></code> instead. So in the end, it is up to the
 user to manage this event loop and there are several ways to achieve this.
 For example, it’s possible to start Python interactively with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-i</span></code>,
-use <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or execute the Qt event loop by adding <code class="docutils literal notranslate"><span class="pre">plotter.app.exec_()</span></code>
+use <code class="docutils literal notranslate"><span class="pre">ipython</span></code> or execute the Qt event loop by adding <code class="docutils literal notranslate"><span class="pre">plotter.app.exec()</span></code>
 to the end of the following code.</p>
 </div>
 <section id="background-plotting">
@@ -531,6 +531,26 @@ and functions like a normal PyVista <code class="docutils literal notranslate"><
 </section>
 <section id="multiple-plotters">
 <h2>Multiple Plotters<a class="headerlink" href="#multiple-plotters" title="Link to this heading">#</a></h2>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 0.13: </span><code class="docutils literal notranslate"><span class="pre">MultiPlotter</span></code> is deprecated and will be removed in 0.14. Use
+<code class="docutils literal notranslate"><span class="pre">BackgroundPlotter</span></code> with its <code class="docutils literal notranslate"><span class="pre">shape</span></code> argument instead, or embed
+multiple <code class="docutils literal notranslate"><span class="pre">QtInteractor</span></code> instances directly in your own <code class="docutils literal notranslate"><span class="pre">QLayout</span></code>
+for full control:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvistaqt</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackgroundPlotter</span>
+
+<span class="n">plotter</span> <span class="o">=</span> <span class="n">BackgroundPlotter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Sphere</span><span class="p">())</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Cylinder</span><span class="p">())</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Cube</span><span class="p">())</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Cone</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
 <p>The following example shows how to use an interface with multiple plotters. Each
 plotter can be selected and functions like a normal PyVista <code class="docutils literal notranslate"><span class="pre">Plotter</span></code> instance:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
@@ -544,15 +564,11 @@ plotter can be selected and functions like a normal PyVista <code class="docutil
 </pre></div>
 </div>
 </section>
-<section id="example-pyqt5-pyvista-qtinteractor">
-<h2>Example PyQt5 PyVista QtInteractor<a class="headerlink" href="#example-pyqt5-pyvista-qtinteractor" title="Link to this heading">#</a></h2>
+<section id="example-pyvista-qtinteractor-application">
+<h2>Example PyVista QtInteractor application<a class="headerlink" href="#example-pyvista-qtinteractor-application" title="Link to this heading">#</a></h2>
 <p>The following example shows how to create a simple application that adds a
 sphere to an empty plotting window.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-
-<span class="c1"># Setting the Qt bindings for QtPy</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"QT_API"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"pyqt5"</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">qtpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">QtWidgets</span>
 
@@ -605,14 +621,14 @@ sphere to an empty plotting window.</p>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">window</span> <span class="o">=</span> <span class="n">MyMainWindow</span><span class="p">()</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">())</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">exec</span><span class="p">())</span>
 </pre></div>
 </div>
 <figure class="align-default" id="id1">
 <a class="reference internal image-reference" href="_images/qt_plotting_sphere.png"><img alt="_images/qt_plotting_sphere.png" src="_images/qt_plotting_sphere.png" style="width: 600pt;" />
 </a>
 <figcaption>
-<p><span class="caption-text">PyQt5 pyvista QtInteractor</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+<p><span class="caption-text">PyVista QtInteractor in a Qt application</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
@@ -659,7 +675,7 @@ for more information.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#background-plotting">Background Plotting</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-plotters">Multiple Plotters</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-pyqt5-pyvista-qtinteractor">Example PyQt5 PyVista QtInteractor</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-pyvista-qtinteractor-application">Example PyVista QtInteractor application</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-different-qt-bindings">Using Different Qt bindings</a></li>
 </ul>
   </nav></div>
