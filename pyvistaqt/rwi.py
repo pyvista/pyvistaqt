@@ -626,7 +626,9 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             self._in_paint = True
             try:
                 iren = rw.GetInteractor()
-                if iren is not None:
+                # A disabled interactor ignores Render(), and an off-screen
+                # plotter never enables its interactor.
+                if iren is not None and iren.GetEnabled():
                     iren.Render()
                 else:
                     rw.Render()
