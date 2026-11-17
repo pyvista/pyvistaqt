@@ -86,9 +86,11 @@ docstring-code-format = true
 select = ["ALL"]
 ignore = [
   "COM812",
+  "CPY001",  # no per-file copyright notices
   "D203",
   "D212",
   "ISC001",
+  "PLR0917",  # public signatures predate keyword-only arguments
   "PLR2004",
 ]
 
