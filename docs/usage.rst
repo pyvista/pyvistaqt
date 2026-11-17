@@ -16,7 +16,7 @@ Qt.
    active instance of ``QApplication`` instead. So in the end, it is up to the
    user to manage this event loop and there are several ways to achieve this.
    For example, it's possible to start Python interactively with ``python -i``,
-   use ``ipython`` or execute the Qt event loop by adding ``plotter.app.exec_()``
+   use ``ipython`` or execute the Qt event loop by adding ``plotter.app.exec()``
    to the end of the following code.
 
 
@@ -45,6 +45,27 @@ and functions like a normal PyVista ``Plotter`` instance. For example:
 Multiple Plotters
 ~~~~~~~~~~~~~~~~~
 
+.. deprecated:: 0.13
+   ``MultiPlotter`` is deprecated and will be removed in 0.14. Use
+   ``BackgroundPlotter`` with its ``shape`` argument instead, or embed
+   multiple ``QtInteractor`` instances directly in your own ``QLayout``
+   for full control:
+
+   .. code:: python
+
+       import pyvista as pv
+       from pyvistaqt import BackgroundPlotter
+
+       plotter = BackgroundPlotter(shape=(2, 2))
+       plotter.subplot(0, 0)
+       plotter.add_mesh(pv.Sphere())
+       plotter.subplot(0, 1)
+       plotter.add_mesh(pv.Cylinder())
+       plotter.subplot(1, 0)
+       plotter.add_mesh(pv.Cube())
+       plotter.subplot(1, 1)
+       plotter.add_mesh(pv.Cone())
+
 The following example shows how to use an interface with multiple plotters. Each
 plotter can be selected and functions like a normal PyVista ``Plotter`` instance:
 
@@ -60,8 +81,8 @@ plotter can be selected and functions like a normal PyVista ``Plotter`` instance
     mp[1, 1].add_mesh(pv.Cone())
 
 
-Example PyQt5 PyVista QtInteractor
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Example PyVista QtInteractor application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to create a simple application that adds a
 sphere to an empty plotting window.
@@ -69,10 +90,6 @@ sphere to an empty plotting window.
 .. code:: python
 
     import sys
-
-    # Setting the Qt bindings for QtPy
-    import os
-    os.environ["QT_API"] = "pyqt5"
 
     from qtpy import QtWidgets
 
@@ -125,13 +142,13 @@ sphere to an empty plotting window.
     if __name__ == '__main__':
         app = QtWidgets.QApplication(sys.argv)
         window = MyMainWindow()
-        sys.exit(app.exec_())
+        sys.exit(app.exec())
 
 
 .. figure:: ./images/user-generated/qt_plotting_sphere.png
     :width: 600pt
 
-    PyQt5 pyvista QtInteractor
+    PyVista QtInteractor in a Qt application
 
 
 Using Different Qt bindings

@@ -27,9 +27,9 @@ PyVistaQt
   :target: https://github.com/astral-sh/ruff
   :alt: Ruff
 
-.. image:: https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat
-  :target: https://github.com/python/mypy
-  :alt: mypy
+.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json
+  :target: https://github.com/astral-sh/ty
+  :alt: ty
 
 ``pyvistaqt`` is a helper module for ``pyvista`` to enable you to
 plot using Qt by placing a vtk-widget into a background renderer.
@@ -40,7 +40,7 @@ Documentation
 =============
 
 For the installation and usage of this package, please visit the
-`PyVistaQt documentation <http://qtdocs.pyvista.org/>`_.
+`PyVistaQt documentation <https://qt.pyvista.org/>`_.
 
 Refer to the `PyVista documentation <http://docs.pyvista.org/>`_ for detailed
 installation and usage details of the core package which is used
@@ -90,5 +90,5 @@ community to share their ideas. To learn more about contributing to
 PyVista, please see the ``pyvista`` `Contributing Guide`_ and
 `Code of Conduct`_.
 
-.. _Contributing Guide: https://github.com/pyvista/pyvista/blob/main/CONTRIBUTING.md
+.. _Contributing Guide: https://github.com/pyvista/pyvista/blob/main/CONTRIBUTING.rst
 .. _Code of Conduct: https://github.com/pyvista/pyvista/blob/main/CODE_OF_CONDUCT.md

@@ -1,15 +1,14 @@
 name: "CI"
 permissions:
-  statuses: write
-  contents: write
-  id-token: write
+  contents: read
+  id-token: write # Codecov OIDC upload
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
   cancel-in-progress: true
 on:
   push:
     branches:
-      - "*"
+      - main
   pull_request:
     branches:
       - "*"
@@ -111,6 +110,11 @@ jobs:
             python-version: "3.14"
             vtk: "==9.6.1"
             qt: "PySide6"
+          - os: "ubuntu-latest"
+            pyvista: "0.49"
+            python-version: "3.14"
+            vtk: "==9.7.2"
+            qt: "PyQt5"
 
     defaults:
       run:
