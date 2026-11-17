@@ -59,11 +59,6 @@ import warnings
 import numpy as np
 import pyvista
 from pyvista import global_theme
-
-# NB: pyvista 0.48 (which the ty hook checks against) types BasePlotter's
-# forwarding methods (add_key_event, enable_trackball_style, ...) as
-# functools._Wrapped, which type checkers do not bind to the instance; the
-# ``ty: ignore``s on calls to them are for that.
 from pyvista.plotting import BasePlotter
 from pyvista.plotting.render_window_interactor import RenderWindowInteractor
 from qtpy import QtCore
@@ -164,11 +159,11 @@ def _ndarray_to_qpixmap(img: np.ndarray) -> QtGui.QPixmap:
 def _no_base_plotter_init() -> Generator[None, None, None]:
     init = BasePlotter.__init__
     # Deliberately monkeypatch BasePlotter.__init__ to a no-op for the duration.
-    BasePlotter.__init__ = lambda *args, **kwargs: None  # noqa: ARG005  # ty: ignore[invalid-assignment]
+    BasePlotter.__init__ = lambda *args, **kwargs: None  # noqa: ARG005
     try:
         yield
     finally:
-        BasePlotter.__init__ = init  # ty: ignore[invalid-assignment]
+        BasePlotter.__init__ = init
 
 
 class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
@@ -329,9 +324,9 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
         else:
             self.iren = RenderWindowInteractor(self, interactor=self.GetRenderWindow().GetInteractor())
             # slows window update?
-            self.iren.interactor.RemoveObservers("MouseMoveEvent")  # ty: ignore[unresolved-attribute]
+            self.iren.interactor.RemoveObservers("MouseMoveEvent")  # ty: ignore[missing-union-attribute]
             self.iren.initialize()
-            self.enable_trackball_style()  # ty: ignore[missing-argument]
+            self.enable_trackball_style()
 
     def _setup_key_press(self) -> None:
         self._observers: dict[None, None] = {}  # Map of events to observers of self.iren
@@ -402,7 +397,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             return
         self.render()
 
-    def render(self) -> None:  # ty: ignore[invalid-method-override]
+    def render(self) -> None:  # ty: ignore[incompatible-method-override]
         """
         Render the scene through ``render_signal``.
 
@@ -513,7 +508,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self.render_timer.stop()
         super().closeEvent(evt)
 
-    def close(self) -> None:  # ty: ignore[invalid-method-override]
+    def close(self) -> None:  # ty: ignore[incompatible-method-override]
         """Quit application (intentionally returns None, unlike QWidget.close)."""
         if getattr(self, "_closed", True):  # if it doesn't exist, error during init
             return
@@ -730,7 +725,7 @@ class BackgroundPlotter(QtInteractor):
         """
         super().reset_key_events()
         if self.allow_quit_keypress:
-            self.add_key_event("q", self.close)  # ty: ignore[invalid-argument-type]
+            self.add_key_event("q", self.close)
 
     def scale_axes_dialog(self, show: bool = True) -> ScaleAxesDialog:  # noqa: FBT001, FBT002
         """Open scale axes dialog."""
@@ -852,8 +847,8 @@ class BackgroundPlotter(QtInteractor):
 
     def _toggle_parallel_projection(self) -> None:
         if self.camera.GetParallelProjection():
-            return self.disable_parallel_projection()  # ty: ignore[missing-argument]
-        return self.enable_parallel_projection()  # ty: ignore[missing-argument]
+            return self.disable_parallel_projection()
+        return self.enable_parallel_projection()
 
     @property
     def window_size(self) -> tuple[int, int]:
@@ -862,7 +857,7 @@ class BackgroundPlotter(QtInteractor):
         return the_size.width(), the_size.height()
 
     @window_size.setter
-    def window_size(self, window_size: tuple[int, int]) -> None:
+    def window_size(self, window_size: tuple[int, int]) -> None:  # ty: ignore[incompatible-property-override]
         """Set the render window size."""
         self.app_window.setBaseSize(*window_size)
         self.app_window.resize(*window_size)
@@ -946,7 +941,7 @@ class BackgroundPlotter(QtInteractor):
                 if position is not None:
                     self.camera_position = position
 
-            self.add_key_event(key, load_saved_camera_position)  # ty: ignore[invalid-argument-type]
+            self.add_key_event(key, load_saved_camera_position)
             self._saved_camera_keys.add(key)
 
     def clear_camera_positions(self) -> None:
@@ -1019,7 +1014,7 @@ class BackgroundPlotter(QtInteractor):
         tool_menu.addAction("Enable Cell Picking (through)", self.enable_cell_picking)
         tool_menu.addAction(
             "Enable Cell Picking (visible)",
-            lambda: self.enable_cell_picking(through=False),  # ty: ignore[missing-argument]
+            lambda: self.enable_cell_picking(through=False),
         )
 
         cam_menu = view_menu.addMenu("Camera")

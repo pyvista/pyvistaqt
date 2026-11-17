@@ -49,3 +49,5 @@ jobs:
           git push origin $BRANCH
           PR_URL=$(gh pr create --base main --head $BRANCH --title "Update prek" --body "Created by [GitHub action](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}).")
           echo "Opened ${PR_URL}" >> $GITHUB_STEP_SUMMARY
+          # Like the Dependabot PRs (see automerge.yml): merge once checks pass
+          gh pr merge --auto --squash "$PR_URL"

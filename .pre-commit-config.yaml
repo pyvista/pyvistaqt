@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: v0.0.55
+    rev: v0.0.105
     hooks:
       - id: ty
         # ty runs in an isolated environment, so the project's runtime deps
@@ -17,7 +17,7 @@ repos:
         args: [--no-python-downloads, --no-project]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.2
+    rev: v2.4.3
     hooks:
       - id: codespell
 
@@ -31,18 +31,18 @@ repos:
 
   # this validates our github workflow files
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.3
+    rev: 0.39.0
     hooks:
       - id: check-github-workflows
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.9.1
+    rev: v3.10.1
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
+    rev: v0.17.5
     hooks:
       - id: ruff
         args: [--fix, --show-fixes]
