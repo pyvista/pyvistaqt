@@ -33,6 +33,7 @@ from qtpy.QtWidgets import QCheckBox
 from qtpy.QtWidgets import QDoubleSpinBox
 from qtpy.QtWidgets import QFrame
 from qtpy.QtWidgets import QGestureEvent
+from qtpy.QtWidgets import QMainWindow
 from qtpy.QtWidgets import QMenuBar
 from qtpy.QtWidgets import QPinchGesture
 from qtpy.QtWidgets import QStackedWidget
@@ -44,6 +45,7 @@ from pyvistaqt._vtk import vtkRenderer
 from pyvistaqt.plotting import _HAS_TRAME_COMPONENT
 from pyvistaqt.plotting import LOG
 from pyvistaqt.plotting import global_theme
+from pyvistaqt.rwi import QOpenGLWidget
 
 try:
     from pyvista.plotting.utilities import Scraper
@@ -548,6 +550,9 @@ def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
     A finished VTK render schedules a paint to put its frame on screen. That
     paint used to render again, so every ``render()`` and every interaction
     cost two VTK renders. Paints with any other cause must still render.
+    The unbound ``QOpenGLWidget.grabFramebuffer(plotter)`` paints
+    synchronously like a paint from the event loop, without the override
+    that marks the frame stale (see ``test_grab_after_render_renders``).
     """
     if _no_gl():
         pytest.skip("Qt did not provide a GL context (macOS software GL)")
@@ -566,7 +571,7 @@ def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
     plotter.renderer.SetBackground(1.0, 0.0, 0.0)
     plotter._render()  # noqa: SLF001
     assert len(renders) == 1
-    image = plotter.grabFramebuffer()  # paints synchronously
+    image = QOpenGLWidget.grabFramebuffer(plotter)  # the scheduled paint
     assert len(renders) == 1
     color = image.pixelColor(image.width() // 2, image.height() // 2)
     assert (color.red(), color.green(), color.blue()) == (255, 0, 0)
@@ -578,7 +583,7 @@ def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
     plotter._render()  # noqa: SLF001
     plotter.renderer.SetBackground(0.0, 1.0, 0.0)
     plotter.update()
-    image = plotter.grabFramebuffer()
+    image = QOpenGLWidget.grabFramebuffer(plotter)
     assert len(renders) == 2
     color = image.pixelColor(image.width() // 2, image.height() // 2)
     assert (color.red(), color.green(), color.blue()) == (0, 255, 0)
@@ -597,10 +602,10 @@ def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
     # Wayland delivers no paints to a window that the compositor is not
     # showing (one that opened behind another window, say), so the paint
     # scheduled by the last render can still be pending: flush it first.
-    plotter.grabFramebuffer()
+    QOpenGLWidget.grabFramebuffer(plotter)
     renders.clear()
     plotter.renderer.SetBackground(0.0, 0.0, 1.0)
-    image = plotter.grabFramebuffer()
+    image = QOpenGLWidget.grabFramebuffer(plotter)
     assert len(renders) == 1
     color = image.pixelColor(image.width() // 2, image.height() // 2)
     assert (color.red(), color.green(), color.blue()) == (0, 0, 255)
@@ -646,6 +651,112 @@ def test_update_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
     plotter.renderer.SetBackground(0.0, 1.0, 0.0)  # the scene changes after that render
     plotter.update()
     qtbot.waitUntil(lambda: len(renders) >= 2, timeout=5000)
+    plotter.close()
+
+
+def _center_rgb(image) -> tuple[int, int, int]:
+    """Return the RGB of the center pixel of a QImage."""
+    color = image.pixelColor(image.width() // 2, image.height() // 2)
+    return (color.red(), color.green(), color.blue())
+
+
+def _shown_plotter(qtbot) -> BackgroundPlotter:
+    """Show a BackgroundPlotter and return it, skipping where there is no GL."""
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(off_screen=False, update_app_icon=False, auto_update=False, window_size=(300, 300))
+    qtbot.addWidget(plotter.app_window)
+    with wait_exposed(qtbot, plotter.app_window):
+        plotter.app_window.show()
+    qtbot.wait(10)  # let pending paints go through
+    if plotter._ctx is None:  # noqa: SLF001
+        plotter.close()
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    return plotter
+
+
+def test_grab_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
+    """
+    Grabbing the widget shows the scene as it is now.
+
+    A grab paints, and with a render's blit pending that paint used to only
+    blit, returning the frame from before a later scene change.
+    """
+    plotter = _shown_plotter(qtbot)
+    renders = []
+    plotter.renderer.AddObserver("StartEvent", lambda *_: renders.append(1))
+    plotter._render()  # noqa: SLF001
+    plotter.renderer.SetBackground(1.0, 0.0, 0.0)
+    image = plotter.grabFramebuffer()
+    assert len(renders) == 2
+    assert _center_rgb(image) == (255, 0, 0)
+
+    renders.clear()
+    plotter._render()  # noqa: SLF001
+    plotter.renderer.SetBackground(0.0, 1.0, 0.0)
+    image = plotter.grab().toImage()
+    assert len(renders) == 2
+    assert _center_rgb(image) == (0, 255, 0)
+    plotter.close()
+
+
+def test_show_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
+    """
+    Showing a hidden widget shows the scene as it is now.
+
+    A render made while hidden leaves its blit pending, and the scene can
+    change before the widget is shown again: the paint on show has to render.
+    """
+    plotter = _shown_plotter(qtbot)
+    renders = []
+    plotter.renderer.AddObserver("StartEvent", lambda *_: renders.append(1))
+    plotter.app_window.hide()
+    plotter._render()  # noqa: SLF001
+    plotter.renderer.SetBackground(1.0, 0.0, 0.0)
+    plotter.app_window.show()
+    # The paint on show is delivered by the window system (if at all, see
+    # test_render_renders_once), so paint synchronously instead.
+    image = QOpenGLWidget.grabFramebuffer(plotter)
+    assert len(renders) >= 2
+    assert _center_rgb(image) == (255, 0, 0)
+    plotter.close()
+
+
+def test_new_context_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
+    """
+    A widget moved to another top-level window renders in its new GL context.
+
+    Qt destroys the widget's context when the widget changes windows and
+    makes a new one on the next show or paint. A render's pending blit refers
+    to framebuffers of the old context, and blitting it left the widget black.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    window = QMainWindow()
+    qtbot.addWidget(window)
+    plotter = QtInteractor(window)
+    window.setCentralWidget(plotter)
+    window.resize(300, 300)
+    with wait_exposed(qtbot, window):
+        window.show()
+    qtbot.wait(10)  # let pending paints go through
+    if plotter._ctx is None:  # noqa: SLF001
+        plotter.close()
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    destroyed = []
+    plotter._ctx.destroyed.connect(lambda *_: destroyed.append(1))  # noqa: SLF001
+    plotter.renderer.SetBackground(1.0, 0.0, 0.0)
+    plotter._render()  # noqa: SLF001
+
+    other = QMainWindow()
+    qtbot.addWidget(other)
+    other.resize(300, 300)
+    other.setCentralWidget(plotter)
+    other.show()  # creates the new context and paints synchronously
+    assert destroyed == [1]
+    assert plotter._ctx is not None  # noqa: SLF001
+    image = QOpenGLWidget.grabFramebuffer(plotter)
+    assert _center_rgb(image) == (255, 0, 0)
     plotter.close()
 
 

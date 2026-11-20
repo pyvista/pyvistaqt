@@ -66,11 +66,18 @@ of them produces symptoms that are far removed from the cause):
    without asking the widget to repaint, so a skipped render blits a stale
    frame (caught by ``test_background_plotting_plots``: the last-active
    subplot showed a pre-``camera.zoom`` frame). Qt merges paint requests, so
-   "scheduled by ``_cb_frame``" cannot be read off the paint itself:
-   ``update()`` and ``repaint()`` are overridden to mark the frame stale, and
-   ``_cb_frame`` bypasses the override. Otherwise a scene change followed by
-   ``update()`` before the event loop runs is merged into the pending blit
-   and shows up one render late (gh-876).
+   "scheduled by ``_cb_frame``" cannot be read off the paint itself, so
+   everything else that can lead to a paint marks the frame stale:
+   ``update()`` and ``repaint()`` (``_cb_frame`` bypasses the override;
+   otherwise a scene change followed by ``update()`` before the event loop
+   runs is merged into the pending blit and shows up one render late,
+   gh-876), ``grab()`` and ``grabFramebuffer()`` (a caller asking for a
+   picture wants the current scene), ``showEvent`` (the scene may have
+   changed while hidden), ``resizeGL`` (the frame has the old size), and
+   ``initializeGL`` (a new context, e.g. after moving the widget to another
+   top-level window, does not have VTK's framebuffers to blit from).
+   ``grab()`` of a *parent* widget paints this one from C++ and cannot be
+   intercepted, so it shows the pending frame.
 4. Never call ``QWidget.screen()``: the Python binding can end up owning the
    returned application-global ``QScreen``, and a later garbage collection
    then deletes it, crashing much later inside an unrelated
@@ -521,6 +528,9 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
     # ---- QOpenGLWidget overrides ---------------------------------------------
     def initializeGL(self):
         super().initializeGL()
+        # A pending frame lives in the old context's framebuffers (see
+        # invariant 3); QVTKRenderWindowAdapter re-arms its render here too.
+        self._frame_fresh = False
         rw = self._RenderWindow
         if rw is None:
             return
@@ -624,10 +634,11 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # Like C++ QVTKOpenGLNativeWidget, skip the VTK render when this paint
         # was scheduled by a render that just finished (``_cb_frame``): its
         # frame is already in VTK's framebuffer and only needs the blit below.
-        # Any other paint (expose, resize, ``update()``, which marks the frame
-        # stale even when Qt merges it with the pending blit) renders, because
-        # pyvista mutates the scene (cameras, actors) without asking the widget
-        # to repaint, and a skipped render there would show a stale frame.
+        # Any other paint (expose, show, resize, new context, grabs,
+        # ``update()``, which mark the frame stale even when Qt merges them
+        # with the pending blit; see invariant 3) renders, because pyvista
+        # mutates the scene (cameras, actors) without asking the widget to
+        # repaint, and a skipped render there would show a stale frame.
         fresh, self._frame_fresh = self._frame_fresh, False
         if not self._in_paint and not fresh:
             self._in_paint = True
@@ -664,6 +675,27 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         """Repaint now, rendering the scene (see ``update``)."""
         self._frame_fresh = False
         super().repaint(*args)
+
+    def grabFramebuffer(self, *args):
+        """Render the scene and return it as an image (see ``update``)."""
+        self._frame_fresh = False
+        return super().grabFramebuffer(*args)
+
+    def grab(self, *args, **kwargs):
+        """
+        Render the scene and return it as a pixmap (see ``update``).
+
+        A ``grab()`` of a parent widget paints this one from C++, bypassing
+        this override, so it can show a frame that is already stale.
+        """
+        self._frame_fresh = False
+        return super().grab(*args, **kwargs)
+
+    def showEvent(self, evt):
+        # The scene may have changed while the widget was hidden, after the
+        # render whose blit is pending (see invariant 3).
+        self._frame_fresh = False
+        super().showEvent(evt)
 
     # ---- QVTKRenderWindowAdapter::blit + clearAlpha ---------------------------
     def _blit(self, target_id, rect):
