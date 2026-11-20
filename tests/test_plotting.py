@@ -2,6 +2,7 @@ from __future__ import annotations  # noqa: D100
 
 import contextlib
 import gc
+import inspect
 import logging
 import os
 import os.path as op
@@ -811,21 +812,14 @@ def test_new_context_keeps_observers(qtbot, qtlog, plotting) -> None:  # noqa: A
     if _composited(qtlog):
         assert destroyed == [1]
     assert (plotter._ctx is None) == bool(destroyed)  # noqa: SLF001
-    plotter.renderer.SetBackground(0.0, 0.0, 1.0)
-    renders = []
-    tag = plotter.renderer.AddObserver("StartEvent", lambda *_: renders.append(1))
-    image = plotter.screenshot(return_img=True)
-    plotter.renderer.RemoveObserver(tag)
-    center = image[image.shape[0] // 2, image.shape[1] // 2].tolist()
-    if center != [0, 0, 255] and not _composited(qtlog):
-        # Seen on the arm64 macOS CI runners with released pyvista (not with
-        # pyvista main, and not reproduced on a Mac with the software
-        # renderer): Qt keeps the context, and the screenshot shows the scene
-        # from before the change. Not understood, so report what happened.
-        current = plotter.render_window.IsCurrent()
+    if not _composited(qtlog) and "render" not in inspect.signature(pyvista.Plotter.screenshot).parameters:
+        # Before pyvista#9235 (after 0.49.2), screenshot() reads the last frame
+        # without rendering. Here only re-realizing a destroyed context renders.
         plotter.close()
-        pytest.skip(f"uncomposited: stale screenshot {center}, {len(renders)} renders, current={current}, pyvista {pyvista.__version__}")
-    assert center == [0, 0, 255]
+        pytest.skip("screenshot() does not render in this pyvista, and Qt kept the context")
+    plotter.renderer.SetBackground(0.0, 0.0, 1.0)
+    image = plotter.screenshot(return_img=True)
+    assert image[image.shape[0] // 2, image.shape[1] // 2].tolist() == [0, 0, 255]
     ctx = plotter._ctx  # noqa: SLF001
     assert ctx is not None
     assert len(plotter._vtk_observers) == n_observers  # noqa: SLF001
