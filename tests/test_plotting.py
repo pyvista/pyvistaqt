@@ -661,9 +661,17 @@ def _center_rgb(image) -> tuple[int, int, int]:
     return (color.red(), color.green(), color.blue())
 
 
-def _context_survives_move() -> bool:
-    """Return whether a widget's GL context was seen to survive a move to another window."""
-    return sys.platform == "darwin" and platform.machine() == "arm64"
+def _composited(qtlog) -> bool:
+    """
+    Return whether Qt composites this test's QOpenGLWidgets into their windows.
+
+    Qt refuses composition where it would use the Apple software renderer on
+    arm64 macOS >= 26 (rwi invariant 8) and says so on every QOpenGLWidget
+    construction. The widget then gets a context from ``resizeEvent`` that
+    only works offscreen: ``grab()`` shows the widget background, and Qt
+    keeps the context across a move to another window.
+    """
+    return not any("QOpenGLWidget is not supported" in rec.message for rec in qtlog.records)
 
 
 def _shown_plotter(qtbot) -> BackgroundPlotter:
@@ -681,7 +689,7 @@ def _shown_plotter(qtbot) -> BackgroundPlotter:
     return plotter
 
 
-def test_grab_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
+def test_grab_after_render_renders(qtbot, qtlog, plotting) -> None:  # noqa: ARG001
     """
     Grabbing the widget shows the scene as it is now.
 
@@ -702,10 +710,7 @@ def test_grab_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
     plotter.renderer.SetBackground(0.0, 1.0, 0.0)
     image = plotter.grab().toImage()
     assert len(renders) == 2
-    # On the arm64 macOS CI runners the pixmap showed only the widget
-    # background (white or light gray) though the render happened; the
-    # Intel ones showed the scene. The cause is not known.
-    if not (sys.platform == "darwin" and platform.machine() == "arm64"):
+    if _composited(qtlog):
         assert _center_rgb(image) == (0, 255, 0)
     plotter.close()
 
@@ -732,7 +737,7 @@ def test_show_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
     plotter.close()
 
 
-def test_new_context_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
+def test_new_context_after_render_renders(qtbot, qtlog, plotting) -> None:  # noqa: ARG001
     """
     A widget moved to another top-level window renders in its new GL context.
 
@@ -763,10 +768,7 @@ def test_new_context_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG
     other.resize(300, 300)
     other.setCentralWidget(plotter)
     other.show()  # creates the new context and paints synchronously
-    # On the arm64 macOS CI runners the context survived the move (cause not
-    # known), so re-creation is only required elsewhere; the picture has to be
-    # right either way.
-    if not _context_survives_move():
+    if _composited(qtlog):
         assert destroyed == [1]
     assert plotter._ctx is not None  # noqa: SLF001
     image = QOpenGLWidget.grabFramebuffer(plotter)
@@ -774,7 +776,7 @@ def test_new_context_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG
     plotter.close()
 
 
-def test_new_context_keeps_observers(qtbot, plotting) -> None:  # noqa: ARG001
+def test_new_context_keeps_observers(qtbot, qtlog, plotting) -> None:  # noqa: ARG001
     """
     A widget moved to another top-level window keeps working in its new context.
 
@@ -805,14 +807,14 @@ def test_new_context_keeps_observers(qtbot, plotting) -> None:  # noqa: ARG001
     qtbot.addWidget(other)
     other.resize(300, 300)
     other.setCentralWidget(plotter)
-    # The context survived the move on the arm64 macOS CI runners (cause not
-    # known), and everything below has to hold either way.
-    if not _context_survives_move():
+    if _composited(qtlog):
         assert destroyed == [1]
     assert (plotter._ctx is None) == bool(destroyed)  # noqa: SLF001
     plotter.renderer.SetBackground(0.0, 0.0, 1.0)
     image = plotter.screenshot(return_img=True)
-    assert image[image.shape[0] // 2, image.shape[1] // 2].tolist() == [0, 0, 255]
+    # failed once on the arm64 macOS runner (white) and not reproduced locally
+    state = f"destroyed={destroyed} ctx={plotter._ctx is not None} composited={_composited(qtlog)}"  # noqa: SLF001
+    assert image[image.shape[0] // 2, image.shape[1] // 2].tolist() == [0, 0, 255], state
     ctx = plotter._ctx  # noqa: SLF001
     assert ctx is not None
     assert len(plotter._vtk_observers) == n_observers  # noqa: SLF001
@@ -835,6 +837,7 @@ def test_new_context_keeps_observers(qtbot, plotting) -> None:  # noqa: ARG001
     assert _center_rgb(image) == (0, 255, 0)
     del ctx
     plotter.close()
+
 
 
 def test_render_returns_none_and_renders(qtbot, plotting, monkeypatch) -> None:  # noqa: ARG001
