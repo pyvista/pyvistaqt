@@ -571,6 +571,18 @@ def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
     color = image.pixelColor(image.width() // 2, image.height() // 2)
     assert (color.red(), color.green(), color.blue()) == (255, 0, 0)
 
+    # Unless a repaint was asked for after the render: Qt merges it with the
+    # paint the render scheduled, and it is asked for because the scene
+    # changed, so that paint has to render (gh-876).
+    renders.clear()
+    plotter._render()  # noqa: SLF001
+    plotter.renderer.SetBackground(0.0, 1.0, 0.0)
+    plotter.update()
+    image = plotter.grabFramebuffer()
+    assert len(renders) == 2
+    color = image.pixelColor(image.width() // 2, image.height() // 2)
+    assert (color.red(), color.green(), color.blue()) == (0, 255, 0)
+
     # The scheduled paints do not render again either. The window system can
     # ask for a repaint of its own at any time, which legitimately renders, so
     # allow a few of those: rendering twice per call would give 2 * n_render.
@@ -599,6 +611,41 @@ def test_render_renders_once(qtbot, plotting) -> None:  # noqa: ARG001
     plotter.app_window.resize(360, 340)
     qtbot.wait(50)
     assert len(renders) >= 2
+    plotter.close()
+
+
+def test_update_after_render_renders(qtbot, plotting) -> None:  # noqa: ARG001
+    """
+    ``update()`` right after a render shows the scene as it is now (gh-876).
+
+    A finished render schedules a paint that only blits its frame. Qt merges
+    an ``update()`` made before the event loop runs into that same paint, and
+    an ``update()`` is made because the scene changed, so the merged paint has
+    to render. Unlike ``test_render_renders_once``, which paints synchronously,
+    this lets the event loop deliver the paint, as an application would.
+    """
+    if _no_gl():
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    plotter = BackgroundPlotter(off_screen=False, update_app_icon=False, auto_update=False, window_size=(300, 300))
+    qtbot.addWidget(plotter.app_window)
+    with wait_exposed(qtbot, plotter.app_window):
+        plotter.app_window.show()
+    # Qt on Wayland withdraws exposure when the compositor has sent no frame
+    # callback for 100 ms, so give it time to do that before looking.
+    qtbot.wait(300)
+    if plotter._ctx is None:  # noqa: SLF001
+        pytest.skip("Qt did not provide a GL context (macOS software GL)")
+    if not plotter.app_window.windowHandle().isExposed():
+        # Seen on a Wayland desktop when the window opens behind another one.
+        pytest.skip("the window system is not presenting the window, so it delivers no paints")
+    renders = []
+    plotter.renderer.AddObserver("StartEvent", lambda *_: renders.append(1))
+
+    plotter._render()  # noqa: SLF001
+    assert len(renders) == 1
+    plotter.renderer.SetBackground(0.0, 1.0, 0.0)  # the scene changes after that render
+    plotter.update()
+    qtbot.waitUntil(lambda: len(renders) >= 2, timeout=5000)
     plotter.close()
 
 

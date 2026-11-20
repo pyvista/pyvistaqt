@@ -108,6 +108,8 @@ force-single-line = true
 "docs/**" = ["INP001"]
 # CI helper scripts are standalone entry points whose output is the job log.
 ".github/scripts/**" = ["INP001", "T201"]
+# Developer scripts run by hand; their output is the result.
+"tools/**" = ["INP001", "T201"]
 "tests/**" = ["ANN001", "INP001", "S101", "T201", "PLR0915"]
 
 [tool.ruff.lint.pyupgrade]

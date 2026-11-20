@@ -59,13 +59,18 @@ of them produces symptoms that are far removed from the cause):
    count, buffer sizes, newer version) is left alone. Our format additionally
    requests desktop OpenGL explicitly, since Wayland/EGL may otherwise return
    a GLES context whose GLSL rejects VTK's ``#version 150`` shaders.
-3. ``paintGL`` must *always* render, unlike C++
-   ``QVTKOpenGLNativeWidget::paintGL`` which skips the VTK render for paints
-   scheduled by a finished render's ``WindowFrameEvent``. pyvista mutates the
-   scene (cameras, actors) without asking the widget to repaint, so a skipped
-   render blits a stale frame (caught by ``test_background_plotting_plots``:
-   the last-active subplot showed a pre-``camera.zoom`` frame). This matches
-   the behavior of the previously vendored ``QVTKRenderWindowInteractor``.
+3. ``paintGL`` may skip the VTK render only for the paint that a finished
+   render's ``WindowFrameEvent`` scheduled (``_cb_frame``), whose frame just
+   needs blitting; C++ ``QVTKOpenGLNativeWidget::paintGL`` does the same.
+   Every other paint must render: pyvista mutates the scene (cameras, actors)
+   without asking the widget to repaint, so a skipped render blits a stale
+   frame (caught by ``test_background_plotting_plots``: the last-active
+   subplot showed a pre-``camera.zoom`` frame). Qt merges paint requests, so
+   "scheduled by ``_cb_frame``" cannot be read off the paint itself:
+   ``update()`` and ``repaint()`` are overridden to mark the frame stale, and
+   ``_cb_frame`` bypasses the override. Otherwise a scene change followed by
+   ``update()`` before the event loop runs is merged into the pending blit
+   and shows up one render late (gh-876).
 4. Never call ``QWidget.screen()``: the Python binding can end up owning the
    returned application-global ``QScreen``, and a later garbage collection
    then deletes it, crashing much later inside an unrelated
@@ -495,7 +500,8 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             # The paint this schedules only has to show the frame VTK just
             # rendered, not render it a second time.
             self._frame_fresh = self._ctx is not None
-            self.update()
+            # not self.update(), which would mark the frame stale again
+            QOpenGLWidget.update(self)
 
     def _set_symbol_loader(self, rw):
         """Point VTK's GL loader at the platform's getProcAddress."""
@@ -618,7 +624,8 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # Like C++ QVTKOpenGLNativeWidget, skip the VTK render when this paint
         # was scheduled by a render that just finished (``_cb_frame``): its
         # frame is already in VTK's framebuffer and only needs the blit below.
-        # Any other paint (expose, resize, ``update()``) renders, because
+        # Any other paint (expose, resize, ``update()``, which marks the frame
+        # stale even when Qt merges it with the pending blit) renders, because
         # pyvista mutates the scene (cameras, actors) without asking the widget
         # to repaint, and a skipped render there would show a stale frame.
         fresh, self._frame_fresh = self._frame_fresh, False
@@ -641,6 +648,22 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         rect = QRect(0, 0, max(1, round(self.width() * dpr)), max(1, round(self.height() * dpr)))
         self._blit(self.defaultFramebufferObject(), rect)
         st.Pop()
+
+    def update(self, *args):
+        """
+        Schedule a repaint that renders the scene.
+
+        A caller asks for this because the scene changed, possibly after a
+        render whose blit is still pending, and Qt merges the two requests
+        into one paint: mark that render's frame stale (see invariant 3).
+        """
+        self._frame_fresh = False
+        super().update(*args)
+
+    def repaint(self, *args):
+        """Repaint now, rendering the scene (see ``update``)."""
+        self._frame_fresh = False
+        super().repaint(*args)
 
     # ---- QVTKRenderWindowAdapter::blit + clearAlpha ---------------------------
     def _blit(self, target_id, rect):
