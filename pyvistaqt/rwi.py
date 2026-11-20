@@ -123,11 +123,12 @@ Known platform limitation (macOS, hard-won but not fixable here):
 8. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
    context would use the Apple *software* renderer, because NSOpenGLContext
    crashes in ``flushBuffer``/``setView:`` there (qtbase commit a9ca1aef2291).
-   Qt warns ``QOpenGLWidget is not supported on this platform.`` and this
-   widget never receives ``initializeGL``/``paintGL`` (``_ctx`` stays None,
-   the widget shows solid white, and ``plotter.image`` reads uninitialized
-   memory). This hits macOS VMs without GPU acceleration, e.g. GitHub Actions
-   arm64 runners. Where a software context *is* still handed out (e.g. Qt
+   Qt warns ``QOpenGLWidget is not supported on this platform.`` and the
+   widget is not composited: it shows its background, as does ``grab()``.
+   Qt 6.11.1 and 6.12.0 still realize it from ``resizeEvent`` with a context
+   that only works offscreen (``grabFramebuffer`` and VTK readbacks are
+   right), which Qt also keeps across a move to another window. This hits
+   macOS VMs without GPU acceleration, e.g. GitHub Actions arm64 runners. Where a software context *is* still handed out (e.g. Qt
    6.11 on the same VMs, or macOS < 26), the arm64 software renderer draws
    with a corrupted view transform (roughly 2x-magnified/shifted subplots).
    C++ ``QVTKOpenGLNativeWidget`` shares this limitation; the previously
@@ -383,9 +384,25 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
         # slot for proper cleanup of VTK objects.
+        self._closing_parent = None
+        self._follow_parent()
+
+    def _follow_parent(self):
+        """Close with the current parent, not one the widget has since left."""
+        old = self._closing_parent() if self._closing_parent is not None else None
+        if old is not None:
+            with contextlib.suppress(RuntimeError, TypeError):
+                old.destroyed.disconnect(self.close)
         qparent = self.parent()
+        self._closing_parent = None if qparent is None else weakref.ref(qparent)
         if qparent is not None:
             qparent.destroyed.connect(self.close, Qt.ConnectionType.DirectConnection)
+
+    def changeEvent(self, evt):
+        # C++ construction sets the first parent before this override is live
+        if evt.type() == QEvent.Type.ParentChange and "_closing_parent" in self.__dict__:
+            self._follow_parent()
+        super().changeEvent(evt)
 
     # ---- render-window observers (QVTKRenderWindowAdapter) -------------------
     def _add_observers(self):

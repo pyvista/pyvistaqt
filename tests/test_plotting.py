@@ -839,6 +839,35 @@ def test_new_context_keeps_observers(qtbot, qtlog, plotting) -> None:  # noqa: A
     plotter.close()
 
 
+def test_moved_widget_closes_with_new_parent(qtbot) -> None:
+    """
+    A widget moved to another window closes with that window, not the old one.
+
+    The widget closes when its parent is destroyed (Qt deletes children
+    without closing them). That used to follow only the constructor's parent:
+    deleting the old window tore down the moved widget, and deleting the new
+    one leaked it, pinned by VTK's observers.
+    """
+    window = QMainWindow()
+    plotter = QtInteractor(window)
+    window.setCentralWidget(plotter)
+    other = QMainWindow()
+    other.setCentralWidget(plotter)
+    window.deleteLater()
+    del window
+    qtbot.wait(10)
+    assert plotter.render_window is not None
+    plotter.render_timer.stop()  # raises if the timer was deleted with the old window
+    render_window = plotter.render_window
+    ref = weakref.ref(plotter)
+    other.deleteLater()
+    del plotter, other
+    for _ in range(3):
+        qtbot.wait(10)
+        gc.collect()
+    assert not render_window.HasObserver("WindowMakeCurrentEvent")
+    assert ref() is None
+
 
 def test_render_returns_none_and_renders(qtbot, plotting, monkeypatch) -> None:  # noqa: ARG001
     """
