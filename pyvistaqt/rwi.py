@@ -365,6 +365,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # and creating a GL context while the application is dying is unsafe.
         self._fallback = None
         self._fallback_allowed = True
+        self._torn_down = False  # closed: no new observers, no realizing
 
         # input-event state (ported from VTK's QVTKRenderWindowInteractor.py)
         self._active_button = Qt.MouseButton.NoButton
@@ -373,28 +374,11 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         self._save_modifiers = Qt.KeyboardModifier.NoModifier
         self._wheel_delta = 0
 
-        # Track (subject, tag) pairs so teardown can remove the observers:
-        # VTK holds a C++-side strong reference to each bound method, which
-        # pins the widget (invisibly to Python's GC) for as long as the
-        # subject lives -- a leak whenever anything (e.g. a trame export)
-        # keeps the render window alive past close.
-        self._vtk_observers = []
-        for obj, event, handler in (
-            (self._RenderWindow, "WindowMakeCurrentEvent", self._cb_make_current),
-            (self._RenderWindow, "WindowIsCurrentEvent", self._cb_is_current),
-            (self._RenderWindow, "WindowFrameEvent", self._cb_frame),
-            (self._RenderWindow, "CursorChangedEvent", self.CursorChangedEvent),
-        ):
-            self._vtk_observers.append((obj, obj.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
-
         # VTK interactor timers (vtkGenericRenderWindowInteractor delegates).
         self._Timer = QTimer(self)
         self._Timer.timeout.connect(self.TimerEvent)
-        for event, handler in (
-            ("CreateTimerEvent", self.CreateTimer),
-            ("DestroyTimerEvent", self.DestroyTimer),
-        ):
-            self._vtk_observers.append((self._Iren, self._Iren.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
+        self._vtk_observers = []
+        self._add_observers()
 
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
@@ -404,6 +388,26 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             qparent.destroyed.connect(self.close, Qt.ConnectionType.DirectConnection)
 
     # ---- render-window observers (QVTKRenderWindowAdapter) -------------------
+    def _add_observers(self):
+        """
+        Observe the render window and interactor.
+
+        Track (subject, tag) pairs so teardown can remove the observers: VTK
+        holds a C++-side strong reference to each bound method, which pins the
+        widget (invisibly to Python's GC) for as long as the subject lives --
+        a leak whenever anything (e.g. a trame export) keeps the render window
+        alive past close.
+        """
+        for obj, event, handler in (
+            (self._RenderWindow, "WindowMakeCurrentEvent", self._cb_make_current),
+            (self._RenderWindow, "WindowIsCurrentEvent", self._cb_is_current),
+            (self._RenderWindow, "WindowFrameEvent", self._cb_frame),
+            (self._RenderWindow, "CursorChangedEvent", self.CursorChangedEvent),
+            (self._Iren, "CreateTimerEvent", self.CreateTimer),
+            (self._Iren, "DestroyTimerEvent", self.DestroyTimer),
+        ):
+            self._vtk_observers.append((obj, obj.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
+
     def _cb_make_current(self, obj, evt):
         """Make VTK's context current WITHOUT touching framebuffer bindings."""
         app = QApplication.instance()
@@ -473,16 +477,17 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
 
     def _ensure_initialized(self):
         """
-        Realize the widget offscreen if it was never exposed.
+        Realize the widget offscreen if it has no GL context.
 
         Rendering APIs (pyvista's ``image``/``screenshot``) must work on a
         widget that has not painted yet (hidden, or shown without the event
-        loop running). ``QOpenGLWidget.grabFramebuffer`` is Qt's supported
-        way to force initializeGL/paintGL without an exposed window; the old
-        native-window interactor got this for free by creating its GL context
-        on demand.
+        loop running), or whose context Qt destroyed when it moved to another
+        top-level window that has not painted it yet.
+        ``QOpenGLWidget.grabFramebuffer`` is Qt's supported way to force
+        initializeGL/paintGL without an exposed window; the old native-window
+        interactor got this for free by creating its GL context on demand.
         """
-        if self._ctx is None and self._fallback_allowed:
+        if self._ctx is None and not self._torn_down:
             with contextlib.suppress(Exception):
                 self.grabFramebuffer()
 
@@ -535,6 +540,11 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         if rw is None:
             return
         self._drop_fallback_context()  # the real context takes over
+        if not self._vtk_observers and not self._torn_down:
+            # A previous context was destroyed while the widget lives on (it
+            # moved to another top-level window): _cleanup_context removed the
+            # observers, as it cannot tell this from the widget going away.
+            self._add_observers()
         self._ctx = self.context()
         self._surface = self._ctx.surface()
         # See invariant 7. Qt deletes the surface only in reset(), right after
@@ -769,6 +779,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # render window's own MakeCurrent (serviced by _cb_make_current), and
         # QOpenGLWidget.makeCurrent on a widget whose window is being torn
         # down (parent destroyed -> close) is unsafe.
+        self._torn_down = True
         self.Finalize()
         self._remove_observers()
         self._drop_fallback_context()
@@ -778,6 +789,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # Qt never delivers closeEvent to a widget that was never realized
         # (e.g. constructed with show=False), so tear down here as well; both
         # calls are idempotent.
+        self._torn_down = True
         self.Finalize()
         self._remove_observers()
         self._drop_fallback_context()
