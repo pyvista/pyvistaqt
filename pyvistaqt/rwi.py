@@ -204,6 +204,14 @@ def _forget_widget_context(widget_ref, *_args):
         widget._forget_context()  # noqa: SLF001
 
 
+def _close_widget_with_parent(widget_ref, token, *_args):
+    """Close a widget when the parent it still belongs to is destroyed."""
+    widget = widget_ref()
+    if widget is not None and widget._parent_token is token:  # noqa: SLF001
+        with contextlib.suppress(RuntimeError):  # C++ widget already deleted
+            widget.close()
+
+
 def _default_format() -> QSurfaceFormat:
     """Desktop-GL 3.2 core format (QVTKRenderWindowAdapter::defaultFormat)."""
     fmt = QSurfaceFormat()
@@ -384,23 +392,27 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # If we've a parent, it does not close the child when closed.
         # Connect the parent's destroyed signal to this widget's close
         # slot for proper cleanup of VTK objects.
-        self._closing_parent = None
+        self._parent_token = None
         self._follow_parent()
 
     def _follow_parent(self):
-        """Close with the current parent, not one the widget has since left."""
-        old = self._closing_parent() if self._closing_parent is not None else None
-        if old is not None:
-            with contextlib.suppress(RuntimeError, TypeError):
-                old.destroyed.disconnect(self.close)
+        """
+        Close with the current parent, not one the widget has since left.
+
+        A parent the widget left cannot be disconnected reliably: it is often
+        a widget Qt made itself (the stack inside a ``QTabWidget``), whose
+        Python wrapper does not outlive the ``parent()`` call. Each connection
+        instead carries a token, and only the latest one closes the widget.
+        """
+        self._parent_token = token = object()
         qparent = self.parent()
-        self._closing_parent = None if qparent is None else weakref.ref(qparent)
         if qparent is not None:
-            qparent.destroyed.connect(self.close, Qt.ConnectionType.DirectConnection)
+            slot = functools.partial(_close_widget_with_parent, weakref.ref(self), token)
+            qparent.destroyed.connect(slot, Qt.ConnectionType.DirectConnection)
 
     def changeEvent(self, evt):
         # C++ construction sets the first parent before this override is live
-        if evt.type() == QEvent.Type.ParentChange and "_closing_parent" in self.__dict__:
+        if evt.type() == QEvent.Type.ParentChange and "_parent_token" in self.__dict__:
             self._follow_parent()
         super().changeEvent(evt)
 
