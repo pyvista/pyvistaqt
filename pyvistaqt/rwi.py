@@ -59,13 +59,25 @@ of them produces symptoms that are far removed from the cause):
    count, buffer sizes, newer version) is left alone. Our format additionally
    requests desktop OpenGL explicitly, since Wayland/EGL may otherwise return
    a GLES context whose GLSL rejects VTK's ``#version 150`` shaders.
-3. ``paintGL`` must *always* render, unlike C++
-   ``QVTKOpenGLNativeWidget::paintGL`` which skips the VTK render for paints
-   scheduled by a finished render's ``WindowFrameEvent``. pyvista mutates the
-   scene (cameras, actors) without asking the widget to repaint, so a skipped
-   render blits a stale frame (caught by ``test_background_plotting_plots``:
-   the last-active subplot showed a pre-``camera.zoom`` frame). This matches
-   the behavior of the previously vendored ``QVTKRenderWindowInteractor``.
+3. ``paintGL`` may skip the VTK render only for the paint that a finished
+   render's ``WindowFrameEvent`` scheduled (``_cb_frame``), whose frame just
+   needs blitting; C++ ``QVTKOpenGLNativeWidget::paintGL`` does the same.
+   Every other paint must render: pyvista mutates the scene (cameras, actors)
+   without asking the widget to repaint, so a skipped render blits a stale
+   frame (caught by ``test_background_plotting_plots``: the last-active
+   subplot showed a pre-``camera.zoom`` frame). Qt merges paint requests, so
+   "scheduled by ``_cb_frame``" cannot be read off the paint itself, so
+   everything else that can lead to a paint marks the frame stale:
+   ``update()`` and ``repaint()`` (``_cb_frame`` bypasses the override;
+   otherwise a scene change followed by ``update()`` before the event loop
+   runs is merged into the pending blit and shows up one render late,
+   gh-876), ``grab()`` and ``grabFramebuffer()`` (a caller asking for a
+   picture wants the current scene), ``showEvent`` (the scene may have
+   changed while hidden), ``resizeGL`` (the frame has the old size), and
+   ``initializeGL`` (a new context, e.g. after moving the widget to another
+   top-level window, does not have VTK's framebuffers to blit from).
+   ``grab()`` of a *parent* widget paints this one from C++ and cannot be
+   intercepted, so it shows the pending frame.
 4. Never call ``QWidget.screen()``: the Python binding can end up owning the
    returned application-global ``QScreen``, and a later garbage collection
    then deletes it, crashing much later inside an unrelated
@@ -111,11 +123,12 @@ Known platform limitation (macOS, hard-won but not fixable here):
 8. On macOS >= 26 ("Tahoe"), Qt >= 6.10 disables OpenGL process-wide when the
    context would use the Apple *software* renderer, because NSOpenGLContext
    crashes in ``flushBuffer``/``setView:`` there (qtbase commit a9ca1aef2291).
-   Qt warns ``QOpenGLWidget is not supported on this platform.`` and this
-   widget never receives ``initializeGL``/``paintGL`` (``_ctx`` stays None,
-   the widget shows solid white, and ``plotter.image`` reads uninitialized
-   memory). This hits macOS VMs without GPU acceleration, e.g. GitHub Actions
-   arm64 runners. Where a software context *is* still handed out (e.g. Qt
+   Qt warns ``QOpenGLWidget is not supported on this platform.`` and the
+   widget is not composited: it shows its background, as does ``grab()``.
+   Qt 6.11.1 and 6.12.0 still realize it from ``resizeEvent`` with a context
+   that only works offscreen (``grabFramebuffer`` and VTK readbacks are
+   right), which Qt also keeps across a move to another window. This hits
+   macOS VMs without GPU acceleration, e.g. GitHub Actions arm64 runners. Where a software context *is* still handed out (e.g. Qt
    6.11 on the same VMs, or macOS < 26), the arm64 software renderer draws
    with a corrupted view transform (roughly 2x-magnified/shifted subplots).
    C++ ``QVTKOpenGLNativeWidget`` shares this limitation; the previously
@@ -353,6 +366,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # and creating a GL context while the application is dying is unsafe.
         self._fallback = None
         self._fallback_allowed = True
+        self._torn_down = False  # closed: no new observers, no realizing
 
         # input-event state (ported from VTK's QVTKRenderWindowInteractor.py)
         self._active_button = Qt.MouseButton.NoButton
@@ -361,37 +375,56 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         self._save_modifiers = Qt.KeyboardModifier.NoModifier
         self._wheel_delta = 0
 
-        # Track (subject, tag) pairs so teardown can remove the observers:
-        # VTK holds a C++-side strong reference to each bound method, which
-        # pins the widget (invisibly to Python's GC) for as long as the
-        # subject lives -- a leak whenever anything (e.g. a trame export)
-        # keeps the render window alive past close.
+        # VTK interactor timers (vtkGenericRenderWindowInteractor delegates).
+        self._Timer = QTimer(self)
+        self._Timer.timeout.connect(self.TimerEvent)
         self._vtk_observers = []
+        self._add_observers()
+
+        # If we've a parent, it does not close the child when closed.
+        # Connect the parent's destroyed signal to this widget's close
+        # slot for proper cleanup of VTK objects.
+        self._closing_parent = None
+        self._follow_parent()
+
+    def _follow_parent(self):
+        """Close with the current parent, not one the widget has since left."""
+        old = self._closing_parent() if self._closing_parent is not None else None
+        if old is not None:
+            with contextlib.suppress(RuntimeError, TypeError):
+                old.destroyed.disconnect(self.close)
+        qparent = self.parent()
+        self._closing_parent = None if qparent is None else weakref.ref(qparent)
+        if qparent is not None:
+            qparent.destroyed.connect(self.close, Qt.ConnectionType.DirectConnection)
+
+    def changeEvent(self, evt):
+        # C++ construction sets the first parent before this override is live
+        if evt.type() == QEvent.Type.ParentChange and "_closing_parent" in self.__dict__:
+            self._follow_parent()
+        super().changeEvent(evt)
+
+    # ---- render-window observers (QVTKRenderWindowAdapter) -------------------
+    def _add_observers(self):
+        """
+        Observe the render window and interactor.
+
+        Track (subject, tag) pairs so teardown can remove the observers: VTK
+        holds a C++-side strong reference to each bound method, which pins the
+        widget (invisibly to Python's GC) for as long as the subject lives --
+        a leak whenever anything (e.g. a trame export) keeps the render window
+        alive past close.
+        """
         for obj, event, handler in (
             (self._RenderWindow, "WindowMakeCurrentEvent", self._cb_make_current),
             (self._RenderWindow, "WindowIsCurrentEvent", self._cb_is_current),
             (self._RenderWindow, "WindowFrameEvent", self._cb_frame),
             (self._RenderWindow, "CursorChangedEvent", self.CursorChangedEvent),
+            (self._Iren, "CreateTimerEvent", self.CreateTimer),
+            (self._Iren, "DestroyTimerEvent", self.DestroyTimer),
         ):
             self._vtk_observers.append((obj, obj.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
 
-        # VTK interactor timers (vtkGenericRenderWindowInteractor delegates).
-        self._Timer = QTimer(self)
-        self._Timer.timeout.connect(self.TimerEvent)
-        for event, handler in (
-            ("CreateTimerEvent", self.CreateTimer),
-            ("DestroyTimerEvent", self.DestroyTimer),
-        ):
-            self._vtk_observers.append((self._Iren, self._Iren.AddObserver(event, handler)))  # ty: ignore[invalid-argument-type]
-
-        # If we've a parent, it does not close the child when closed.
-        # Connect the parent's destroyed signal to this widget's close
-        # slot for proper cleanup of VTK objects.
-        qparent = self.parent()
-        if qparent is not None:
-            qparent.destroyed.connect(self.close, Qt.ConnectionType.DirectConnection)
-
-    # ---- render-window observers (QVTKRenderWindowAdapter) -------------------
     def _cb_make_current(self, obj, evt):
         """Make VTK's context current WITHOUT touching framebuffer bindings."""
         app = QApplication.instance()
@@ -461,16 +494,17 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
 
     def _ensure_initialized(self):
         """
-        Realize the widget offscreen if it was never exposed.
+        Realize the widget offscreen if it has no GL context.
 
         Rendering APIs (pyvista's ``image``/``screenshot``) must work on a
         widget that has not painted yet (hidden, or shown without the event
-        loop running). ``QOpenGLWidget.grabFramebuffer`` is Qt's supported
-        way to force initializeGL/paintGL without an exposed window; the old
-        native-window interactor got this for free by creating its GL context
-        on demand.
+        loop running), or whose context Qt destroyed when it moved to another
+        top-level window that has not painted it yet.
+        ``QOpenGLWidget.grabFramebuffer`` is Qt's supported way to force
+        initializeGL/paintGL without an exposed window; the old native-window
+        interactor got this for free by creating its GL context on demand.
         """
-        if self._ctx is None and self._fallback_allowed:
+        if self._ctx is None and not self._torn_down:
             with contextlib.suppress(Exception):
                 self.grabFramebuffer()
 
@@ -495,7 +529,8 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
             # The paint this schedules only has to show the frame VTK just
             # rendered, not render it a second time.
             self._frame_fresh = self._ctx is not None
-            self.update()
+            # not self.update(), which would mark the frame stale again
+            QOpenGLWidget.update(self)
 
     def _set_symbol_loader(self, rw):
         """Point VTK's GL loader at the platform's getProcAddress."""
@@ -515,10 +550,18 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
     # ---- QOpenGLWidget overrides ---------------------------------------------
     def initializeGL(self):
         super().initializeGL()
+        # A pending frame lives in the old context's framebuffers (see
+        # invariant 3); QVTKRenderWindowAdapter re-arms its render here too.
+        self._frame_fresh = False
         rw = self._RenderWindow
         if rw is None:
             return
         self._drop_fallback_context()  # the real context takes over
+        if not self._vtk_observers and not self._torn_down:
+            # A previous context was destroyed while the widget lives on (it
+            # moved to another top-level window): _cleanup_context removed the
+            # observers, as it cannot tell this from the widget going away.
+            self._add_observers()
         self._ctx = self.context()
         self._surface = self._ctx.surface()
         # See invariant 7. Qt deletes the surface only in reset(), right after
@@ -618,9 +661,11 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # Like C++ QVTKOpenGLNativeWidget, skip the VTK render when this paint
         # was scheduled by a render that just finished (``_cb_frame``): its
         # frame is already in VTK's framebuffer and only needs the blit below.
-        # Any other paint (expose, resize, ``update()``) renders, because
-        # pyvista mutates the scene (cameras, actors) without asking the widget
-        # to repaint, and a skipped render there would show a stale frame.
+        # Any other paint (expose, show, resize, new context, grabs,
+        # ``update()``, which mark the frame stale even when Qt merges them
+        # with the pending blit; see invariant 3) renders, because pyvista
+        # mutates the scene (cameras, actors) without asking the widget to
+        # repaint, and a skipped render there would show a stale frame.
         fresh, self._frame_fresh = self._frame_fresh, False
         if not self._in_paint and not fresh:
             self._in_paint = True
@@ -641,6 +686,43 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         rect = QRect(0, 0, max(1, round(self.width() * dpr)), max(1, round(self.height() * dpr)))
         self._blit(self.defaultFramebufferObject(), rect)
         st.Pop()
+
+    def update(self, *args):
+        """
+        Schedule a repaint that renders the scene.
+
+        A caller asks for this because the scene changed, possibly after a
+        render whose blit is still pending, and Qt merges the two requests
+        into one paint: mark that render's frame stale (see invariant 3).
+        """
+        self._frame_fresh = False
+        super().update(*args)
+
+    def repaint(self, *args):
+        """Repaint now, rendering the scene (see ``update``)."""
+        self._frame_fresh = False
+        super().repaint(*args)
+
+    def grabFramebuffer(self, *args):
+        """Render the scene and return it as an image (see ``update``)."""
+        self._frame_fresh = False
+        return super().grabFramebuffer(*args)
+
+    def grab(self, *args, **kwargs):
+        """
+        Render the scene and return it as a pixmap (see ``update``).
+
+        A ``grab()`` of a parent widget paints this one from C++, bypassing
+        this override, so it can show a frame that is already stale.
+        """
+        self._frame_fresh = False
+        return super().grab(*args, **kwargs)
+
+    def showEvent(self, evt):
+        # The scene may have changed while the widget was hidden, after the
+        # render whose blit is pending (see invariant 3).
+        self._frame_fresh = False
+        super().showEvent(evt)
 
     # ---- QVTKRenderWindowAdapter::blit + clearAlpha ---------------------------
     def _blit(self, target_id, rect):
@@ -714,6 +796,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # render window's own MakeCurrent (serviced by _cb_make_current), and
         # QOpenGLWidget.makeCurrent on a widget whose window is being torn
         # down (parent destroyed -> close) is unsafe.
+        self._torn_down = True
         self.Finalize()
         self._remove_observers()
         self._drop_fallback_context()
@@ -723,6 +806,7 @@ class QVTKRenderWindowInteractor(QOpenGLWidget):
         # Qt never delivers closeEvent to a widget that was never realized
         # (e.g. constructed with show=False), so tear down here as well; both
         # calls are idempotent.
+        self._torn_down = True
         self.Finalize()
         self._remove_observers()
         self._drop_fallback_context()

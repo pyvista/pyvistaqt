@@ -284,7 +284,7 @@ class QtInteractor(QVTKRenderWindowInteractor, BasePlotter):
             self._setup_key_press()
 
         # Make the render timer but only activate if using auto update
-        self.render_timer = QTimer(parent=parent)
+        self.render_timer = QTimer(parent=self)
         if float(auto_update) > 0.0:  # Can be False as well
             # Periodically re-render the window from the GUI thread.
             # Sometimes directly modifying object data doesn't trigger
